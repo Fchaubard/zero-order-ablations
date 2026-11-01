@@ -91,7 +91,13 @@ class PLayer(nn.Module):
 
     def enable_decorrelation(self):
         d = self.decor_dim
-        self.register_buffer("R", torch.eye(d))
+        # ``__init__`` stores the placeholder ``self.R = None`` as a plain attribute and
+        # ``register_buffer`` refuses to shadow an existing attribute (KeyError), so drop
+        # the placeholder first.  R is created on the layer's own device / dtype so that
+        # a model already on the GPU does not get a CPU buffer.
+        if "R" not in self._buffers:
+            self.__dict__.pop("R", None)
+        self.register_buffer("R", torch.eye(d, device=self.weight.device, dtype=self.weight.dtype))
 
     def _decorrelate(self, x2d: torch.Tensor) -> torch.Tensor:
         """x2d: (M, d) rows -> (M, d) decorrelated rows (R x)."""
