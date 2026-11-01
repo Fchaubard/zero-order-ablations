@@ -1,0 +1,1088 @@
+\documentclass{article}
+
+% ------------------------------------------------------------------------------------
+% A ZOO Deep Learning Survey -- NeurIPS 2025 format, camera-ready (non-anonymous).
+%
+% The official neurips_2025.sty defines the footer notice only when a track option is
+% given, so the non-anonymous "final" option is combined with "main" exactly as the
+% template prescribes for camera-ready copies:  \usepackage[main, final]{neurips_2025}.
+% ------------------------------------------------------------------------------------
+\usepackage[main,final]{neurips_2025}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=blue!60!black, urlcolor=blue!60!black}
+
+% ------------------------------------------------------------------------------------
+% Shared colour / marker cycle for the 8 optimizers.  Order is fixed everywhere:
+%   bp  spsa  rs  np  anp  inp  danp  ff
+% bp is black dashed; the seven others use an Okabe-Ito style colour-blind-safe set.
+% ------------------------------------------------------------------------------------
+\definecolor{zoospsa}{HTML}{E69F00}
+\definecolor{zoors}{HTML}{0072B2}
+\definecolor{zoonp}{HTML}{009E73}
+\definecolor{zooanp}{HTML}{D55E00}
+\definecolor{zooinp}{HTML}{CC79A7}
+\definecolor{zoodanp}{HTML}{56B4E9}
+\definecolor{zooff}{HTML}{6A3D9A}
+\pgfplotscreateplotcyclelist{zoocycle}{%
+  color=black,   dashed, thick, mark=none\\
+  color=zoospsa, solid, mark=o,         mark size=1.3pt\\
+  color=zoors,   solid, mark=square*,   mark size=1.2pt\\
+  color=zoonp,   solid, mark=triangle*, mark size=1.5pt\\
+  color=zooanp,  solid, mark=diamond*,  mark size=1.5pt\\
+  color=zooinp,  solid, mark=pentagon*, mark size=1.5pt\\
+  color=zoodanp, solid, mark=x,         mark size=1.8pt\\
+  color=zooff,   solid, mark=+,         mark size=1.8pt\\
+}
+
+% Adds the 8 optimizer curves of one CSV (#2) with x column #1, in zoocycle order.
+\newcommand{\zooplots}[2]{%
+  \addplot table [x=#1, y=bp,   col sep=comma] {#2};
+  \addplot table [x=#1, y=spsa, col sep=comma] {#2};
+  \addplot table [x=#1, y=rs,   col sep=comma] {#2};
+  \addplot table [x=#1, y=np,   col sep=comma] {#2};
+  \addplot table [x=#1, y=anp,  col sep=comma] {#2};
+  \addplot table [x=#1, y=inp,  col sep=comma] {#2};
+  \addplot table [x=#1, y=danp, col sep=comma] {#2};
+  \addplot table [x=#1, y=ff,   col sep=comma] {#2};
+}
+
+% Short names used in the text.
+\newcommand{\method}[1]{\textsc{#1}}
+\newcommand{\BP}{\method{bp}}
+\newcommand{\SPSA}{\method{spsa}}
+\newcommand{\RS}{\method{rs}}
+\newcommand{\NP}{\method{np}}
+\newcommand{\ANP}{\method{anp}}
+\newcommand{\INP}{\method{inp}}
+\newcommand{\DANP}{\method{danp}}
+\newcommand{\FF}{\method{ff}}
+\newcommand{\ghat}{\hat{\mathbf{g}}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bxi}{\boldsymbol{\xi}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bh}{\mathbf{h}}
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bR}{\mathbf{R}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\dL}{\delta\mathcal{L}}
+\newcommand{\loss}{\mathcal{L}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\title{A ZOO Deep Learning Survey}
+
+\author{%
+  Francois Chaubard \\
+  Stanford University \\
+  \texttt{fchaubar@stanford.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Zero-order optimization (ZOO) trains a network from loss evaluations alone, without
+back-propagating errors. It is the natural training rule for neuromorphic and analog
+hardware, for systems that contain non-differentiable components, for biologically
+plausible learning, and for memory-constrained fine-tuning. Many ZOO rules have been
+proposed, but they are rarely compared under one budget on the same networks. We
+survey eight training rules---backpropagation as the reference, simultaneous
+perturbation (SPSA), random search, four node-perturbation variants (classic,
+activity-based, iterative and decorrelated), and the forward-forward algorithm---on
+four standard $\approx$40k-parameter architectures: an MLP on MNIST, a convolutional
+network on CIFAR-10, and a character-level LSTM and Transformer on Penn Treebank. Every
+method is given the same 16-forward-pass step budget and the same one hour of
+wall-clock training on a single GPU, feeds its gradient estimate to Adam, and is swept
+over three probe scales, yielding 96 runs. We report final test loss, accuracy and
+bits-per-character, training curves against wall-clock, sensitivity to the probe
+scale, and throughput.
+%TODO: one sentence with the headline finding once results are in (which ZOO method wins and by how much).
+Code, configurations and raw logs are released at
+\url{https://github.com/Fchaubard/zero-order-ablations}.
+\end{abstract}
+
+% ====================================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Backpropagation \citep{rumelhart1986} is the default way to train neural networks, but
+it is not always available. Neuromorphic and analog accelerators implement a forward
+pass natively and may have no mechanism to transport exact error signals backwards
+through the substrate; systems with non-differentiable components (simulators,
+hardware in the loop, discrete decisions, black-box APIs) expose only a loss value;
+neuroscience asks which learning rules a brain could plausibly implement with local
+information; and fine-tuning of very large models is increasingly limited by the
+activation memory that backpropagation must store \citep{malladi2023}. In all of these
+settings the learner can evaluate the loss at perturbed parameters or perturbed
+activities, but cannot differentiate it. \emph{Zero-order optimization} (ZOO) is the
+family of methods that estimate a descent direction from such evaluations alone.
+
+The ZOO literature is old and broad: random search \citep{rastrigin1963,matyas1965,
+schumer1968}, simultaneous perturbation stochastic approximation
+\citep{spall1992,spall1998}, Gaussian smoothing and its convergence theory
+\citep{nesterov2017,duchi2015,flaxman2005}, evolution strategies
+\citep{wierstra2014,hansen2003,salimans2017,mania2018}, node perturbation
+\citep{widrow1990,werfel2003,fiete2006,hiratani2022} and its recent activity-based and
+decorrelated variants \citep{dalm2023}, and local learning rules such as
+forward-forward \citep{hinton2022}. Each paper demonstrates its method on its own
+architecture, with its own budget of forward passes, its own choice of optimizer and
+its own hyper-parameter search. A practitioner who must train without backpropagation
+is left with the question this paper tries to answer: \emph{which ZOO method wins, on
+standard small architectures, when every method is given exactly the same budget?}
+
+We answer it empirically. Our protocol fixes four $\approx$40k-parameter models on four
+standard tasks (an MLP on MNIST, a ConvNet on CIFAR-10, and a character-level LSTM and
+Transformer on Penn Treebank), gives every probe-based method 16 forward passes per
+step, runs every method for one hour of wall-clock training on one GPU, feeds every
+method's gradient estimate to the same Adam optimizer, and sweeps a single scalar
+$\varepsilon$ that is simultaneously the learning rate and the probe scale. Model
+selection uses validation loss only; test metrics are reported once.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item A single, fully specified protocol (Section~\ref{sec:methods} and
+        Section~\ref{sec:setup}) under which eight training rules---backpropagation,
+        SPSA, random search, classic / activity-based / iterative / decorrelated node
+        perturbation and forward-forward---are compared on four architectures with
+        identical forward-pass, wall-clock and hyper-parameter budgets.
+  \item A faithful implementation of each published estimator on top of one
+        \emph{perturbable layer} abstraction (Appendix~\ref{app:impl}) so that every
+        method drives the same models, including an LSTM and a pre-LN Transformer, not
+        only MLPs.
+  \item The resulting 96-run grid (Table~\ref{tab:main}, Appendix~\ref{app:grid}),
+        training curves against wall-clock (Figure~\ref{fig:curves}), the sensitivity
+        of every method to the probe scale (Figure~\ref{fig:eps}) and the throughput of
+        every method (Table~\ref{tab:throughput}), with code and logs released.
+\end{itemize}
+
+Table~\ref{tab:main} previews the main result:
+%TODO: preview sentence, e.g. "<method> is the best zero-order rule on every task, but
+%TODO: remains <k>x behind backpropagation in test loss after one hour".
+the best zero-order rule on each task is set in bold next to the backpropagation
+reference.
+
+% ====================================================================================
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{SPSA, Gaussian smoothing and evolution strategies.}
+Simultaneous perturbation stochastic approximation \citep{spall1992,spall1998}
+estimates a gradient from two loss evaluations at $\btheta\pm\varepsilon\bz$ with a
+random direction $\bz$; with Gaussian $\bz$ the estimator is the gradient of the
+Gaussian-smoothed loss \citep{nesterov2017}, and its complexity in the convex
+\citep{duchi2015} and bandit \citep{flaxman2005} settings is well understood (see
+\citet{liu2020primer} for a survey). Evolution strategies use the same estimator with
+many directions, fitness shaping and natural-gradient corrections
+\citep{wierstra2014,hansen2003,hansen2016}; \citet{salimans2017} and \citet{mania2018}
+showed that they are competitive with policy-gradient reinforcement learning, which is
+itself a zero-order method with respect to the environment \citep{williams1992}.
+Adaptive-moment updates on top of zero-order estimates were studied by
+\citet{chen2019zoadamm}. Our \SPSA{} and \RS{} baselines are the two-point and
+best-of-$K$ instances of this family.
+
+\paragraph{Node perturbation.}
+Rather than perturbing weights, node perturbation injects noise into the units of the
+network and correlates the resulting change of the loss with the noise, which yields a
+weight update that is local to each layer
+\citep{widrow1990,werfel2003,werfel2005,fiete2006}. \citet{hiratani2022} analysed its
+stability and scalability and showed that it suffers from weight diffusion in
+mismatched networks. \citet{dalm2023} reformulated node perturbation as a directional
+derivative (\emph{iterative} NP), proposed the cheaper \emph{activity-based} NP that
+uses the measured activity change rather than the injected noise, and combined it with
+the input decorrelation rule of \citet{ahmad2023constrained}, which was also shown to
+accelerate backpropagation itself \citep{dalm2024,ahmad2024}. We implement all four
+variants.
+
+\paragraph{Forward gradients.}
+Forward-mode automatic differentiation gives an unbiased directional derivative in a
+single forward pass; \citet{baydin2022} proposed training with a random direction, and
+\citet{ren2023} scaled it with local losses. Forward gradients require a
+Jacobian-vector product through the network and therefore do not apply to the
+black-box and hardware settings that motivate this survey; we do not include them.
+
+\paragraph{Decorrelation.}
+Correlated layer inputs make the loss landscape ill-conditioned; decorrelating inputs
+with a local rule \citep{ahmad2023constrained} removes this and was reported to make
+node perturbation competitive with backpropagation \citep{dalm2023} and to speed up
+backpropagation \citep{dalm2024,ahmad2024}. Our \DANP{} baseline uses exactly this
+rule.
+
+\paragraph{Forward-forward and other local rules.}
+The forward-forward algorithm \citep{hinton2022} replaces the backward pass by two
+forward passes with positive and negative data and trains each layer to separate
+them with a local ``goodness'' objective. Other backprop-free rules, such as feedback
+alignment \citep{lillicrap2016}, direct feedback alignment \citep{nokland2016} and
+synthetic gradients \citep{jaderberg2017}, still require a backward signal that is
+learned or random; they are outside our zero-order scope and we include only
+forward-forward as the representative local rule.
+
+\paragraph{Zero-order fine-tuning of large language models.}
+MeZO \citep{malladi2023} showed that two-point SPSA with in-place perturbation can
+fine-tune billion-parameter language models with inference-level memory; DeepZero
+\citep{chen2024deepzero} scaled zero-order training from scratch with sparsity and
+coordinate-wise estimates; and \citet{zhang2024revisiting} benchmarked the resulting
+estimators and optimizers for memory-efficient fine-tuning. Those works vary the
+estimator on one large model; we vary the estimator \emph{and} the architecture at a
+scale where every method can be run to its one-hour limit.
+
+% ====================================================================================
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Problem setup and the shared update rule}
+\label{sec:setup-rule}
+
+Let $\btheta\in\mathbb{R}^{P}$ be the parameters of a network with $L$ perturbable
+layers, and let $\loss(\btheta)=\frac{1}{N}\sum_{n=1}^{N}\ell_n(\btheta)$ be the
+mini-batch cross-entropy loss, where $\ell_n$ is the per-example loss (for language
+modelling, the per-sequence mean of the 64 next-character cross-entropies). Every method
+in this paper produces an estimate $\ghat\approx\nabla_{\btheta}\loss$ of the gradient
+and writes it into the gradient slot of every parameter; backpropagation writes the
+exact gradient, the zero-order methods write their estimator, and forward-forward
+writes the gradient of its local objectives. The estimate is then consumed by the same
+optimizer, Adam \citep{kingma2015} with $(\beta_1,\beta_2)=(0.9,0.99)$ and no schedule:
+\begin{equation}
+  \mathbf{m}\leftarrow\beta_1\mathbf{m}+(1-\beta_1)\,\ghat,\qquad
+  \mathbf{v}\leftarrow\beta_2\mathbf{v}+(1-\beta_2)\,\ghat^{2},\qquad
+  \btheta\leftarrow\btheta-\varepsilon\,\frac{\hat{\mathbf{m}}}{\sqrt{\hat{\mathbf{v}}}+10^{-8}},
+  \label{eq:adam}
+\end{equation}
+with the usual bias corrections $\hat{\mathbf{m}},\hat{\mathbf{v}}$. The learning rate
+$\varepsilon$ is the only hyper-parameter, and it \emph{doubles as the probe scale}: it
+is the standard deviation of the parameter perturbation for \SPSA{} and \RS{} and the
+standard deviation $\sigma$ of the node noise for the node-perturbation family. All
+probes are drawn from $\mathcal{N}(\mathbf{0},\bI)$ and scaled by $\varepsilon$. Tying
+the two removes a two-dimensional grid search per method and expresses the natural
+constraint that a probe cannot be finer than the step it informs.
+
+Because Adam normalises $\ghat$ by a running estimate of its own magnitude,
+Eq.~\eqref{eq:adam} is approximately invariant to a constant rescaling of the
+estimator. The normalisation constants of the estimators below therefore influence the
+first few hundred steps and the relative weighting of estimates across steps, but not
+the asymptotic step size; this is deliberate and makes the comparison insensitive to
+the different conventions in the literature.
+
+\subsection{Optimizers}
+\label{sec:optimizers}
+
+\paragraph{SPSA (central difference, Gaussian probes).}
+With $K=8$ antithetic pairs of probes $\bz_k\sim\mathcal{N}(\mathbf{0},\bI_P)$ the
+estimator is the two-point central difference
+\begin{equation}
+  \ghat_{\SPSA}
+  = \frac{1}{K}\sum_{k=1}^{K}\frac{\loss(\btheta+\varepsilon\bz_k)-\loss(\btheta-\varepsilon\bz_k)}{2\varepsilon}\,\bz_k ,
+  \qquad K=8,
+  \label{eq:spsa}
+\end{equation}
+which is the Gaussian-smoothing estimator of \citet{nesterov2017} and the
+multi-direction form of SPSA \citep{spall1992} with Gaussian rather than Rademacher
+directions. Each pair costs two forward passes on the batch-mean loss, so the 16-pass
+budget buys $K=8$ directions.
+%TODO: confirm the normalisation: the code may divide by K (as written) or by K*P or
+%TODO: use the 1/(2 eps) factor only once; also confirm the training loss reported for
+%TODO: SPSA (mean of the +/- probe losses, or a separate clean pass outside the budget).
+
+\paragraph{Random search (jumping).}
+Random search \citep{rastrigin1963,matyas1965,schumer1968} evaluates the clean loss
+$\loss_0=\loss(\btheta)$ and $K=15$ candidates $\btheta+\varepsilon\bz_k$,
+$\bz_k\sim\mathcal{N}(\mathbf{0},\bI_P)$, and keeps the best one,
+$k^{*}=\argmin_k\loss(\btheta+\varepsilon\bz_k)$. Instead of jumping to the candidate
+directly, it is expressed in the shared update rule through the pseudo-gradient
+\begin{equation}
+  \ghat_{\RS}=
+  \begin{cases}
+    \dfrac{\loss_{k^{*}}-\loss_0}{\varepsilon}\,\bz_{k^{*}} & \text{if }\loss_{k^{*}}<\loss_0,\\[1.2ex]
+    \mathbf{0} & \text{otherwise},
+  \end{cases}
+  \label{eq:rs}
+\end{equation}
+which points along the improving direction (the difference is negative) and is zero
+when no candidate improves on the clean loss; Adam then takes a step of magnitude
+$\approx\varepsilon$ along $\bz_{k^{*}}$. The acceptance rate (fraction of steps with a
+non-zero update) is logged.
+%TODO: confirm whether Adam's moment buffers are still updated on rejected (zero) steps.
+
+\paragraph{Node perturbation (NP).}
+Classic node perturbation \citep{widrow1990,werfel2003,fiete2006,hiratani2022} perturbs
+the units rather than the weights. For layer $l$ with input $\bh_{l-1}$,
+pre-activation $\ba_l=\bW_l\bh_{l-1}+\bb_l$ and post-activation
+$\bh_l=f(\ba_l)$, a noisy forward pass injects Gaussian noise into \emph{every} layer
+and propagates it:
+\begin{equation}
+  \tilde{\ba}_l=\bW_l\tilde{\bh}_{l-1}+\bb_l+\sigma\,\bxi_l,\qquad
+  \bxi_l\sim\mathcal{N}(\mathbf{0},\bI),\qquad \tilde{\bh}_l=f(\tilde{\ba}_l),
+  \label{eq:np-pass}
+\end{equation}
+with $\sigma=\varepsilon$. Writing $\dL_n=\tilde\ell_n-\ell_n$ for the change of the
+per-example loss, the estimator for the weights and biases of layer $l$ is
+\begin{equation}
+  \ghat_{\bW_l}^{\NP}=\frac{1}{N}\sum_{n=1}^{N}\frac{\dL_n}{\sigma}\,\bxi_{l,n}\,\bh_{l-1,n}^{\top},
+  \qquad
+  \ghat_{\bb_l}^{\NP}=\frac{1}{N}\sum_{n=1}^{N}\frac{\dL_n}{\sigma}\,\bxi_{l,n},
+  \label{eq:np}
+\end{equation}
+i.e.\ the outer product of the noise-weighted loss change with the \emph{clean} layer
+input (for convolutions, the matching correlation over unfolded patches; for
+embeddings, the one-hot input). With one clean pass and 15 noisy passes the estimator
+is averaged over 15 independent noise draws. Note that $\dL_n/\sigma\cdot\bxi_l$ equals
+$\dL_n\,\varepsilon_l/\sigma^{2}$ with $\varepsilon_l=\sigma\bxi_l$, the form used by
+\citet{dalm2023}.
+%TODO: confirm the 1/sigma (vs 1/sigma^2 with unit-scaled noise) constant and the
+%TODO: 1/N batch average in the implementation.
+
+\paragraph{Activity-based node perturbation (ANP).}
+Because the noise injected in early layers propagates, the actual perturbation of
+layer $l$ in Eq.~\eqref{eq:np-pass} is not $\sigma\bxi_l$ but the measured activity
+difference $\delta\ba_l=\tilde{\ba}_l-\ba_l$. Activity-based NP \citep{dalm2023}
+replaces the injected noise by this measured difference and normalises by the norm of
+the total activity perturbation across all layers:
+\begin{equation}
+  \ghat_{\bW_l}^{\ANP}=\frac{1}{N}\sum_{n=1}^{N}
+    c\,\frac{\dL_n}{\|\delta\ba_n\|^{2}}\;\delta\ba_{l,n}\,\bh_{l-1,n}^{\top},
+  \qquad
+  \|\delta\ba_n\|^{2}=\sum_{l'=1}^{L}\|\delta\ba_{l',n}\|^{2},
+  \label{eq:anp}
+\end{equation}
+where $c$ is a normalisation constant ($c=\sum_l N_l$, the total number of perturbed
+units, in \citet{dalm2023}), with the bias analogue obtained by dropping
+$\bh_{l-1,n}^{\top}$. For a single perturbed unit the estimator reduces to
+Eq.~\eqref{eq:np}; in general it corrects for the propagated perturbation that
+classic NP ignores.
+%TODO: confirm the normalisation used in code: c = total number of units, c = 1, or
+%TODO: the per-layer norm ||delta a_l||^2 instead of the norm across layers.
+
+\paragraph{Iterative node perturbation (INP).}
+Iterative NP \citep{dalm2023} removes the propagation problem differently: each noisy
+pass perturbs \emph{one} layer only, so that the loss change $\dL^{(l)}_n$ is
+attributable to that layer and the estimator is a directional derivative,
+\begin{equation}
+  \ghat_{\bW_l}^{\INP}=\frac{1}{N}\sum_{n=1}^{N}\frac{\dL^{(l)}_n}{\sigma}\,\bxi_{l,n}\,\bh_{l-1,n}^{\top},
+  \label{eq:inp}
+\end{equation}
+at the price of one pass per layer: with $L$ perturbable layers, $L$ passes are needed
+for one estimate of the full gradient, and the 15 noisy passes of the budget are
+distributed over the layers (Table~\ref{tab:budget}).
+%TODO: confirm the per-layer normalisation (Dalm et al. use N_l / ||v_l||^2 rather than
+%TODO: 1/sigma) and how the 15 passes are scheduled over L layers when L does not divide 15.
+
+\paragraph{Decorrelated ANP (DANP).}
+Decorrelated ANP \citep{dalm2023} is ANP in which the input of every layer is first
+decorrelated by a square matrix $\bR_l$ that is \emph{not} a parameter of the model:
+$\hat{\bh}_{l-1}=\bR_l\bh_{l-1}$, $\ba_l=\bW_l\hat{\bh}_{l-1}+\bb_l$, with
+$\bR_l$ initialised to the identity and trained by the local rule of
+\citet{ahmad2023constrained},
+\begin{equation}
+  \bR_l\leftarrow\bR_l-\eta_R\,\bigl(\hat{\bC}_l-\operatorname{diag}\hat{\bC}_l\bigr)\,\bR_l,
+  \qquad
+  \hat{\bC}_l=\frac{1}{M}\sum_{m=1}^{M}\hat{\bh}_{l-1,m}\hat{\bh}_{l-1,m}^{\top},
+  \label{eq:decor}
+\end{equation}
+where $\hat{\bC}_l$ is the batch covariance of the decorrelated inputs recorded on the
+clean pass ($M$ rows: examples, or examples $\times$ positions for sequence and
+convolutional layers, whose decorrelated vector is the unfolded $C_{\text{in}}k^{2}$
+patch). The ANP estimator \eqref{eq:anp} is then applied with $\hat{\bh}_{l-1}$ in
+place of $\bh_{l-1}$. Embedding layers, whose inputs are one-hot, are not
+decorrelated.
+%TODO: confirm eta_R (fixed, e.g. 1e-3 as in Dalm et al., or tied to epsilon) and whether
+%TODO: R is updated once per step from the clean pass.
+
+\paragraph{Forward-forward (FF).}
+The forward-forward algorithm \citep{hinton2022} trains each layer with a local
+objective and never propagates an error signal between layers. For a layer with
+activity $\bh_l$ the goodness is $G=\operatorname{mean}_j h_{l,j}^{2}$, and the local
+loss on a positive/negative pair is
+\begin{equation}
+  \ell_{\FF}=\log\bigl(1+e^{\,\theta-G_{\text{pos}}}\bigr)+\log\bigl(1+e^{\,G_{\text{neg}}-\theta}\bigr),
+  \qquad \theta=2,
+  \label{eq:ff}
+\end{equation}
+whose gradient with respect to the layer's own parameters is written into the
+gradient slot (local backward within the layer only). Activities are
+$\ell_2$-normalised before being passed to the next layer so that only their
+direction, not their goodness, is forwarded. For classification, positive data are
+inputs with the correct label overlaid on the first 10 pixels and negative data carry
+a wrong label; a softmax readout, trained with the same optimizer on the normalised
+top-layer activity of a pass with a neutral (uniform) label, provides the test loss
+and accuracy. For character-level language modelling, positive sequences are the real
+text, negative sequences have 30\,\% of their characters replaced at random, and the
+readout predicts the next character at every position from the normalised top-layer
+activity.
+%TODO: confirm whether the neutral-label readout pass is counted in the 2-pass budget
+%TODO: and whether the readout is trained on detached features.
+
+\paragraph{Backpropagation (reference).}
+One forward and one backward pass produce the exact gradient
+$\ghat_{\BP}=\nabla_{\btheta}\loss$, which is fed to the same Adam update with the same
+$\varepsilon$. It is the upper reference, not a zero-order method.
+
+\subsection{Forward-pass budget}
+\label{sec:budget}
+
+Every probe-based method is given exactly 16 forward passes per step. The passes are
+spent differently (Table~\ref{tab:budget}): \SPSA{} uses all 16 for 8 antithetic pairs
+and has no clean pass; \RS{} and the node-perturbation family use one clean pass to
+record the clean activities (and, for \RS{}, the clean loss) plus 15 probe passes.
+Forward-forward uses two passes (positive and negative) and backpropagation one forward
+plus one backward pass; they are not probe methods and are included as references for
+the two ends of the spectrum. Because the number of passes per step is fixed, the
+number of steps per hour differs between methods (Section~\ref{sec:throughput}).
+
+\begin{table}[t]
+  \caption{How each method spends its forward-pass budget per step. $L$ is the number
+  of perturbable layers (3 for the MLP and the LSTM, 5 for the ConvNet, 15 for the
+  Transformer).}
+  \label{tab:budget}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lcccl}
+    \toprule
+    Method & Clean passes & Probe passes & Backward & Estimates per step \\
+    \midrule
+    \BP{}   & 1 & 0  & 1 full      & exact gradient \\
+    \SPSA{} & 0 & 16 & --          & 8 central differences, averaged \\
+    \RS{}   & 1 & 15 & --          & best of 15 candidates \\
+    \NP{}   & 1 & 15 (all layers) & --          & 15 noise draws, averaged \\
+    \ANP{}  & 1 & 15 (all layers) & --          & 15 noise draws, averaged \\
+    \INP{}  & 1 & 15 (one layer each) & --      & $15/L$ draws per layer \\
+    \DANP{} & 1 & 15 (all layers) & --          & 15 noise draws, averaged; local $\bR_l$ update \\
+    \FF{}   & 2 (pos.\ + neg.) & 0 & per layer, local & local goodness gradients \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+%TODO: confirm the INP schedule: 15 single-layer passes over L layers (5 per layer for L=3,
+%TODO: 3 for L=5, exactly 1 per layer for the 15-layer Transformer).
+
+% ====================================================================================
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Tasks and architectures.}
+Table~\ref{tab:tasks} lists the four tasks. All models have $\approx$40k parameters so
+that a run fits comfortably within the budget and the methods are compared at the same
+scale. Weights are Xavier-uniform initialised \citep{glorot2010} with zero biases (the
+LSTM forget-gate bias is set to 1); layer normalisation \citep{ba2016} in the
+Transformer carries no affine parameters, so that every parameter of every model
+lives in a perturbable layer. MNIST \citep{lecun1998} and CIFAR-10 \citep{krizhevsky2009}
+use the last 5k images of the official training sets as validation; inputs are
+standardised (per channel for CIFAR-10). Penn Treebank \citep{marcus1993} is used at
+the character level \citep{mikolov2012} with the standard train/valid/test files and
+a vocabulary built from the training text; a word-level embedding would by itself
+exceed the 40k-parameter budget. Classification uses batches of 128 images; language
+modelling uses batches of 64 sequences of 64 characters. There is no augmentation,
+dropout or weight decay.
+
+\begin{table}[t]
+  \caption{Tasks, data splits (train/validation/test) and architectures. All
+  hidden nonlinearities are ReLU; convolutions are $3{\times}3$ with $2{\times}2$
+  max-pooling. The LSTM \citep{hochreiter1997} has one layer of 80 units; the
+  Transformer \citep{vaswani2017} uses two pre-LN blocks, model width 48, 4 heads,
+  feed-forward width 64, learned positional embeddings and context length $T=64$.
+  $V$ is the character vocabulary size.}
+  \label{tab:tasks}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{llllr}
+    \toprule
+    Key & Data & Split & Model & Params \\
+    \midrule
+    \texttt{mlp\_mnist}       & MNIST      & 55k / 5k / 10k & MLP 784--48--32--10                          & 39,578 \\
+    \texttt{conv\_cifar10}    & CIFAR-10   & 45k / 5k / 10k & conv16--conv32--conv32--fc48--10             & 39,450 \\
+    \texttt{lstm\_ptb}        & PTB (char) & standard       & emb32--LSTM80--$V$                           & $\approx$41.8k \\
+    \texttt{transformer\_ptb} & PTB (char) & standard       & emb48 $+$ pos64--2 blocks ($d{=}48$, $d_{\text{ff}}{=}64$)--$V$ & $\approx$39.3k \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+%TODO: fill the exact PTB character vocabulary size V and the exact LSTM/Transformer
+%TODO: parameter counts at that V (41,810 and 39,250 at V=50).
+
+\paragraph{Optimization and sweep.}
+Every method uses Adam with $(\beta_1,\beta_2)=(0.9,0.99)$ and learning rate
+$\varepsilon$, with $\varepsilon$ also the probe scale (Section~\ref{sec:setup-rule}).
+We sweep $\varepsilon\in\{0.1,\,0.01,\,0.001\}$, held fixed for the whole run. The
+loss is cross-entropy: per example for classification, per sequence (mean over the 64
+next-character predictions) for language modelling. Zero-order estimates use
+per-example loss differences where the method allows it (the node-perturbation
+family) and batch-mean losses where it does not (\SPSA{}, \RS{}).
+
+\paragraph{Budget and evaluation.}
+Each run trains for \textbf{one hour of wall-clock} on a single NVIDIA RTX~5090;
+evaluation time is excluded from the clock. Validation and test loss (and accuracy or
+bits-per-character) are evaluated every 5 minutes of training time and at the end. A
+run whose training loss becomes NaN, or exceeds 10$\times$ its initial value at two
+consecutive evaluations, is stopped and marked as diverged.
+
+\paragraph{Model selection and reporting.}
+For each (task, optimizer) pair we select the $\varepsilon$ with the lowest final
+\emph{validation} loss and report that run's final \emph{test} loss, together with test
+accuracy for classification and bits-per-character ($\text{loss}/\ln 2$) for language
+modelling. The grid is 4 tasks $\times$ 8 optimizers $\times$ 3 values of
+$\varepsilon$ = \textbf{96 runs}, executed 8 at a time on 8 GPUs (one run per GPU).
+Every run is logged to Weights \& Biases (project \texttt{zoo-survey}, run name
+\texttt{\{task\}-\{opt\}-lr\{eps\}}) and writes a JSON file with its configuration,
+history and final metrics.
+
+\paragraph{Hardware and software.}
+All runs use one RTX~5090 (32\,GB) per run on a single 8-GPU node, PyTorch~2.7 with
+CUDA, and the code at \url{https://github.com/Fchaubard/zero-order-ablations}.
+%TODO: fill CPU model, driver / CUDA / PyTorch versions, and the git commit hash of the runs.
+
+% ====================================================================================
+\section{Results}
+\label{sec:results}
+
+\subsection{Main comparison}
+\label{sec:main}
+
+Table~\ref{tab:main} reports, for every task and optimizer, the final test loss of the
+run selected by validation loss, with test accuracy (classification) or
+bits-per-character (language modelling) as the second number. The best zero-order
+method in each row is set in bold; backpropagation and forward-forward are references.
+%TODO: two or three sentences stating the winner per task and the gap to BP.
+
+\begin{table}[t]
+  \caption{Main result: final test loss after one hour of training, with test
+  accuracy (\%) for MNIST / CIFAR-10 and bits-per-character for PTB in parentheses.
+  Each entry is the run with the lowest final validation loss over
+  $\varepsilon\in\{0.1,0.01,0.001\}$. The best zero-order probe method per row is in
+  bold; \BP{} is the reference and \FF{} is a local (non-probe) rule. A dagger marks
+  a diverged run.}
+  \label{tab:main}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/main_table}
+\end{table}
+
+\subsection{Training curves}
+\label{sec:curves}
+
+Figure~\ref{fig:curves} shows test loss against training wall-clock for the selected
+$\varepsilon$ of every method on every task. Plotting against time rather than steps
+is the fair comparison under our protocol: methods that spend 16 passes per step take
+proportionally fewer steps per hour, and sequence models pay for every pass with $T=64$
+sequential time steps.
+%TODO: describe the shape of the curves (plateaus, divergence, which methods are still
+%TODO: improving at 60 min).
+
+\begin{figure}[t]
+  \centering
+  \input{figures/fig_curves}
+  \\[0.5ex]
+  \ref{zoolegend}
+  \caption{Test loss versus training time (minutes, evaluation time excluded) for the
+  $\varepsilon$ selected by validation loss, one line per optimizer. Log-scale
+  $y$-axis. \BP{} is the black dashed reference.}
+  \label{fig:curves}
+\end{figure}
+
+\subsection{Sensitivity to the probe scale}
+\label{sec:eps}
+
+Because $\varepsilon$ is both the learning rate and the probe scale, its sweep probes
+two things at once: how large a step each method can tolerate and how small a probe
+each method can resolve. Figure~\ref{fig:eps} plots the final test loss of every run
+against $\varepsilon$.
+%TODO: which methods are robust across the three decades, which diverge at 0.1, which
+%TODO: fail to move at 0.001; whether NP-family methods need a smaller sigma than
+%TODO: SPSA/RS need for their parameter probes.
+
+\begin{figure}[t]
+  \centering
+  \input{figures/fig_eps}
+  \\[0.5ex]
+  \ref{zoolegend}
+  \caption{Final test loss versus $\varepsilon$ (learning rate $=$ probe scale) for
+  every optimizer and task; all 96 runs. Diverged runs are plotted at their last
+  finite evaluation.}
+  \label{fig:eps}
+\end{figure}
+
+\subsection{Throughput}
+\label{sec:throughput}
+
+Table~\ref{tab:throughput} lists the number of optimizer steps and forward passes
+completed per hour by every method on every task. Since the per-step budget is 16
+passes for the probe methods, 2 for \FF{} and 1 (plus a backward) for \BP{}, the
+step rate is the quantity that differs across methods, while the pass rate shows how
+efficiently each implementation uses the GPU (batched probes, in-place perturbation,
+sequential LSTM time steps).
+%TODO: comment on the measured ratios (e.g. whether 16 forward passes cost more or less
+%TODO: than one forward+backward in practice, and the cost of the decorrelation update).
+
+\begin{table}[t]
+  \caption{Throughput: optimizer steps per hour and forward passes per hour (in
+  thousands) for every method and task, measured on one RTX~5090 at the selected
+  $\varepsilon$.}
+  \label{tab:throughput}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/throughput_table}
+\end{table}
+
+\subsection{Analysis}
+\label{sec:analysis}
+
+\paragraph{Which zero-order method wins?}
+%TODO: summarise the ranking across the four tasks, name the consistent winner (if any),
+%TODO: and quantify the gap to BP in loss and in accuracy / bpc.
+
+\paragraph{Weight probes versus node probes.}
+%TODO: compare SPSA/RS (perturb all P parameters, one scalar loss difference per probe)
+%TODO: with the NP family (per-example loss differences, layer-local credit); relate to
+%TODO: the dimension dependence of the estimator variance (P ~ 40k vs number of units).
+
+\paragraph{The effect of activity-based, iterative and decorrelated variants.}
+%TODO: does ANP beat NP (propagated perturbation correction)?  Does INP's attribution
+%TODO: compensate for having only 15/L draws per layer?  Does decorrelation help as
+%TODO: reported by Dalm et al., and on which architectures (it is skipped for embeddings)?
+
+\paragraph{Sequence models.}
+%TODO: discuss the LSTM and Transformer: cost of sequential passes, whether any ZOO
+%TODO: method learns beyond the unigram/bigram baseline in one hour, and FF's behaviour
+%TODO: with corrupted-sequence negatives.
+
+\paragraph{Forward-forward.}
+%TODO: position FF relative to the probe methods: many more steps per hour, local
+%TODO: gradients, but a readout-limited test loss.
+
+% ====================================================================================
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\paragraph{Single seed.}
+Each of the 96 configurations is run once. The reported differences are therefore
+single draws of a random process (initialisation, data order, probes); we do not
+report error bars, and small differences in Table~\ref{tab:main} should not be read as
+rankings. The one-hour-per-run protocol was chosen so that the full grid fits in 12
+GPU-hours of wall-clock on 8 GPUs; repeating it with several seeds is the most
+important follow-up.
+
+\paragraph{One-hour budget and 40k parameters.}
+The budget is deliberately small and identical for all methods, which favours methods
+that make progress quickly over methods that converge slowly but further. The
+$\approx$40k-parameter models are small by modern standards; the variance of
+weight-space estimators grows with the number of parameters, so the relative standing
+of \SPSA{} and \RS{} against the node-perturbation family may change at larger scale,
+and none of our conclusions should be extrapolated to models with orders of magnitude
+more parameters without new experiments.
+
+\paragraph{$\varepsilon$ tied to the learning rate.}
+Using one scalar for the probe scale and the Adam learning rate removes a dimension
+from the sweep but also removes a degree of freedom: a method that would benefit from a
+small probe and a large step (or vice versa) is handicapped. The three-point sweep is
+coarse, and the best $\varepsilon$ of a method may lie between grid points.
+
+\paragraph{Wall-clock depends on implementation efficiency.}
+Comparing against training time rewards implementations that batch probes well and
+penalises methods whose natural implementation is sequential (iterative NP, the
+decorrelation update, LSTM time steps). We report forward passes per hour
+(Table~\ref{tab:throughput}) so that readers can re-weight the comparison by passes
+instead of time, but the ranking under a pass budget could differ.
+
+\paragraph{\FF{} and \BP{} are not probe methods.}
+Forward-forward uses local gradients within each layer and backpropagation uses the
+exact gradient; neither obeys the 16-pass budget, and both are included only as
+reference points for a local rule and for the ceiling.
+
+\paragraph{Character-level PTB.}
+Language modelling is done at the character level because a word-level embedding of
+the 10k-word PTB vocabulary would by itself exceed the parameter budget. Character-level
+results are not comparable to word-level perplexities in the literature.
+
+% ====================================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We compared eight training rules---backpropagation, SPSA, random search, four
+node-perturbation variants and forward-forward---on four $\approx$40k-parameter
+architectures under one fully specified protocol: the same 16 forward passes per step,
+the same hour of training, the same Adam update and a single swept scalar that is both
+learning rate and probe scale.
+%TODO: one or two sentences with the final verdict (which ZOO method to use, and the
+%TODO: remaining gap to backpropagation), consistent with the abstract.
+The protocol, code and all 96 run logs are public so that new zero-order rules can be
+added to the grid at the cost of 12 GPU-hours.
+
+\begin{ack}
+%TODO: acknowledgements and funding disclosure (or delete this environment).
+\end{ack}
+
+% ====================================================================================
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+% ====================================================================================
+\appendix
+
+\section{Full 96-run grid}
+\label{app:grid}
+
+Table~\ref{tab:grid} lists the final validation and test loss of every run, for all
+three values of $\varepsilon$; the run selected for Table~\ref{tab:main} in each row is
+the one with the lowest validation loss.
+
+\begin{table}[ht]
+  \caption{Final validation / test loss of all 96 runs. For each (task, optimizer)
+  row the $\varepsilon$ with the lowest validation loss (in bold) is the run reported
+  in Table~\ref{tab:main}. A dagger marks a diverged run (last finite evaluation
+  shown).}
+  \label{tab:grid}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/full_grid}
+\end{table}
+
+\section{Implementation details and hyper-parameters}
+\label{app:impl}
+
+\paragraph{Perturbable layers.}
+Every trainable layer of every model is a perturbable linear, convolutional or
+embedding layer. A global context selects what a layer does on its forward pass:
+(i)~a plain differentiable forward (used by backpropagation, by the forward-forward
+local losses and by evaluation); (ii)~a \emph{clean} forward that detaches the layer
+input and records the input $\bh_{l-1}$ and pre-activation $\ba_l$, keeping a local
+autograd graph to the layer's own parameters only; or (iii)~a graph-free \emph{noisy}
+forward that adds $\sigma\bxi_l$ to the pre-activation of every layer (or of one
+selected layer for \INP{}) and records $\bxi_l$ and $\tilde\ba_l$. Given a
+per-unit credit tensor $\mathbf{G}_l$ (for \NP{}, $\dL_n\bxi_{l,n}/\sigma$), the weight
+update $\mathbf{G}_l^{\top}\bh_{l-1}$ and its convolutional and embedding analogues are
+obtained by a one-layer backward through the recorded local graph, so that no error
+is propagated through any nonlinearity. A layer that is called several times in one
+forward (the LSTM gate layer, once per time step) accumulates one record per call and
+the credit is summed over calls.
+
+\paragraph{Decorrelation.}
+For \DANP{}, each linear and convolutional layer owns a square matrix $\bR_l$
+(initialised to the identity, stored as a buffer, not an optimizer parameter) that
+multiplies the layer input; for convolutions the decorrelated vector is the unfolded
+$C_{\text{in}}k^{2}$ patch. $\bR_l$ is updated once per step with
+Eq.~\eqref{eq:decor} from the inputs recorded on the clean pass. Embedding layers are
+not decorrelated.
+%TODO: state eta_R and whether R is also updated during the first steps / warm-up.
+
+\paragraph{Language-model specifics.}
+The LSTM is written with a single perturbable layer for the four gate pre-activations so
+that the gates are the perturbable nodes; the forget-gate bias is initialised to 1. The
+Transformer uses pre-LN blocks with parameter-free layer normalisation, a learned
+positional embedding over $T=64$ positions, and a final parameter-free layer
+normalisation before the readout. The per-sequence loss is the mean next-character
+cross-entropy over the 64 positions.
+
+\paragraph{Forward-forward specifics.}
+%TODO: layer-wise optimizer details (one Adam per layer or one global Adam), the
+%TODO: label-overlay encoding for MNIST / CIFAR-10, the negative-sampling scheme for
+%TODO: wrong labels, the 30% corruption rule for PTB, the readout training schedule.
+
+\paragraph{Evaluation.}
+Validation and test metrics are computed with the plain forward of the full
+validation / test set every 5 minutes of training time (the clock is paused during
+evaluation) and at 60 minutes. For \FF{}, evaluation uses the neutral-label pass and
+the trained readout.
+
+\paragraph{Hyper-parameters.}
+Table~\ref{tab:hparams} summarises every hyper-parameter; none is tuned per method
+beyond the $\varepsilon$ sweep.
+
+\begin{table}[ht]
+  \caption{Hyper-parameters shared by all runs.}
+  \label{tab:hparams}
+  \centering
+  \footnotesize
+  \begin{tabular}{l p{7.6cm}}
+    \toprule
+    Optimizer & Adam, $(\beta_1,\beta_2)=(0.9,0.99)$, $\epsilon_{\text{Adam}}=10^{-8}$, no schedule, no weight decay \\
+    Learning rate $=$ probe scale $\varepsilon$ & $\{0.1, 0.01, 0.001\}$ \\
+    Probe distribution & $\mathcal{N}(\mathbf{0},\bI)$, scaled by $\varepsilon$ \\
+    Forward passes per step & 16 (probe methods), 2 (\FF{}), 1 $+$ 1 backward (\BP{}) \\
+    \SPSA{} antithetic pairs / \RS{} candidates & 8 / 15 \\
+    Batch size & 128 images; 64 sequences $\times$ 64 characters \\
+    Initialisation & Xavier-uniform, zero biases (LSTM forget gate $=1$) \\
+    \FF{} threshold $\theta$ / PTB corruption & 2 / 30\,\% of characters \\
+    Decorrelation rate $\eta_R$ & %TODO: fill
+    \\
+    Training budget & 60 min wall-clock per run, evaluation excluded \\
+    Evaluation interval & every 5 min of training time, and at the end \\
+    Divergence rule & NaN, or $>10\times$ initial training loss at two consecutive evaluations \\
+    Seeds & 1 per configuration \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Data and licences.}
+MNIST \citep{lecun1998}, CIFAR-10 \citep{krizhevsky2009} and the character-level Penn
+Treebank files \citep{marcus1993,mikolov2012} are used as distributed by their
+authors.
+%TODO: state the licence / terms of use of each dataset and of the released code.
+
+\section{Per-task training curves for all \texorpdfstring{$\varepsilon$}{epsilon}}
+\label{app:curves}
+
+Figure~\ref{fig:curves-all} shows the test-loss curves of all 96 runs, one row per
+task and one column per $\varepsilon$.
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_appendix_curves}
+  \\[0.5ex]
+  \ref{zoolegend}
+  \caption{Test loss versus training time for every run. Rows: tasks; columns:
+  $\varepsilon\in\{0.1,0.01,0.001\}$. Diverged runs end at their last finite
+  evaluation.}
+  \label{fig:curves-all}
+\end{figure}
+
+% ====================================================================================
+\clearpage
+\section*{NeurIPS Paper Checklist}
+
+\begin{enumerate}
+
+\item {\bf Claims}
+    \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The abstract and Section~\ref{sec:intro} claim an empirical comparison of eight training rules on four small architectures under one protocol; this is exactly what Sections~\ref{sec:methods}--\ref{sec:results} deliver, and the scope (single seed, one hour, $\approx$40k parameters) is stated in Section~\ref{sec:discussion}.
+    %TODO: re-check once the headline sentence of the abstract is written.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the abstract and introduction do not include the claims made in the paper.
+        \item The abstract and/or introduction should clearly state the claims made, including the contributions made in the paper and important assumptions and limitations. A No or NA answer to this question will not be perceived well by the reviewers.
+        \item The claims made should match theoretical and experimental results, and reflect how much the results can be expected to generalize to other settings.
+        \item It is fine to include aspirational goals as motivation as long as it is clear that these goals are not attained by the paper.
+    \end{itemize}
+
+\item {\bf Limitations}
+    \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:discussion} discusses the single seed, the one-hour budget, the 40k-parameter scale, the tying of $\varepsilon$ to the learning rate, the dependence of wall-clock results on implementation efficiency, the status of \FF{} and \BP{} as non-probe references, and the character-level PTB choice.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper has no limitation while the answer No means that the paper has limitations, but those are not discussed in the paper.
+        \item The authors are encouraged to create a separate "Limitations" section in their paper.
+        \item The paper should point out any strong assumptions and how robust the results are to violations of these assumptions (e.g., independence assumptions, noiseless settings, model well-specification, asymptotic approximations only holding locally). The authors should reflect on how these assumptions might be violated in practice and what the implications would be.
+        \item The authors should reflect on the scope of the claims made, e.g., if the approach was only tested on a few datasets or with a few runs. In general, empirical results often depend on implicit assumptions, which should be articulated.
+        \item The authors should reflect on the factors that influence the performance of the approach. For example, a facial recognition algorithm may perform poorly when image resolution is low or images are taken in low lighting. Or a speech-to-text system might not be used reliably to provide closed captions for online lectures because it fails to handle technical jargon.
+        \item The authors should discuss the computational efficiency of the proposed algorithms and how they scale with dataset size.
+        \item If applicable, the authors should discuss possible limitations of their approach to address problems of privacy and fairness.
+        \item While the authors might fear that complete honesty about limitations might be used by reviewers as grounds for rejection, a worse outcome might be that reviewers discover limitations that aren't acknowledged in the paper. The authors should use their best judgment and recognize that individual actions in favor of transparency play an important role in developing norms that preserve the integrity of the community. Reviewers will be specifically instructed to not penalize honesty concerning limitations.
+    \end{itemize}
+
+\item {\bf Theory assumptions and proofs}
+    \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper is purely empirical and contains no theoretical results; the estimator equations in Section~\ref{sec:optimizers} restate published rules with citations.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include theoretical results.
+        \item All the theorems, formulas, and proofs in the paper should be numbered and cross-referenced.
+        \item All assumptions should be clearly stated or referenced in the statement of any theorems.
+        \item The proofs can either appear in the main paper or the supplemental material, but if they appear in the supplemental material, the authors are encouraged to provide a short proof sketch to provide intuition.
+        \item Inversely, any informal proof provided in the core of the paper should be complemented by formal proofs provided in appendix or supplemental material.
+        \item Theorems and Lemmas that the proof relies upon should be properly referenced.
+    \end{itemize}
+
+    \item {\bf Experimental result reproducibility}
+    \item[] Question: Does the paper fully disclose all the information needed to reproduce the main experimental results of the paper to the extent that it affects the main claims and/or conclusions of the paper (regardless of whether the code and data are provided or not)?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Sections~\ref{sec:methods} and~\ref{sec:setup} and Appendix~\ref{app:impl} specify the architectures, data splits, estimators, budget, optimizer, sweep, selection rule and evaluation protocol; the code and all run logs are public.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item If the paper includes experiments, a No answer to this question will not be perceived well by the reviewers: Making the paper reproducible is important, regardless of whether the code and data are provided or not.
+        \item If the contribution is a dataset and/or model, the authors should describe the steps taken to make their results reproducible or verifiable.
+        \item Depending on the contribution, reproducibility can be accomplished in various ways. For example, if the contribution is a novel architecture, describing the architecture fully might suffice, or if the contribution is a specific model and empirical evaluation, it may be necessary to either make it possible for others to replicate the model with the same dataset, or provide access to the model. In general. releasing code and data is often one good way to accomplish this, but reproducibility can also be provided via detailed instructions for how to replicate the results, access to a hosted model (e.g., in the case of a large language model), releasing of a model checkpoint, or other means that are appropriate to the research performed.
+        \item While NeurIPS does not require releasing code, the conference does require all submissions to provide some reasonable avenue for reproducibility, which may depend on the nature of the contribution. For example
+        \begin{enumerate}
+            \item If the contribution is primarily a new algorithm, the paper should make it clear how to reproduce that algorithm.
+            \item If the contribution is primarily a new model architecture, the paper should describe the architecture clearly and fully.
+            \item If the contribution is a new model (e.g., a large language model), then there should either be a way to access this model for reproducing the results or a way to reproduce the model (e.g., with an open-source dataset or instructions for how to construct the dataset).
+            \item We recognize that reproducibility may be tricky in some cases, in which case authors are welcome to describe the particular way they provide for reproducibility. In the case of closed-source models, it may be that access to the model is limited in some way (e.g., to registered users), but it should be possible for other researchers to have some path to reproducing or verifying the results.
+        \end{enumerate}
+    \end{itemize}
+
+
+\item {\bf Open access to data and code}
+    \item[] Question: Does the paper provide open access to the data and code, with sufficient instructions to faithfully reproduce the main experimental results, as described in supplemental material?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The complete code, the run configurations, the per-run JSON results and the scripts that generate every table and figure are released at \url{https://github.com/Fchaubard/zero-order-ablations}; the datasets are public and downloaded by the code.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that paper does not include experiments requiring code.
+        \item Please see the NeurIPS code and data submission guidelines (\url{https://nips.cc/public/guides/CodeSubmissionPolicy}) for more details.
+        \item While we encourage the release of code and data, we understand that this might not be possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not including code, unless this is central to the contribution (e.g., for a new open-source benchmark).
+        \item The instructions should contain the exact command and environment needed to run to reproduce the results. See the NeurIPS code and data submission guidelines (\url{https://nips.cc/public/guides/CodeSubmissionPolicy}) for more details.
+        \item The authors should provide instructions on data access and preparation, including how to access the raw data, preprocessed data, intermediate data, and generated data, etc.
+        \item The authors should provide scripts to reproduce all experimental results for the new proposed method and baselines. If only a subset of experiments are reproducible, they should state which ones are omitted from the script and why.
+        \item At submission time, to preserve anonymity, the authors should release anonymized versions (if applicable).
+        \item Providing as much information as possible in supplemental material (appended to the paper) is recommended, but including URLs to data and code is permitted.
+    \end{itemize}
+
+
+\item {\bf Experimental setting/details}
+    \item[] Question: Does the paper specify all the training and test details (e.g., data splits, hyperparameters, how they were chosen, type of optimizer, etc.) necessary to understand the results?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:setup} gives the data splits, batch sizes, initialisation, optimizer, the $\varepsilon$ sweep and the validation-based selection rule; Appendix~\ref{app:impl} (Table~\ref{tab:hparams}) lists every hyper-parameter.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The experimental setting should be presented in the core of the paper to a level of detail that is necessary to appreciate the results and make sense of them.
+        \item The full details can be provided either with the code, in appendix, or as supplemental material.
+    \end{itemize}
+
+\item {\bf Experiment statistical significance}
+    \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
+    \item[] Answer: \answerNo{}
+    \item[] Justification: Every configuration is run with a single seed because the full grid already requires 96 GPU-hours; Section~\ref{sec:discussion} states this explicitly and warns that small differences should not be read as rankings.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The authors should answer "Yes" if the results are accompanied by error bars, confidence intervals, or statistical significance tests, at least for the experiments that support the main claims of the paper.
+        \item The factors of variability that the error bars are capturing should be clearly stated (for example, train/test split, initialization, random drawing of some parameter, or overall run with given experimental conditions).
+        \item The method for calculating the error bars should be explained (closed form formula, call to a library function, bootstrap, etc.)
+        \item The assumptions made should be given (e.g., Normally distributed errors).
+        \item It should be clear whether the error bar is the standard deviation or the standard error of the mean.
+        \item It is OK to report 1-sigma error bars, but one should state it. The authors should preferably report a 2-sigma error bar than state that they have a 96\% CI, if the hypothesis of Normality of errors is not verified.
+        \item For asymmetric distributions, the authors should be careful not to show in tables or figures symmetric error bars that would yield results that are out of range (e.g. negative error rates).
+        \item If error bars are reported in tables or plots, The authors should explain in the text how they were calculated and reference the corresponding figures or tables in the text.
+    \end{itemize}
+
+\item {\bf Experiments compute resources}
+    \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:setup} states that every run uses one RTX~5090 for one hour of training (plus evaluation), 96 runs in total executed 8 at a time; development and debugging runs used a small additional amount of compute on the same machine.
+    %TODO: estimate the total compute including preliminary runs.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The paper should indicate the type of compute workers CPU or GPU, internal cluster, or cloud provider, including relevant memory and storage.
+        \item The paper should provide the amount of compute required for each of the individual experimental runs as well as estimate the total compute.
+        \item The paper should disclose whether the full research project required more compute than the experiments reported in the paper (e.g., preliminary or failed experiments that didn't make it into the paper).
+    \end{itemize}
+
+\item {\bf Code of ethics}
+    \item[] Question: Does the research conducted in the paper conform, in every respect, with the NeurIPS Code of Ethics \url{https://neurips.cc/public/EthicsGuidelines}?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The study trains small models on three standard public benchmarks; it involves no human subjects, no personal data and no deployment.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics.
+        \item If the authors answer No, they should explain the special circumstances that require a deviation from the Code of Ethics.
+        \item The authors should make sure to preserve anonymity (e.g., if there is a special consideration due to laws or regulations in their jurisdiction).
+    \end{itemize}
+
+
+\item {\bf Broader impacts}
+    \item[] Question: Does the paper discuss both potential positive societal impacts and negative societal impacts of the work performed?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: This is foundational optimizer-benchmarking research on $\approx$40k-parameter models with no direct application or deployment path; its potential positive impact (more energy-efficient or hardware-friendly training) is discussed in Section~\ref{sec:intro} and we see no specific negative impact beyond those of generic training algorithms.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that there is no societal impact of the work performed.
+        \item If the authors answer NA or No, they should explain why their work has no societal impact or why the paper does not address societal impact.
+        \item Examples of negative societal impacts include potential malicious or unintended uses (e.g., disinformation, generating fake profiles, surveillance), fairness considerations (e.g., deployment of technologies that could make decisions that unfairly impact specific groups), privacy considerations, and security considerations.
+        \item The conference expects that many papers will be foundational research and not tied to particular applications, let alone deployments. However, if there is a direct path to any negative applications, the authors should point it out. For example, it is legitimate to point out that an improvement in the quality of generative models could be used to generate deepfakes for disinformation. On the other hand, it is not needed to point out that a generic algorithm for optimizing neural networks could enable people to train models that generate Deepfakes faster.
+        \item The authors should consider possible harms that could arise when the technology is being used as intended and functioning correctly, harms that could arise when the technology is being used as intended but gives incorrect results, and harms following from (intentional or unintentional) misuse of the technology.
+        \item If there are negative societal impacts, the authors could also discuss possible mitigation strategies (e.g., gated release of models, providing defenses in addition to attacks, mechanisms for monitoring misuse, mechanisms to monitor how a system learns from feedback over time, improving the efficiency and accessibility of ML).
+    \end{itemize}
+
+\item {\bf Safeguards}
+    \item[] Question: Does the paper describe safeguards that have been put in place for responsible release of data or models that have a high risk for misuse (e.g., pretrained language models, image generators, or scraped datasets)?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: No models with misuse potential are released; the released artefacts are training code and logs of $\approx$40k-parameter models on MNIST, CIFAR-10 and character-level PTB.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper poses no such risks.
+        \item Released models that have a high risk for misuse or dual-use should be released with necessary safeguards to allow for controlled use of the model, for example by requiring that users adhere to usage guidelines or restrictions to access the model or implementing safety filters.
+        \item Datasets that have been scraped from the Internet could pose safety risks. The authors should describe how they avoided releasing unsafe images.
+        \item We recognize that providing effective safeguards is challenging, and many papers do not require this, but we encourage authors to take this into account and make a best faith effort.
+    \end{itemize}
+
+\item {\bf Licenses for existing assets}
+    \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: MNIST, CIFAR-10 and Penn Treebank are cited (Section~\ref{sec:setup}) and their terms of use are stated in Appendix~\ref{app:impl}; PyTorch is used under its BSD licence.
+    %TODO: fill the licence statements in Appendix B before answering Yes.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not use existing assets.
+        \item The authors should cite the original paper that produced the code package or dataset.
+        \item The authors should state which version of the asset is used and, if possible, include a URL.
+        \item The name of the license (e.g., CC-BY 4.0) should be included for each asset.
+        \item For scraped data from a particular source (e.g., website), the copyright and terms of service of that source should be provided.
+        \item If assets are released, the license, copyright information, and terms of use in the package should be provided. For popular datasets, \url{paperswithcode.com/datasets} has curated licenses for some datasets. Their licensing guide can help determine the license of a dataset.
+        \item For existing datasets that are re-packaged, both the original license and the license of the derived asset (if it has changed) should be provided.
+        \item If this information is not available online, the authors are encouraged to reach out to the asset's creators.
+    \end{itemize}
+
+\item {\bf New assets}
+    \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The released code repository documents the protocol (\texttt{PROTOCOL.md}), the command to launch every run and the scripts that regenerate every table and figure.
+    %TODO: state the code licence in the repository and here.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not release new assets.
+        \item Researchers should communicate the details of the dataset/code/model as part of their submissions via structured templates. This includes details about training, license, limitations, etc.
+        \item The paper should discuss whether and how consent was obtained from people whose asset is used.
+        \item At submission time, remember to anonymize your assets (if applicable). You can either create an anonymized URL or include an anonymized zip file.
+    \end{itemize}
+
+\item {\bf Crowdsourcing and research with human subjects}
+    \item[] Question: For crowdsourcing experiments and research with human subjects, does the paper include the full text of instructions given to participants and screenshots, if applicable, as well as details about compensation (if any)?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper involves neither crowdsourcing nor human subjects.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Including this information in the supplemental material is fine, but if the main contribution of the paper involves human subjects, then as much detail as possible should be included in the main paper.
+        \item According to the NeurIPS Code of Ethics, workers involved in data collection, curation, or other labor should be paid at least the minimum wage in the country of the data collector.
+    \end{itemize}
+
+\item {\bf Institutional review board (IRB) approvals or equivalent for research with human subjects}
+    \item[] Question: Does the paper describe potential risks incurred by study participants, whether such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) approvals (or an equivalent approval/review based on the requirements of your country or institution) were obtained?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper involves no human subjects, so no IRB review was required.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Depending on the country in which research is conducted, IRB approval (or equivalent) may be required for any human subjects research. If you obtained IRB approval, you should clearly state this in the paper.
+        \item We recognize that the procedures for this may vary significantly between institutions and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the guidelines for their institution.
+        \item For initial submissions, do not include any information that would break anonymity (if applicable), such as the institution conducting the review.
+    \end{itemize}
+
+\item {\bf Declaration of LLM usage}
+    \item[] Question: Does the paper describe the usage of LLMs if it is an important, original, or non-standard component of the core methods in this research? Note that if the LLM is used only for writing, editing, or formatting purposes and does not impact the core methodology, scientific rigorousness, or originality of the research, declaration is not required.
+    \item[] Answer: \answerNA{}
+    \item[] Justification: LLM-based assistants were used only for writing and coding assistance; no LLM is part of the methods, the experiments or the analysis.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the core method development in this research does not involve LLMs as any important, original, or non-standard components.
+        \item Please refer to our LLM policy (\url{https://neurips.cc/Conferences/2025/LLM}) for what should or should not be described.
+    \end{itemize}
+
+\end{enumerate}
+
+\end{document}

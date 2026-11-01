@@ -1,0 +1,431 @@
+% ------------------------------------------------------------------------------------
+% References for "A ZOO Deep Learning Survey".
+% Entries verified against the publisher / arXiv / PMLR record on 2026-11-01 unless an
+% "UNVERIFIED" comment says otherwise.
+% ------------------------------------------------------------------------------------
+
+% ----------------------------------------------------------- SPSA / smoothing / ES
+@article{spall1992,
+  author  = {Spall, James C.},
+  title   = {Multivariate stochastic approximation using a simultaneous perturbation gradient approximation},
+  journal = {IEEE Transactions on Automatic Control},
+  volume  = {37},
+  number  = {3},
+  pages   = {332--341},
+  year    = {1992},
+  doi     = {10.1109/9.119632}
+}
+
+@article{spall1998,
+  author  = {Spall, James C.},
+  title   = {An overview of the simultaneous perturbation method for efficient optimization},
+  journal = {Johns Hopkins APL Technical Digest},
+  volume  = {19},
+  number  = {4},
+  pages   = {482--492},
+  year    = {1998}
+}
+
+@article{nesterov2017,
+  author  = {Nesterov, Yurii and Spokoiny, Vladimir},
+  title   = {Random gradient-free minimization of convex functions},
+  journal = {Foundations of Computational Mathematics},
+  volume  = {17},
+  number  = {2},
+  pages   = {527--566},
+  year    = {2017},
+  doi     = {10.1007/s10208-015-9296-2}
+}
+
+@article{salimans2017,
+  author  = {Salimans, Tim and Ho, Jonathan and Chen, Xi and Sidor, Szymon and Sutskever, Ilya},
+  title   = {Evolution strategies as a scalable alternative to reinforcement learning},
+  journal = {arXiv preprint arXiv:1703.03864},
+  year    = {2017}
+}
+
+@inproceedings{mania2018,
+  author    = {Mania, Horia and Guy, Aurelia and Recht, Benjamin},
+  title     = {Simple random search of static linear policies is competitive for reinforcement learning},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {31},
+  year      = {2018}
+}
+
+@article{wierstra2014,
+  author  = {Wierstra, Daan and Schaul, Tom and Glasmachers, Tobias and Sun, Yi and Peters, Jan and Schmidhuber, J{\"u}rgen},
+  title   = {Natural evolution strategies},
+  journal = {Journal of Machine Learning Research},
+  volume  = {15},
+  number  = {27},
+  pages   = {949--980},
+  year    = {2014}
+}
+
+@article{hansen2003,
+  author  = {Hansen, Nikolaus and M{\"u}ller, Sibylle D. and Koumoutsakos, Petros},
+  title   = {Reducing the time complexity of the derandomized evolution strategy with covariance matrix adaptation ({CMA-ES})},
+  journal = {Evolutionary Computation},
+  volume  = {11},
+  number  = {1},
+  pages   = {1--18},
+  year    = {2003},
+  doi     = {10.1162/106365603321828970}
+}
+
+@article{hansen2016,
+  author  = {Hansen, Nikolaus},
+  title   = {The {CMA} evolution strategy: A tutorial},
+  journal = {arXiv preprint arXiv:1604.00772},
+  year    = {2016}
+}
+
+@article{williams1992,
+  author  = {Williams, Ronald J.},
+  title   = {Simple statistical gradient-following algorithms for connectionist reinforcement learning},
+  journal = {Machine Learning},
+  volume  = {8},
+  number  = {3--4},
+  pages   = {229--256},
+  year    = {1992},
+  doi     = {10.1007/BF00992696}
+}
+
+% ----------------------------------------------------------- random search (classic)
+% UNVERIFIED beyond secondary sources: Rastrigin's 1963 paper in the Russian/English
+% journal "Automation and Remote Control"; page numbers vary between citing papers.
+@article{rastrigin1963,
+  author  = {Rastrigin, Leonard A.},
+  title   = {The convergence of the random search method in the extremal control of a many parameter system},
+  journal = {Automation and Remote Control},
+  volume  = {24},
+  number  = {10},
+  pages   = {1337--1342},
+  year    = {1963}
+}
+
+% UNVERIFIED beyond secondary sources (widely cited as below).
+@article{matyas1965,
+  author  = {Matyas, J.},
+  title   = {Random optimization},
+  journal = {Automation and Remote Control},
+  volume  = {26},
+  number  = {2},
+  pages   = {246--253},
+  year    = {1965}
+}
+
+@article{schumer1968,
+  author  = {Schumer, M. A. and Steiglitz, Kenneth},
+  title   = {Adaptive step size random search},
+  journal = {IEEE Transactions on Automatic Control},
+  volume  = {13},
+  number  = {3},
+  pages   = {270--276},
+  year    = {1968},
+  doi     = {10.1109/TAC.1968.1098903}
+}
+
+% ----------------------------------------------------------- ZO theory / surveys
+@inproceedings{flaxman2005,
+  author    = {Flaxman, Abraham D. and Kalai, Adam Tauman and McMahan, H. Brendan},
+  title     = {Online convex optimization in the bandit setting: Gradient descent without a gradient},
+  booktitle = {Proceedings of the Sixteenth Annual ACM-SIAM Symposium on Discrete Algorithms (SODA)},
+  pages     = {385--394},
+  year      = {2005}
+}
+
+@article{duchi2015,
+  author  = {Duchi, John C. and Jordan, Michael I. and Wainwright, Martin J. and Wibisono, Andre},
+  title   = {Optimal rates for zero-order convex optimization: The power of two function evaluations},
+  journal = {IEEE Transactions on Information Theory},
+  volume  = {61},
+  number  = {5},
+  pages   = {2788--2806},
+  year    = {2015},
+  doi     = {10.1109/TIT.2015.2409256}
+}
+
+@article{liu2020primer,
+  author  = {Liu, Sijia and Chen, Pin-Yu and Kailkhura, Bhavya and Zhang, Gaoyuan and Hero, Alfred O. and Varshney, Pramod K.},
+  title   = {A primer on zeroth-order optimization in signal processing and machine learning: Principals, recent advances, and applications},
+  journal = {IEEE Signal Processing Magazine},
+  volume  = {37},
+  number  = {5},
+  pages   = {43--54},
+  year    = {2020},
+  doi     = {10.1109/MSP.2020.3003837}
+}
+
+@inproceedings{chen2019zoadamm,
+  author    = {Chen, Xiangyi and Liu, Sijia and Xu, Kaidi and Li, Xingguo and Lin, Xue and Hong, Mingyi and Cox, David},
+  title     = {{ZO-AdaMM}: Zeroth-order adaptive momentum method for black-box optimization},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {32},
+  year      = {2019}
+}
+
+% UNVERIFIED / POSSIBLY NOT THE INTENDED PAPER.  The request asked for "Zhang, Zhou et
+% al. 2024 on Adam with ZO".  No 2024 zeroth-order Adam paper with that author pair
+% could be found; the closest match is the (first-order) Adam convergence analysis
+% below, which is cited by later adaptive-ZO papers.  Replace if another paper was meant
+% (e.g. ZO-AdaMU, Jiang et al., AAAI 2024, or MeZO-Adam in Zhang et al. ICML 2024).
+@article{zhang2024adam,
+  author  = {Zhang, Qi and Zhou, Yi and Zou, Shaofeng},
+  title   = {Convergence guarantees for {RMSProp} and {Adam} in generalized-smooth non-convex optimization with affine noise variance},
+  journal = {arXiv preprint arXiv:2404.01436},
+  year    = {2024}
+}
+
+% ----------------------------------------------------------- node perturbation
+@article{widrow1990,
+  author  = {Widrow, Bernard and Lehr, Michael A.},
+  title   = {30 years of adaptive neural networks: Perceptron, {Madaline}, and backpropagation},
+  journal = {Proceedings of the IEEE},
+  volume  = {78},
+  number  = {9},
+  pages   = {1415--1442},
+  year    = {1990},
+  doi     = {10.1109/5.58323}
+}
+
+@inproceedings{werfel2003,
+  author    = {Werfel, Justin and Xie, Xiaohui and Seung, H. Sebastian},
+  title     = {Learning curves for stochastic gradient descent in linear feedforward networks},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {16},
+  pages     = {1197--1204},
+  year      = {2003}
+}
+
+@article{werfel2005,
+  author  = {Werfel, Justin and Xie, Xiaohui and Seung, H. Sebastian},
+  title   = {Learning curves for stochastic gradient descent in linear feedforward networks},
+  journal = {Neural Computation},
+  volume  = {17},
+  number  = {12},
+  pages   = {2699--2718},
+  year    = {2005},
+  doi     = {10.1162/089976605774320539}
+}
+
+@article{fiete2006,
+  author  = {Fiete, Ila R. and Seung, H. Sebastian},
+  title   = {Gradient learning in spiking neural networks by dynamic perturbation of conductances},
+  journal = {Physical Review Letters},
+  volume  = {97},
+  number  = {4},
+  pages   = {048104},
+  year    = {2006},
+  doi     = {10.1103/PhysRevLett.97.048104}
+}
+
+@inproceedings{hiratani2022,
+  author    = {Hiratani, Naoki and Mehta, Yash and Lillicrap, Timothy and Latham, Peter E.},
+  title     = {On the stability and scalability of node perturbation learning},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  year      = {2022}
+}
+
+% arXiv 2310.00965.  v1 (Oct 2023) was titled "Effective learning with node perturbation
+% in multi-layer neural networks"; later versions (v6+, current v8 of June 2026) carry
+% the title below.  No journal/conference publication (e.g. TMLR) could be confirmed.
+@article{dalm2023,
+  author  = {Dalm, Sander and van Gerven, Marcel and Ahmad, Nasir},
+  title   = {Node perturbation can effectively train multi-layer neural networks},
+  journal = {arXiv preprint arXiv:2310.00965},
+  year    = {2023}
+}
+
+% Published in TMLR in 2023 (arXiv 2203.13203 first posted March 2022).
+@article{ahmad2023constrained,
+  author  = {Ahmad, Nasir and Schrader, Ellen and van Gerven, Marcel},
+  title   = {Constrained parameter inference as a principle for learning},
+  journal = {Transactions on Machine Learning Research},
+  year    = {2023},
+  note    = {arXiv:2203.13203}
+}
+
+@article{dalm2024,
+  author  = {Dalm, Sander and Offergeld, Joshua and Ahmad, Nasir and van Gerven, Marcel},
+  title   = {Efficient deep learning with decorrelated backpropagation},
+  journal = {arXiv preprint arXiv:2405.02385},
+  year    = {2024}
+}
+
+@article{ahmad2024,
+  author  = {Ahmad, Nasir},
+  title   = {Correlations are ruining your gradient descent},
+  journal = {arXiv preprint arXiv:2407.10780},
+  year    = {2024}
+}
+
+% ----------------------------------------------------------- forward gradients / local rules
+@article{baydin2022,
+  author  = {Baydin, At{\i}l{\i}m G{\"u}ne{\c{s}} and Pearlmutter, Barak A. and Syme, Don and Wood, Frank and Torr, Philip},
+  title   = {Gradients without backpropagation},
+  journal = {arXiv preprint arXiv:2202.08587},
+  year    = {2022}
+}
+
+@inproceedings{ren2023,
+  author    = {Ren, Mengye and Kornblith, Simon and Liao, Renjie and Hinton, Geoffrey},
+  title     = {Scaling forward gradient with local losses},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2023}
+}
+
+@article{hinton2022,
+  author  = {Hinton, Geoffrey},
+  title   = {The forward-forward algorithm: Some preliminary investigations},
+  journal = {arXiv preprint arXiv:2212.13345},
+  year    = {2022}
+}
+
+@article{lillicrap2016,
+  author  = {Lillicrap, Timothy P. and Cownden, Daniel and Tweed, Douglas B. and Akerman, Colin J.},
+  title   = {Random synaptic feedback weights support error backpropagation for deep learning},
+  journal = {Nature Communications},
+  volume  = {7},
+  pages   = {13276},
+  year    = {2016},
+  doi     = {10.1038/ncomms13276}
+}
+
+@inproceedings{nokland2016,
+  author    = {N{\o}kland, Arild},
+  title     = {Direct feedback alignment provides learning in deep neural networks},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {29},
+  year      = {2016}
+}
+
+@inproceedings{jaderberg2017,
+  author    = {Jaderberg, Max and Czarnecki, Wojciech Marian and Osindero, Simon and Vinyals, Oriol and Graves, Alex and Silver, David and Kavukcuoglu, Koray},
+  title     = {Decoupled neural interfaces using synthetic gradients},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {70},
+  pages     = {1627--1635},
+  year      = {2017}
+}
+
+% ----------------------------------------------------------- ZO fine-tuning of LLMs
+@inproceedings{malladi2023,
+  author    = {Malladi, Sadhika and Gao, Tianyu and Nichani, Eshaan and Damian, Alex and Lee, Jason D. and Chen, Danqi and Arora, Sanjeev},
+  title     = {Fine-tuning language models with just forward passes},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {36},
+  year      = {2023}
+}
+
+@inproceedings{chen2024deepzero,
+  author    = {Chen, Aochuan and Zhang, Yimeng and Jia, Jinghan and Diffenderfer, James and Liu, Jiancheng and Parasyris, Konstantinos and Zhang, Yihua and Zhang, Zheng and Kailkhura, Bhavya and Liu, Sijia},
+  title     = {{DeepZero}: Scaling up zeroth-order optimization for deep model training},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2024}
+}
+
+@inproceedings{zhang2024revisiting,
+  author    = {Zhang, Yihua and Li, Pingzhi and Hong, Junyuan and Li, Jiaxiang and Zhang, Yimeng and Zheng, Wenqing and Chen, Pin-Yu and Lee, Jason D. and Yin, Wotao and Hong, Mingyi and Wang, Zhangyang and Liu, Sijia and Chen, Tianlong},
+  title     = {Revisiting zeroth-order optimization for memory-efficient {LLM} fine-tuning: A benchmark},
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {235},
+  pages     = {59173--59190},
+  year      = {2024}
+}
+
+% ----------------------------------------------------------- deep learning basics
+@inproceedings{kingma2015,
+  author    = {Kingma, Diederik P. and Ba, Jimmy},
+  title     = {Adam: A method for stochastic optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2015}
+}
+
+@inproceedings{glorot2010,
+  author    = {Glorot, Xavier and Bengio, Yoshua},
+  title     = {Understanding the difficulty of training deep feedforward neural networks},
+  booktitle = {Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {9},
+  pages     = {249--256},
+  year      = {2010}
+}
+
+@article{rumelhart1986,
+  author  = {Rumelhart, David E. and Hinton, Geoffrey E. and Williams, Ronald J.},
+  title   = {Learning representations by back-propagating errors},
+  journal = {Nature},
+  volume  = {323},
+  number  = {6088},
+  pages   = {533--536},
+  year    = {1986},
+  doi     = {10.1038/323533a0}
+}
+
+@article{hochreiter1997,
+  author  = {Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
+  title   = {Long short-term memory},
+  journal = {Neural Computation},
+  volume  = {9},
+  number  = {8},
+  pages   = {1735--1780},
+  year    = {1997},
+  doi     = {10.1162/neco.1997.9.8.1735}
+}
+
+@inproceedings{vaswani2017,
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  title     = {Attention is all you need},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {30},
+  year      = {2017}
+}
+
+@article{ba2016,
+  author  = {Ba, Jimmy Lei and Kiros, Jamie Ryan and Hinton, Geoffrey E.},
+  title   = {Layer normalization},
+  journal = {arXiv preprint arXiv:1607.06450},
+  year    = {2016}
+}
+
+% ----------------------------------------------------------- datasets
+@article{lecun1998,
+  author  = {LeCun, Yann and Bottou, L{\'e}on and Bengio, Yoshua and Haffner, Patrick},
+  title   = {Gradient-based learning applied to document recognition},
+  journal = {Proceedings of the IEEE},
+  volume  = {86},
+  number  = {11},
+  pages   = {2278--2324},
+  year    = {1998},
+  doi     = {10.1109/5.726791}
+}
+
+@techreport{krizhevsky2009,
+  author      = {Krizhevsky, Alex},
+  title       = {Learning multiple layers of features from tiny images},
+  institution = {University of Toronto},
+  year        = {2009}
+}
+
+@article{marcus1993,
+  author  = {Marcus, Mitchell P. and Santorini, Beatrice and Marcinkiewicz, Mary Ann},
+  title   = {Building a large annotated corpus of {English}: The {Penn Treebank}},
+  journal = {Computational Linguistics},
+  volume  = {19},
+  number  = {2},
+  pages   = {313--330},
+  year    = {1993}
+}
+
+% Unpublished manuscript (widely cited for the character-level PTB split); UNVERIFIED
+% beyond citing papers -- no formal venue exists.
+@unpublished{mikolov2012,
+  author = {Mikolov, Tom{\'a}{\v{s}} and Sutskever, Ilya and Deoras, Anoop and Le, Hai-Son and Kombrink, Stefan and {\v{C}}ernock{\'y}, Jan},
+  title  = {Subword language modeling with neural networks},
+  note   = {Preprint, \url{http://www.fit.vutbr.cz/~imikolov/rnnlm/char.pdf}},
+  year   = {2012}
+}

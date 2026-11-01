@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 data/
+!paper/data/
 wandb/
 *.env
 .env
@@ -18,3 +19,5 @@ paper/figures/*.png
 runs/
 *.pt
 .DS_Store
+paper/page-*.png
+paper/main.pdf

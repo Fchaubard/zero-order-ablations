@@ -1,0 +1,48 @@
+% Appendix C: test loss vs training time for every run.
+% Rows = tasks, columns = epsilon in {0.1, 0.01, 0.001}.
+% Data: data/curve_{task}_lr{eps}.csv with columns time,bp,spsa,rs,np,anp,inp,danp,ff
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=3 by 4, horizontal sep=1.0cm, vertical sep=1.3cm,
+                   xlabels at=edge bottom, ylabels at=edge left},
+      width=0.33\linewidth, height=3.9cm,
+      cycle list name=zoocycle,
+      ymode=log,
+      xmin=0, xmax=60,
+      xlabel={training time (min)}, ylabel={test loss},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      title style={font=\scriptsize, yshift=-1ex},
+      every axis plot/.append style={line width=0.6pt},
+      grid=major, grid style={gray!25},
+    ]
+    % ---- MNIST / MLP
+    \nextgroupplot[title={MNIST / MLP, $\varepsilon=0.1$}]
+    \zooplots{time}{data/curve_mlp_mnist_lr0.1.csv}
+    \nextgroupplot[title={MNIST / MLP, $\varepsilon=0.01$}]
+    \zooplots{time}{data/curve_mlp_mnist_lr0.01.csv}
+    \nextgroupplot[title={MNIST / MLP, $\varepsilon=0.001$}]
+    \zooplots{time}{data/curve_mlp_mnist_lr0.001.csv}
+    % ---- CIFAR-10 / ConvNet
+    \nextgroupplot[title={CIFAR-10 / ConvNet, $\varepsilon=0.1$}]
+    \zooplots{time}{data/curve_conv_cifar10_lr0.1.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, $\varepsilon=0.01$}]
+    \zooplots{time}{data/curve_conv_cifar10_lr0.01.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, $\varepsilon=0.001$}]
+    \zooplots{time}{data/curve_conv_cifar10_lr0.001.csv}
+    % ---- PTB / char-LSTM
+    \nextgroupplot[title={PTB / char-LSTM, $\varepsilon=0.1$}]
+    \zooplots{time}{data/curve_lstm_ptb_lr0.1.csv}
+    \nextgroupplot[title={PTB / char-LSTM, $\varepsilon=0.01$}]
+    \zooplots{time}{data/curve_lstm_ptb_lr0.01.csv}
+    \nextgroupplot[title={PTB / char-LSTM, $\varepsilon=0.001$}]
+    \zooplots{time}{data/curve_lstm_ptb_lr0.001.csv}
+    % ---- PTB / char-Transformer
+    \nextgroupplot[title={PTB / char-Transformer, $\varepsilon=0.1$}]
+    \zooplots{time}{data/curve_transformer_ptb_lr0.1.csv}
+    \nextgroupplot[title={PTB / char-Transformer, $\varepsilon=0.01$}]
+    \zooplots{time}{data/curve_transformer_ptb_lr0.01.csv}
+    \nextgroupplot[title={PTB / char-Transformer, $\varepsilon=0.001$}]
+    \zooplots{time}{data/curve_transformer_ptb_lr0.001.csv}
+  \end{groupplot}
+\end{tikzpicture}

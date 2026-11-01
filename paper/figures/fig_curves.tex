@@ -1,0 +1,34 @@
+% Figure 1: 2x2 grid of test loss vs training time, one panel per task.
+% Data: data/curve_{task}.csv with columns time,bp,spsa,rs,np,anp,inp,danp,ff
+% The legend is written to the name "zoolegend" (first panel) and placed with
+% \ref{zoolegend} in main.tex; the same legend is reused by the other figures.
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
+      width=0.5\linewidth, height=4.4cm,
+      cycle list name=zoocycle,
+      ymode=log,
+      xmin=0, xmax=60,
+      xlabel={training time (min)}, ylabel={test loss},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      title style={font=\small, yshift=-1ex},
+      every axis plot/.append style={line width=0.7pt},
+      grid=major, grid style={gray!25},
+    ]
+    \nextgroupplot[title={MNIST / MLP},
+      legend to name=zoolegend, legend columns=8,
+      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.5em}},
+      legend entries={BP, SPSA, RS, NP, ANP, INP, DANP, FF}]
+    \zooplots{time}{data/curve_mlp_mnist.csv}
+
+    \nextgroupplot[title={CIFAR-10 / ConvNet}]
+    \zooplots{time}{data/curve_conv_cifar10.csv}
+
+    \nextgroupplot[title={PTB / char-LSTM}]
+    \zooplots{time}{data/curve_lstm_ptb.csv}
+
+    \nextgroupplot[title={PTB / char-Transformer}]
+    \zooplots{time}{data/curve_transformer_ptb.csv}
+  \end{groupplot}
+\end{tikzpicture}
