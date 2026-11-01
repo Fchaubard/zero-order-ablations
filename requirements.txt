@@ -1,0 +1,6 @@
+torch>=2.7
+torchvision>=0.22
+numpy
+wandb
+requests
+pytest
