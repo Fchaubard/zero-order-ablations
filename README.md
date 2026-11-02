@@ -2,21 +2,26 @@
 
 Which zero-order optimizer wins across standard small architectures and tasks?
 
-**8 optimizers** (`bp` backprop reference, `spsa`, `rs` random search, `np` / `anp` / `inp` / `danp`
-node-perturbation variants, `ff` forward-forward) **x 4 tasks** (`mlp_mnist`, `conv_cifar10`,
-`lstm_ptb`, `transformer_ptb`, ~40k parameters each) **x 3 epsilons** (0.1, 0.01, 0.001;
-epsilon == learning rate), one hour of training wall-clock each, 96 runs in total.
-The experimental protocol is the single source of truth: **[PROTOCOL.md](PROTOCOL.md)**.
+**10 optimizers** (`bp` backprop reference, `spsa`, `spsa15` (1.5-SPSA), `rs` random search,
+`np` / `anp` / `inp` / `danp` node-perturbation variants, `anp15` (1.5-ANP), `ff` forward-forward)
+**x 4 tasks** (`mlp_mnist`, `conv_cifar10`, `lstm_ptb`, `transformer_ptb`, ~40k parameters each)
+**x 3 epsilons** (0.1, 0.01, 0.001; epsilon == learning rate), one hour of training wall-clock each.
+Stage 1 screens epsilon (one seed, `results/`); stage 2 replicates the selected configurations
+with three seeds and 1-minute evaluations (`results_v2/`) and adds ablations (`results_bp/`,
+`results_decouple/`, `results_align/`).  The experimental protocol is the single source of
+truth: **[PROTOCOL.md](PROTOCOL.md)**.
 
 ```
 zoo/perturb.py      perturbable layers + the global forward "mode" every optimizer drives
 zoo/models.py       the four models (TASKS, build_model)
-zoo/optimizers/     one file per method; get_optimizer(name, model, lr, task_kind, n_classes)
+zoo/optimizers/     one file per method (curvature.py = spsa15 / anp15); get_optimizer(name, model, lr, task_kind, n_classes, ...)
 zoo/data.py         MNIST / CIFAR-10 / PTB-char, resident on the device; python -m zoo.data --download-all
 zoo/train.py        one run: timed training loop, eval every N seconds, results JSON + wandb
 zoo/sweep.py        tasks x opts x lrs over a GPU pool (resumable);  zoo/status.py  tables + grid
-scripts/            setup_remote.sh (fresh CUDA box), launch_sweep.sh (tmux)
-results/            {task}-{opt}-lr{eps}.json per run      paper/   the write-up
+scripts/            setup_remote.sh (fresh CUDA box), launch_sweep.sh (tmux), make_stage2_jobs.py,
+                    collect_results.py (stage 1), collect_stage2.py (stage 2), gradient_alignment.py
+jobs/               stage2.txt / stage2_extra.txt: the stage-2 job lists (one zoo.train line per run)
+results/            {task}-{opt}-lr{eps}[-sig..][-K..][-wd..][-tf32][-s{seed}].json per run      paper/   the write-up
 ```
 
 ## Install
@@ -38,10 +43,13 @@ python -m zoo.train --task mlp_mnist --opt spsa --lr 0.01 --budget 3600 --eval-e
 
 `--budget` counts only seconds spent inside `opt.step` (evaluation and logging are excluded).
 The run writes `results/mlp_mnist-spsa-lr0.01.json` after every evaluation (`history`, then
-`final`), stops early and sets `diverged` on NaN or a 2x loss blow-up (train or validation,
-at two consecutive evaluations), and logs to wandb with
-`train_time` as the x-axis.  Add `--no-wandb` to skip wandb, `--synthetic` for a smoke run on
-random data, `--budget 20 --eval-every 5` for a quick look.
+`final`), saves checkpoints at the best validation loss / 5 minutes / the end (`*.pt`), stops
+early and sets `diverged` when a loss is non-finite or the validation loss exceeds 2x its step-0
+value at two consecutive evaluations, and logs to wandb with `train_time` as the x-axis.
+Ablation flags (each recorded in the run name): `--sigma` (probe scale decoupled from the
+learning rate), `--passes` (forward-pass budget), `--weight-decay` (AdamW), `--tf32` (default:
+full fp32), `--seed`.  Add `--no-wandb` to skip wandb, `--synthetic` for a smoke run on random
+data, `--budget 20 --eval-every 5` for a quick look.
 
 ## Run the sweep (8 GPUs)
 
@@ -56,6 +64,9 @@ python -m zoo.sweep --gpus 0,1,2,3,4,5,6,7 --tasks all --opts all --lrs 0.1,0.01
 
 The sweep is resumable: configs whose JSON already has a `final` block and no `error` are
 skipped (`--force` reruns them).  Each run's stdout/stderr goes to `runs/{name}.log`.
+Stage 2 uses the job-list mode: `python -m zoo.sweep --jobs jobs/stage2.txt --extra-jobs jobs/extra.txt
+--gpus 0,...,7 --logdir runs_v2` runs one `zoo.train` argument line per job over the GPU pool;
+lines appended to the `--extra-jobs` file while the sweep runs are picked up with priority.
 
 ## Inspecting results
 
