@@ -57,7 +57,7 @@ python -m zoo.sweep --gpus 0,1,2,3,4,5,6,7 --tasks all --opts all --lrs 0.1,0.01
 The sweep is resumable: configs whose JSON already has a `final` block and no `error` are
 skipped (`--force` reruns them).  Each run's stdout/stderr goes to `runs/{name}.log`.
 
-## Results
+## Inspecting results
 
 ```bash
 python -m zoo.status --out results                   # every run + best epsilon per (task, opt) by val loss
@@ -68,3 +68,33 @@ python -m zoo.status --out results --grid --csv paper/grid.csv --metric test_acc
 Model selection follows the protocol: for each (task, optimizer) the epsilon with the lowest
 final validation loss is selected and that run's test loss (test accuracy for classification,
 bits-per-character for language modelling) is reported.  The write-up lives in `paper/`.
+
+## Results (all 96 runs complete)
+
+Final test loss after one hour, epsilon selected by final validation loss (the paper's Table 3), and the
+early-stopping oracle (Table 4: best validation-loss evaluation over all epsilon and times).  Second rows
+of the paper's tables give accuracy / bits-per-character.  Headline: iterative node perturbation (INP) is
+the most consistent zero-order rule (best on both sequence tasks, mean rank 2.0 of 7); ANP / DANP win the
+image tasks; the best zero-order rule trails backprop by about one bit per character on the LSTM and
+Transformer and by 1-7 accuracy points on MNIST / CIFAR-10 at its best evaluation.
+
+```
+final test loss (selected eps):
+task                     bp     spsa       rs       np      anp      inp     danp       ff
+mlp_mnist             1.857    1.039    1.412    2.141    0.381    0.916    0.751    2.127
+conv_cifar10          2.402    2.468    2.406    1.613    1.177    1.339    1.285    1.886
+lstm_ptb              1.231    2.048    2.124    2.015    3.232    1.955    2.608    2.688
+transformer_ptb       1.262    2.181    2.279    2.357    3.412    2.151    2.525    2.959
+
+early-stopping oracle test loss (best val-loss evaluation over all eps and times):
+task                     bp     spsa       rs       np      anp      inp     danp       ff
+mlp_mnist             1.260    0.391    0.487    0.167    0.137    0.162    0.321    1.051
+conv_cifar10          1.319    1.642    1.742    1.434    1.139    1.341    1.085    1.819
+lstm_ptb              1.231    2.048    2.124    2.015    2.969    1.955    2.608    2.658
+transformer_ptb       1.260    2.181    2.279    2.342    3.065    2.151    2.513    2.925
+```
+
+The paper (`paper/main.pdf`, NeurIPS format, all plots in TikZ) is built with `make` in `paper/` after
+`python scripts/collect_results.py`.  Raw per-run JSON results are in `results/` (plus four 10-minute
+backprop runs with 30-second evaluations in `results_supp/`), the sweep logs in `logs/`, and every run is
+on Weights & Biases (project `zoo-survey`).

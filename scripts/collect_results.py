@@ -134,7 +134,10 @@ def main():
             loss = fr["test_loss"]; vals[o] = loss
             dag = "$^\\dagger$" if r.get("diverged") else ""
             loss_cells.append(f"{fmt_loss(loss)}{dag}")
-            sec_cells.append(f"{100 * fr['test_acc']:.1f}" if is_cls else f"{loss / LN2:.2f}")
+            sec = f"{100 * fr['test_acc']:.1f}" if is_cls else f"{loss / LN2:.2f}"
+            if is_cls and fr.get("test_acc_goodness") is not None:
+                sec += f" ({100 * fr['test_acc_goodness']:.1f})"
+            sec_cells.append(sec)
             summary["main"][f"{task}/{o}"] = {"eps": e, "test_loss": loss, "test_acc": fr.get("test_acc"), "test_bpc": loss / LN2,
                                               "test_acc_goodness": fr.get("test_acc_goodness"),
                                               "val_loss": fr["val_loss"], "diverged": r.get("diverged", False)}
@@ -225,10 +228,14 @@ def main():
             v, e, h = best
             vals[o] = h["test_loss"]
             loss_cells.append(fmt_loss(h["test_loss"]))
-            sec_cells.append(f"{100 * h['test_acc']:.1f}" if is_cls else f"{h['test_loss'] / LN2:.2f}")
-            at_cells.append(f"{e} / {h['train_time'] / 60:.0f}")
+            sec = f"{100 * h['test_acc']:.1f}" if is_cls else f"{h['test_loss'] / LN2:.2f}"
+            if is_cls and h.get("test_acc_goodness") is not None:
+                sec += f" ({100 * h['test_acc_goodness']:.1f})"
+            sec_cells.append(sec)
+            at_cells.append(f"{e}/{h['train_time'] / 60:.0f}")
             summary["early_stop"][f"{task}/{o}"] = {"eps": e, "minute": h["train_time"] / 60, "step": h["step"], "val_loss": v,
-                                                    "test_loss": h["test_loss"], "test_acc": h.get("test_acc"), "test_bpc": h["test_loss"] / LN2}
+                                                    "test_loss": h["test_loss"], "test_acc": h.get("test_acc"), "test_bpc": h["test_loss"] / LN2,
+                                                    "test_acc_goodness": h.get("test_acc_goodness")}
         probe_vals = {o: vals[o] for o in PROBE if not math.isnan(vals[o])}
         if probe_vals:
             i = OPTS.index(min(probe_vals, key=probe_vals.get))
@@ -236,7 +243,7 @@ def main():
             sec_cells[i] = f"\\textbf{{{sec_cells[i]}}}"
         lines.append(f"{TASK_LABEL[task]} & test loss & " + " & ".join(loss_cells) + " \\\\")
         lines.append(f" & {'acc.\\ (\\%)' if is_cls else 'bits/char'} & " + " & ".join(sec_cells) + " \\\\")
-        lines.append(" & $\\varepsilon$ / min & " + " & ".join(at_cells) + " \\\\")
+        lines.append(" & $\\varepsilon$/min & " + " & ".join(at_cells) + " \\\\")
         if ti < len(TASKS) - 1:
             lines.append("\\addlinespace[2pt]")
         grid_es.append(f"{task:18s} " + " ".join(f"{fmt(vals[o]):>8s}" for o in OPTS))

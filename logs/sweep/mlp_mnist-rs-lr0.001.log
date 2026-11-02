@@ -1,0 +1,17 @@
+# 09:38:45 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt rs --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-rs-lr0.001] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-rs-lr0.001] params=39578 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-rs-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+[mlp_mnist-rs-lr0.001] t=300.0s step=94581 (315.2 st/s) train 0.4864 | val 0.4069 acc 0.8880 | test 0.4869 acc 0.8629
+[mlp_mnist-rs-lr0.001] t=600.0s step=189901 (317.7 st/s) train 0.5337 | val 0.4926 acc 0.8550 | test 0.5901 acc 0.8284
+[mlp_mnist-rs-lr0.001] t=900.1s step=284821 (316.4 st/s) train 0.6543 | val 0.5450 acc 0.8366 | test 0.6655 acc 0.8124
+[mlp_mnist-rs-lr0.001] t=1200.0s step=379961 (317.1 st/s) train 0.7024 | val 0.6122 acc 0.8238 | test 0.6960 acc 0.7908
+[mlp_mnist-rs-lr0.001] t=1500.0s step=475201 (317.5 st/s) train 0.8032 | val 0.7671 acc 0.7778 | test 0.8739 acc 0.7455
+[mlp_mnist-rs-lr0.001] t=1800.1s step=570401 (317.3 st/s) train 0.8930 | val 0.7750 acc 0.7784 | test 0.9114 acc 0.7549
+[mlp_mnist-rs-lr0.001] t=2100.0s step=665421 (316.8 st/s) train 0.9691 | val 0.8858 acc 0.7564 | test 0.9950 acc 0.7403
+[mlp_mnist-rs-lr0.001] t=2400.0s step=760781 (317.8 st/s) train 1.0935 | val 0.9770 acc 0.7148 | test 1.1191 acc 0.6890
+[mlp_mnist-rs-lr0.001] t=2700.1s step=856201 (318.1 st/s) train 1.2263 | val 1.0000 acc 0.7088 | test 1.1342 acc 0.6813
+[mlp_mnist-rs-lr0.001] t=3000.0s step=951421 (317.4 st/s) train 1.2739 | val 1.1188 acc 0.7048 | test 1.2500 acc 0.6682
+[mlp_mnist-rs-lr0.001] t=3300.0s step=1046921 (318.4 st/s) train 1.3412 | val 1.2379 acc 0.6466 | test 1.3903 acc 0.6152
+[mlp_mnist-rs-lr0.001] t=3600.0s step=1142181 (317.5 st/s) train 1.3815 | val 1.2381 acc 0.6520 | test 1.4115 acc 0.6201
+[mlp_mnist-rs-lr0.001] done: steps=1142181 train_time=3600.0s wall=3641.5s val_loss=1.2381 test_loss=1.4115 test_acc=0.6201 -> results/mlp_mnist-rs-lr0.001.json

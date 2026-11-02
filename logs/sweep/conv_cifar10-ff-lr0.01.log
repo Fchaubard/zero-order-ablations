@@ -1,0 +1,17 @@
+# 08:36:19 /opt/conda/bin/python -m zoo.train --task conv_cifar10 --opt ff --lr 0.01 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[conv_cifar10-ff-lr0.01] conv_cifar10: cifar10 shape=(3, 32, 32) train=45000 valid=5000 test=10000 batch=128 eval_batch=2048
+[conv_cifar10-ff-lr0.01] params=39450 fp/step=2 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[conv_cifar10-ff-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 2.3252 acc 0.0920 | test 2.3294 acc 0.0930
+[conv_cifar10-ff-lr0.01] t=300.1s step=90861 (302.8 st/s) train 2.0380 | val 1.9551 acc 0.3038 | test 1.9574 acc 0.3016
+[conv_cifar10-ff-lr0.01] t=600.0s step=182941 (307.0 st/s) train 1.9495 | val 1.9830 acc 0.2900 | test 1.9924 acc 0.2878
+[conv_cifar10-ff-lr0.01] t=900.0s step=275101 (307.2 st/s) train 1.9738 | val 2.0238 acc 0.2692 | test 2.0012 acc 0.2731
+[conv_cifar10-ff-lr0.01] t=1200.0s step=366341 (304.1 st/s) train 2.0072 | val 2.0368 acc 0.2546 | test 2.0313 acc 0.2616
+[conv_cifar10-ff-lr0.01] t=1500.0s step=459021 (308.9 st/s) train 2.0267 | val 2.0488 acc 0.2556 | test 2.0501 acc 0.2515
+[conv_cifar10-ff-lr0.01] t=1800.0s step=551921 (309.7 st/s) train 2.0463 | val 2.0726 acc 0.2472 | test 2.0700 acc 0.2478
+[conv_cifar10-ff-lr0.01] t=2100.0s step=644561 (308.8 st/s) train 2.0507 | val 2.0826 acc 0.2392 | test 2.0874 acc 0.2379
+[conv_cifar10-ff-lr0.01] t=2400.1s step=737161 (308.6 st/s) train 2.0532 | val 2.0868 acc 0.2374 | test 2.0918 acc 0.2370
+[conv_cifar10-ff-lr0.01] t=2700.0s step=829441 (307.6 st/s) train 2.0572 | val 2.0825 acc 0.2486 | test 2.0853 acc 0.2379
+[conv_cifar10-ff-lr0.01] t=3000.0s step=922061 (308.8 st/s) train 2.0581 | val 2.0809 acc 0.2444 | test 2.0853 acc 0.2402
+[conv_cifar10-ff-lr0.01] t=3300.0s step=1010781 (295.7 st/s) train 2.0610 | val 2.0945 acc 0.2372 | test 2.0921 acc 0.2365
+[conv_cifar10-ff-lr0.01] t=3600.1s step=1102001 (304.0 st/s) train 2.0628 | val 2.0811 acc 0.2404 | test 2.0842 acc 0.2341
+[conv_cifar10-ff-lr0.01] done: steps=1102001 train_time=3600.1s wall=3643.4s val_loss=2.0811 test_loss=2.0842 test_acc=0.2341 -> results/conv_cifar10-ff-lr0.01.json

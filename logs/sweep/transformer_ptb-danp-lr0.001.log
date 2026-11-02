@@ -1,0 +1,17 @@
+# 11:58:37 /opt/conda/bin/python -m zoo.train --task transformer_ptb --opt danp --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[transformer_ptb-danp-lr0.001] transformer_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[transformer_ptb-danp-lr0.001] params=39250 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[transformer_ptb-danp-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 4.4970 (6.488 bpc) | test 4.4963 (6.487 bpc)
+[transformer_ptb-danp-lr0.001] t=300.4s step=7301 (24.3 st/s) train 2.9438 | val 2.7587 (3.980 bpc) | test 2.7449 (3.960 bpc)
+[transformer_ptb-danp-lr0.001] t=600.4s step=14561 (24.2 st/s) train 2.6794 | val 2.6213 (3.782 bpc) | test 2.6035 (3.756 bpc)
+[transformer_ptb-danp-lr0.001] t=900.7s step=21821 (24.2 st/s) train 2.6142 | val 2.5750 (3.715 bpc) | test 2.5581 (3.691 bpc)
+[transformer_ptb-danp-lr0.001] t=1200.4s step=29101 (24.3 st/s) train 2.5719 | val 2.5652 (3.701 bpc) | test 2.5496 (3.678 bpc)
+[transformer_ptb-danp-lr0.001] t=1500.3s step=36321 (24.1 st/s) train 2.5679 | val 2.5577 (3.690 bpc) | test 2.5391 (3.663 bpc)
+[transformer_ptb-danp-lr0.001] t=1800.7s step=43561 (24.1 st/s) train 2.5491 | val 2.5413 (3.666 bpc) | test 2.5255 (3.643 bpc)
+[transformer_ptb-danp-lr0.001] t=2100.3s step=50801 (24.2 st/s) train 2.5523 | val 2.5530 (3.683 bpc) | test 2.5407 (3.665 bpc)
+[transformer_ptb-danp-lr0.001] t=2400.2s step=58021 (24.1 st/s) train 2.5361 | val 2.5304 (3.651 bpc) | test 2.5146 (3.628 bpc)
+[transformer_ptb-danp-lr0.001] t=2700.6s step=65301 (24.2 st/s) train 2.5380 | val 2.5514 (3.681 bpc) | test 2.5369 (3.660 bpc)
+[transformer_ptb-danp-lr0.001] t=3000.1s step=72541 (24.2 st/s) train 2.5418 | val 2.5626 (3.697 bpc) | test 2.5496 (3.678 bpc)
+[transformer_ptb-danp-lr0.001] t=3300.7s step=79821 (24.2 st/s) train 2.5693 | val 2.5688 (3.706 bpc) | test 2.5568 (3.689 bpc)
+[transformer_ptb-danp-lr0.001] t=3600.1s step=87061 (24.2 st/s) train 2.5655 | val 2.5642 (3.699 bpc) | test 2.5538 (3.684 bpc)
+[transformer_ptb-danp-lr0.001] done: steps=87061 train_time=3600.1s wall=3608.4s val_loss=2.5642 test_loss=2.5538 test_bpc=3.6843 -> results/transformer_ptb-danp-lr0.001.json

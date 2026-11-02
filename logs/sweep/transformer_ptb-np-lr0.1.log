@@ -1,0 +1,17 @@
+# 04:14:49 /opt/conda/bin/python -m zoo.train --task transformer_ptb --opt np --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[transformer_ptb-np-lr0.1] transformer_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[transformer_ptb-np-lr0.1] params=39250 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[transformer_ptb-np-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 4.4970 (6.488 bpc) | test 4.4963 (6.487 bpc)
+[transformer_ptb-np-lr0.1] t=300.5s step=10601 (35.3 st/s) train 9.1738 | val 8.2162 (11.854 bpc) | test 8.1937 (11.821 bpc)
+[transformer_ptb-np-lr0.1] t=600.4s step=21161 (35.2 st/s) train 8.3722 | val 7.4731 (10.781 bpc) | test 7.4884 (10.803 bpc)
+[transformer_ptb-np-lr0.1] t=900.0s step=31761 (35.4 st/s) train 6.2764 | val 5.9899 (8.642 bpc) | test 6.0438 (8.719 bpc)
+[transformer_ptb-np-lr0.1] t=1200.1s step=42321 (35.2 st/s) train 8.2930 | val 8.1524 (11.761 bpc) | test 7.8217 (11.284 bpc)
+[transformer_ptb-np-lr0.1] t=1500.4s step=52901 (35.2 st/s) train 7.1408 | val 6.7529 (9.742 bpc) | test 6.7677 (9.764 bpc)
+[transformer_ptb-np-lr0.1] t=1800.3s step=63441 (35.1 st/s) train 6.5117 | val 6.6223 (9.554 bpc) | test 6.6587 (9.606 bpc)
+[transformer_ptb-np-lr0.1] t=2100.2s step=73921 (34.9 st/s) train 6.6736 | val 7.8455 (11.319 bpc) | test 7.8888 (11.381 bpc)
+[transformer_ptb-np-lr0.1] t=2400.4s step=84461 (35.1 st/s) train 7.1535 | val 6.1632 (8.892 bpc) | test 6.2110 (8.961 bpc)
+[transformer_ptb-np-lr0.1] t=2700.4s step=95001 (35.1 st/s) train 6.2543 | val 6.0066 (8.666 bpc) | test 6.0438 (8.719 bpc)
+[transformer_ptb-np-lr0.1] t=3000.4s step=105521 (35.1 st/s) train 6.4432 | val 6.5325 (9.424 bpc) | test 6.5686 (9.476 bpc)
+[transformer_ptb-np-lr0.1] t=3300.5s step=116081 (35.2 st/s) train 6.0689 | val 6.2951 (9.082 bpc) | test 6.3535 (9.166 bpc)
+[transformer_ptb-np-lr0.1] t=3600.3s step=126641 (35.2 st/s) train 7.2080 | val 6.6166 (9.546 bpc) | test 6.7461 (9.733 bpc)
+[transformer_ptb-np-lr0.1] done: steps=126641 train_time=3600.3s wall=3610.8s val_loss=6.6166 test_loss=6.7461 test_bpc=9.7326 -> results/transformer_ptb-np-lr0.1.json

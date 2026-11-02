@@ -1,0 +1,8 @@
+# 04:34:21 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt danp --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-danp-lr0.1] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-danp-lr0.1] params=39578 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-danp-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+/opt/conda/lib/python3.11/site-packages/torch/autograd/graph.py:841: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /pytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:270.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[mlp_mnist-danp-lr0.1] t=0.3s step=21 (67.5 st/s) train nan | val nan acc 0.0978 | test nan acc 0.0980 DIVERGED
+[mlp_mnist-danp-lr0.1] diverged: steps=21 train_time=0.3s wall=2.7s val_loss=nan test_loss=nan test_acc=0.0980 -> results/mlp_mnist-danp-lr0.1.json

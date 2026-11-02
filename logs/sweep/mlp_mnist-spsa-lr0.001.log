@@ -1,0 +1,17 @@
+# 09:16:10 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt spsa --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-spsa-lr0.001] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-spsa-lr0.001] params=39578 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-spsa-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+[mlp_mnist-spsa-lr0.001] t=300.0s step=90681 (302.3 st/s) train 0.3980 | val 0.3216 acc 0.9056 | test 0.3908 acc 0.8880
+[mlp_mnist-spsa-lr0.001] t=600.0s step=181541 (302.8 st/s) train 0.4523 | val 0.4325 acc 0.8800 | test 0.4886 acc 0.8645
+[mlp_mnist-spsa-lr0.001] t=900.0s step=272521 (303.3 st/s) train 0.5506 | val 0.4960 acc 0.8530 | test 0.5468 acc 0.8418
+[mlp_mnist-spsa-lr0.001] t=1200.0s step=363821 (304.3 st/s) train 0.6618 | val 0.5932 acc 0.8338 | test 0.6338 acc 0.8154
+[mlp_mnist-spsa-lr0.001] t=1500.1s step=455101 (304.2 st/s) train 0.7597 | val 0.6436 acc 0.8076 | test 0.7299 acc 0.7874
+[mlp_mnist-spsa-lr0.001] t=1800.0s step=546641 (305.2 st/s) train 0.8295 | val 0.7438 acc 0.7808 | test 0.8195 acc 0.7616
+[mlp_mnist-spsa-lr0.001] t=2100.1s step=638161 (305.0 st/s) train 0.8312 | val 0.7520 acc 0.7974 | test 0.8428 acc 0.7737
+[mlp_mnist-spsa-lr0.001] t=2400.0s step=729421 (304.2 st/s) train 0.8770 | val 0.8330 acc 0.7622 | test 0.9284 acc 0.7434
+[mlp_mnist-spsa-lr0.001] t=2700.0s step=821001 (305.3 st/s) train 0.9318 | val 0.7821 acc 0.7764 | test 0.8988 acc 0.7434
+[mlp_mnist-spsa-lr0.001] t=3000.0s step=912481 (304.9 st/s) train 0.9515 | val 0.8511 acc 0.7646 | test 0.9838 acc 0.7295
+[mlp_mnist-spsa-lr0.001] t=3300.1s step=1003681 (304.0 st/s) train 0.9850 | val 0.8293 acc 0.7602 | test 1.0181 acc 0.7313
+[mlp_mnist-spsa-lr0.001] t=3600.0s step=1094921 (304.1 st/s) train 1.0629 | val 0.9166 acc 0.7384 | test 1.0394 acc 0.7223
+[mlp_mnist-spsa-lr0.001] done: steps=1094921 train_time=3600.0s wall=3640.1s val_loss=0.9166 test_loss=1.0394 test_acc=0.7223 -> results/mlp_mnist-spsa-lr0.001.json

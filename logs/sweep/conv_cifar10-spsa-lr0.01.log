@@ -1,0 +1,14 @@
+# 05:45:30 /opt/conda/bin/python -m zoo.train --task conv_cifar10 --opt spsa --lr 0.01 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[conv_cifar10-spsa-lr0.01] conv_cifar10: cifar10 shape=(3, 32, 32) train=45000 valid=5000 test=10000 batch=128 eval_batch=2048
+[conv_cifar10-spsa-lr0.01] params=39450 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[conv_cifar10-spsa-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 2.3946 acc 0.0922 | test 2.4058 acc 0.0940
+[conv_cifar10-spsa-lr0.01] t=300.1s step=52221 (174.0 st/s) train 2.5451 | val 2.3252 acc 0.0976 | test 2.3287 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=600.1s step=104481 (174.2 st/s) train 2.9292 | val 3.4780 acc 0.1058 | test 3.2455 acc 0.1001
+[conv_cifar10-spsa-lr0.01] t=900.0s step=156981 (175.0 st/s) train 3.2212 | val 2.3260 acc 0.1038 | test 2.3225 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=1200.1s step=209541 (175.2 st/s) train 3.7515 | val 2.3043 acc 0.0986 | test 2.3047 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=1500.0s step=262141 (175.4 st/s) train 4.2058 | val 14.9839 acc 0.0950 | test 159.4335 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=1800.1s step=314881 (175.8 st/s) train 4.1154 | val 2.3034 acc 0.1024 | test 3.2341 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=2100.1s step=367581 (175.7 st/s) train 4.0319 | val 2.3243 acc 0.0970 | test 63.3114 acc 0.1000
+[conv_cifar10-spsa-lr0.01] t=2400.1s step=420141 (175.2 st/s) train 6.6695 | val 2.3107 acc 0.0958 | test 370.7376 acc 0.1001
+[conv_cifar10-spsa-lr0.01] t=2700.1s step=472941 (176.0 st/s) train 8.8739 | val 22.9782 acc 0.1024 | test 2.3134 acc 0.1001 DIVERGED
+[conv_cifar10-spsa-lr0.01] diverged: steps=472941 train_time=2700.1s wall=2719.5s val_loss=22.9782 test_loss=2.3134 test_acc=0.1001 -> results/conv_cifar10-spsa-lr0.01.json

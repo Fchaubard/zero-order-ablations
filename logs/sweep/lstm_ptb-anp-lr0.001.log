@@ -1,0 +1,17 @@
+# 10:47:16 /opt/conda/bin/python -m zoo.train --task lstm_ptb --opt anp --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[lstm_ptb-anp-lr0.001] lstm_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[lstm_ptb-anp-lr0.001] params=41810 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[lstm_ptb-anp-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 3.9107 (5.642 bpc) | test 3.9108 (5.642 bpc)
+[lstm_ptb-anp-lr0.001] t=301.8s step=1661 (5.5 st/s) train 3.1925 | val 3.0435 (4.391 bpc) | test 3.0551 (4.408 bpc)
+[lstm_ptb-anp-lr0.001] t=602.1s step=3321 (5.5 st/s) train 3.0907 | val 3.1399 (4.530 bpc) | test 3.1413 (4.532 bpc)
+[lstm_ptb-anp-lr0.001] t=901.2s step=4981 (5.5 st/s) train 3.0715 | val 3.0920 (4.461 bpc) | test 3.0793 (4.443 bpc)
+[lstm_ptb-anp-lr0.001] t=1201.5s step=6641 (5.5 st/s) train 3.0633 | val 2.9882 (4.311 bpc) | test 2.9803 (4.300 bpc)
+[lstm_ptb-anp-lr0.001] t=1501.6s step=8301 (5.5 st/s) train 2.9771 | val 2.9696 (4.284 bpc) | test 2.9688 (4.283 bpc)
+[lstm_ptb-anp-lr0.001] t=1801.8s step=9961 (5.5 st/s) train 3.0190 | val 3.0302 (4.372 bpc) | test 3.0282 (4.369 bpc)
+[lstm_ptb-anp-lr0.001] t=2100.5s step=11601 (5.5 st/s) train 3.0290 | val 3.0622 (4.418 bpc) | test 3.0597 (4.414 bpc)
+[lstm_ptb-anp-lr0.001] t=2403.3s step=13261 (5.5 st/s) train 3.0701 | val 3.1074 (4.483 bpc) | test 3.0981 (4.470 bpc)
+[lstm_ptb-anp-lr0.001] t=2702.4s step=14901 (5.5 st/s) train 3.1441 | val 3.1318 (4.518 bpc) | test 3.1196 (4.501 bpc)
+[lstm_ptb-anp-lr0.001] t=3001.9s step=16541 (5.5 st/s) train 3.1563 | val 3.1468 (4.540 bpc) | test 3.1319 (4.518 bpc)
+[lstm_ptb-anp-lr0.001] t=3300.7s step=18181 (5.5 st/s) train 3.1702 | val 3.2382 (4.672 bpc) | test 3.2212 (4.647 bpc)
+[lstm_ptb-anp-lr0.001] t=3602.8s step=19841 (5.5 st/s) train 3.2515 | val 3.2421 (4.677 bpc) | test 3.2324 (4.663 bpc)
+[lstm_ptb-anp-lr0.001] done: steps=19841 train_time=3602.8s wall=3607.8s val_loss=3.2421 test_loss=3.2324 test_bpc=4.6634 -> results/lstm_ptb-anp-lr0.001.json

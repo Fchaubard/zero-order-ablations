@@ -1,0 +1,17 @@
+# 10:58:24 /opt/conda/bin/python -m zoo.train --task transformer_ptb --opt anp --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[transformer_ptb-anp-lr0.001] transformer_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[transformer_ptb-anp-lr0.001] params=39250 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[transformer_ptb-anp-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 4.4970 (6.488 bpc) | test 4.4963 (6.487 bpc)
+[transformer_ptb-anp-lr0.001] t=300.6s step=8361 (27.8 st/s) train 2.9856 | val 3.0819 (4.446 bpc) | test 3.0807 (4.444 bpc)
+[transformer_ptb-anp-lr0.001] t=600.6s step=16741 (27.9 st/s) train 3.0991 | val 3.0599 (4.415 bpc) | test 3.0647 (4.421 bpc)
+[transformer_ptb-anp-lr0.001] t=900.4s step=25121 (27.9 st/s) train 3.1064 | val 3.1146 (4.493 bpc) | test 3.1172 (4.497 bpc)
+[transformer_ptb-anp-lr0.001] t=1200.2s step=33541 (28.1 st/s) train 3.5235 | val 3.8065 (5.492 bpc) | test 3.8155 (5.505 bpc)
+[transformer_ptb-anp-lr0.001] t=1500.3s step=41921 (27.9 st/s) train 3.8036 | val 4.2803 (6.175 bpc) | test 4.2606 (6.147 bpc)
+[transformer_ptb-anp-lr0.001] t=1800.4s step=50281 (27.9 st/s) train 3.7937 | val 3.6602 (5.281 bpc) | test 3.6286 (5.235 bpc)
+[transformer_ptb-anp-lr0.001] t=2100.4s step=58661 (27.9 st/s) train 3.6947 | val 3.5632 (5.141 bpc) | test 3.5739 (5.156 bpc)
+[transformer_ptb-anp-lr0.001] t=2400.4s step=67021 (27.9 st/s) train 3.5244 | val 3.8637 (5.574 bpc) | test 3.8703 (5.584 bpc)
+[transformer_ptb-anp-lr0.001] t=2700.3s step=75541 (28.4 st/s) train 3.4611 | val 3.2711 (4.719 bpc) | test 3.2611 (4.705 bpc)
+[transformer_ptb-anp-lr0.001] t=3000.5s step=84041 (28.3 st/s) train 3.2244 | val 3.2199 (4.645 bpc) | test 3.2016 (4.619 bpc)
+[transformer_ptb-anp-lr0.001] t=3300.3s step=92521 (28.3 st/s) train 3.2057 | val 3.4806 (5.022 bpc) | test 3.4616 (4.994 bpc)
+[transformer_ptb-anp-lr0.001] t=3600.4s step=100961 (28.1 st/s) train 3.5328 | val 3.4333 (4.953 bpc) | test 3.4122 (4.923 bpc)
+[transformer_ptb-anp-lr0.001] done: steps=100961 train_time=3600.4s wall=3609.5s val_loss=3.4333 test_loss=3.4122 test_bpc=4.9227 -> results/transformer_ptb-anp-lr0.001.json

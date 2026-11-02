@@ -1,0 +1,7 @@
+# 04:04:22 /opt/conda/bin/python -m zoo.train --task lstm_ptb --opt rs --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[lstm_ptb-rs-lr0.1] lstm_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[lstm_ptb-rs-lr0.1] params=41810 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[lstm_ptb-rs-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 3.9107 (5.642 bpc) | test 3.9108 (5.642 bpc)
+[lstm_ptb-rs-lr0.1] t=300.6s step=2761 (9.2 st/s) train 11.2520 | val 13.2513 (19.118 bpc) | test 13.0907 (18.886 bpc)
+[lstm_ptb-rs-lr0.1] t=600.0s step=5521 (9.2 st/s) train 14.3459 | val 15.8015 (22.797 bpc) | test 15.6886 (22.634 bpc) DIVERGED
+[lstm_ptb-rs-lr0.1] diverged: steps=5521 train_time=600.0s wall=603.1s val_loss=15.8015 test_loss=15.6886 test_bpc=22.6339 -> results/lstm_ptb-rs-lr0.1.json

@@ -1,0 +1,9 @@
+[mlp_mnist-bp-lr0.01] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-bp-lr0.01] params=39578 fp/step=1 device=cuda (NVIDIA GeForce RTX 5090) budget=600s eval_every=30s seed=0 wandb=off
+[mlp_mnist-bp-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+[mlp_mnist-bp-lr0.01] t=30.0s step=40541 (1351.2 st/s) train 0.1086 | val 0.4302 acc 0.9526 | test 0.5150 acc 0.9495
+[mlp_mnist-bp-lr0.01] t=60.0s step=81861 (1377.0 st/s) train 0.1521 | val 2.1751 acc 0.9518 | test 3.3148 acc 0.9456
+[mlp_mnist-bp-lr0.01] t=90.0s step=123181 (1377.4 st/s) train 0.2707 | val 3.5884 acc 0.9230 | test 3.0542 acc 0.9144
+[mlp_mnist-bp-lr0.01] t=120.0s step=164561 (1379.5 st/s) train 0.4299 | val 7.7130 acc 0.8770 | test 6.3767 acc 0.8684
+[mlp_mnist-bp-lr0.01] t=150.0s step=205961 (1380.0 st/s) train 0.6399 | val 27.1025 acc 0.8610 | test 18.6434 acc 0.8391 DIVERGED
+[mlp_mnist-bp-lr0.01] diverged: steps=205961 train_time=150.0s wall=157.6s val_loss=27.1025 test_loss=18.6434 test_acc=0.8391 -> results_supp/mlp_mnist-bp-lr0.01.json

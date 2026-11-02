@@ -1,0 +1,19 @@
+# 10:16:53 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt np --lr 0.001 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-np-lr0.001] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-np-lr0.001] params=39578 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-np-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+/opt/conda/lib/python3.11/site-packages/torch/autograd/graph.py:841: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /pytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:270.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[mlp_mnist-np-lr0.001] t=300.0s step=53601 (178.6 st/s) train 0.0945 | val 0.1766 acc 0.9670 | test 0.1666 acc 0.9657
+[mlp_mnist-np-lr0.001] t=600.1s step=107281 (178.9 st/s) train 0.0379 | val 0.2539 acc 0.9704 | test 0.2442 acc 0.9687
+[mlp_mnist-np-lr0.001] t=900.1s step=160941 (178.9 st/s) train 0.0252 | val 0.3873 acc 0.9742 | test 0.3389 acc 0.9698
+[mlp_mnist-np-lr0.001] t=1200.0s step=214641 (179.0 st/s) train 0.0205 | val 0.4762 acc 0.9708 | test 0.4794 acc 0.9659
+[mlp_mnist-np-lr0.001] t=1500.1s step=268501 (179.5 st/s) train 0.0196 | val 0.5714 acc 0.9736 | test 0.5788 acc 0.9679
+[mlp_mnist-np-lr0.001] t=1800.0s step=322321 (179.4 st/s) train 0.0183 | val 0.8152 acc 0.9716 | test 0.7006 acc 0.9666
+[mlp_mnist-np-lr0.001] t=2100.1s step=376101 (179.3 st/s) train 0.0168 | val 0.8306 acc 0.9724 | test 0.8324 acc 0.9691
+[mlp_mnist-np-lr0.001] t=2400.1s step=429941 (179.5 st/s) train 0.0193 | val 1.0898 acc 0.9714 | test 1.0170 acc 0.9691
+[mlp_mnist-np-lr0.001] t=2700.1s step=483801 (179.5 st/s) train 0.0187 | val 1.4348 acc 0.9708 | test 1.3176 acc 0.9671
+[mlp_mnist-np-lr0.001] t=3000.1s step=537581 (179.3 st/s) train 0.0199 | val 1.4592 acc 0.9732 | test 1.4262 acc 0.9715
+[mlp_mnist-np-lr0.001] t=3300.1s step=591401 (179.4 st/s) train 0.0237 | val 1.5334 acc 0.9760 | test 1.7271 acc 0.9682
+[mlp_mnist-np-lr0.001] t=3600.1s step=645021 (178.7 st/s) train 0.0260 | val 1.9846 acc 0.9700 | test 2.1408 acc 0.9676
+[mlp_mnist-np-lr0.001] done: steps=645021 train_time=3600.1s wall=3625.2s val_loss=1.9846 test_loss=2.1408 test_acc=0.9676 -> results/mlp_mnist-np-lr0.001.json

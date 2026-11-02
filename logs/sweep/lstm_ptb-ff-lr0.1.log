@@ -1,0 +1,17 @@
+# 05:15:02 /opt/conda/bin/python -m zoo.train --task lstm_ptb --opt ff --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[lstm_ptb-ff-lr0.1] lstm_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[lstm_ptb-ff-lr0.1] params=41810 fp/step=2 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[lstm_ptb-ff-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 3.9124 (5.644 bpc) | test 3.9126 (5.645 bpc)
+[lstm_ptb-ff-lr0.1] t=300.4s step=12021 (40.0 st/s) train 2.8403 | val 2.8323 (4.086 bpc) | test 2.8275 (4.079 bpc)
+[lstm_ptb-ff-lr0.1] t=600.0s step=23961 (39.9 st/s) train 2.8399 | val 2.9200 (4.213 bpc) | test 2.9209 (4.214 bpc)
+[lstm_ptb-ff-lr0.1] t=900.4s step=35901 (39.8 st/s) train 2.8676 | val 2.8651 (4.133 bpc) | test 2.8581 (4.123 bpc)
+[lstm_ptb-ff-lr0.1] t=1200.1s step=47901 (40.0 st/s) train 2.8601 | val 2.8619 (4.129 bpc) | test 2.8573 (4.122 bpc)
+[lstm_ptb-ff-lr0.1] t=1500.4s step=59961 (40.2 st/s) train 2.8600 | val 2.8641 (4.132 bpc) | test 2.8576 (4.123 bpc)
+[lstm_ptb-ff-lr0.1] t=1800.0s step=71981 (40.1 st/s) train 2.8601 | val 2.8628 (4.130 bpc) | test 2.8598 (4.126 bpc)
+[lstm_ptb-ff-lr0.1] t=2100.1s step=84001 (40.1 st/s) train 2.8598 | val 2.8631 (4.131 bpc) | test 2.8576 (4.123 bpc)
+[lstm_ptb-ff-lr0.1] t=2400.2s step=96021 (40.0 st/s) train 2.8600 | val 2.8616 (4.128 bpc) | test 2.8591 (4.125 bpc)
+[lstm_ptb-ff-lr0.1] t=2700.3s step=108041 (40.1 st/s) train 2.8600 | val 2.8606 (4.127 bpc) | test 2.8550 (4.119 bpc)
+[lstm_ptb-ff-lr0.1] t=3000.4s step=120021 (39.9 st/s) train 2.8598 | val 2.8657 (4.134 bpc) | test 2.8592 (4.125 bpc)
+[lstm_ptb-ff-lr0.1] t=3300.0s step=131941 (39.8 st/s) train 2.8598 | val 2.8629 (4.130 bpc) | test 2.8561 (4.121 bpc)
+[lstm_ptb-ff-lr0.1] t=3600.4s step=143981 (40.1 st/s) train 2.8599 | val 2.8623 (4.129 bpc) | test 2.8588 (4.124 bpc)
+[lstm_ptb-ff-lr0.1] done: steps=143981 train_time=3600.4s wall=3616.8s val_loss=2.8623 test_loss=2.8588 test_bpc=4.1243 -> results/lstm_ptb-ff-lr0.1.json

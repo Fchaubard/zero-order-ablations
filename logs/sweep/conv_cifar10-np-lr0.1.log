@@ -1,0 +1,7 @@
+# 04:14:08 /opt/conda/bin/python -m zoo.train --task conv_cifar10 --opt np --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[conv_cifar10-np-lr0.1] conv_cifar10: cifar10 shape=(3, 32, 32) train=45000 valid=5000 test=10000 batch=128 eval_batch=2048
+[conv_cifar10-np-lr0.1] params=39450 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[conv_cifar10-np-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 2.3946 acc 0.0922 | test 2.4058 acc 0.0940
+[conv_cifar10-np-lr0.1] t=300.1s step=30341 (101.1 st/s) train 251289053.6131 | val 37441280.5256 acc 0.0976 | test 36893907.9380 acc 0.1000
+[conv_cifar10-np-lr0.1] t=600.1s step=60701 (101.2 st/s) train 267373287.4628 | val 1860284.1690 acc 0.0986 | test 1258126.9655 acc 0.1000 DIVERGED
+[conv_cifar10-np-lr0.1] diverged: steps=60701 train_time=600.1s wall=605.0s val_loss=1860284.1690 test_loss=1258126.9655 test_acc=0.1000 -> results/conv_cifar10-np-lr0.1.json

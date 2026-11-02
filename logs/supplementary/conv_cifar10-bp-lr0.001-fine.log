@@ -1,0 +1,9 @@
+[conv_cifar10-bp-lr0.001] conv_cifar10: cifar10 shape=(3, 32, 32) train=45000 valid=5000 test=10000 batch=128 eval_batch=2048
+[conv_cifar10-bp-lr0.001] params=39450 fp/step=1 device=cuda (NVIDIA GeForce RTX 5090) budget=600s eval_every=30s seed=0 wandb=off
+[conv_cifar10-bp-lr0.001] t=0.0s step=0 (nan st/s) train nan | val 2.3946 acc 0.0922 | test 2.4058 acc 0.0940
+[conv_cifar10-bp-lr0.001] t=30.0s step=24401 (813.1 st/s) train 0.4251 | val 1.8909 acc 0.7086 | test 2.0141 acc 0.6971
+[conv_cifar10-bp-lr0.001] t=60.0s step=49421 (834.1 st/s) train 0.1041 | val 3.4539 acc 0.6992 | test 3.6740 acc 0.6779
+[conv_cifar10-bp-lr0.001] t=90.0s step=74341 (830.2 st/s) train 0.0725 | val 4.4595 acc 0.6886 | test 4.6175 acc 0.6840
+[conv_cifar10-bp-lr0.001] t=120.0s step=98981 (821.7 st/s) train 0.0619 | val 5.2111 acc 0.6900 | test 5.3875 acc 0.6790
+[conv_cifar10-bp-lr0.001] t=150.0s step=123541 (818.6 st/s) train 0.0566 | val 5.8515 acc 0.6838 | test 5.9682 acc 0.6771 DIVERGED
+[conv_cifar10-bp-lr0.001] diverged: steps=123541 train_time=150.0s wall=155.7s val_loss=5.8515 test_loss=5.9682 test_acc=0.6771 -> results_supp/conv_cifar10-bp-lr0.001.json

@@ -1,0 +1,12 @@
+# 08:02:42 /opt/conda/bin/python -m zoo.train --task lstm_ptb --opt danp --lr 0.01 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[lstm_ptb-danp-lr0.01] lstm_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[lstm_ptb-danp-lr0.01] params=41810 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[lstm_ptb-danp-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 3.9107 (5.642 bpc) | test 3.9108 (5.642 bpc)
+[lstm_ptb-danp-lr0.01] t=303.8s step=1441 (4.7 st/s) train 3.0972 | val 3.1510 (4.546 bpc) | test 3.1319 (4.518 bpc)
+[lstm_ptb-danp-lr0.01] t=602.8s step=2861 (4.7 st/s) train 3.3178 | val 3.4438 (4.968 bpc) | test 3.4228 (4.938 bpc)
+[lstm_ptb-danp-lr0.01] t=901.5s step=4281 (4.8 st/s) train 3.7370 | val 3.8612 (5.571 bpc) | test 3.8380 (5.537 bpc)
+[lstm_ptb-danp-lr0.01] t=1203.3s step=5721 (4.8 st/s) train 4.5518 | val 5.0519 (7.288 bpc) | test 5.0017 (7.216 bpc)
+[lstm_ptb-danp-lr0.01] t=1501.6s step=7141 (4.8 st/s) train 6.3413 | val 7.0028 (10.103 bpc) | test 6.9466 (10.022 bpc)
+[lstm_ptb-danp-lr0.01] t=1800.2s step=8561 (4.8 st/s) train 7.6942 | val 9.7916 (14.126 bpc) | test 9.7116 (14.011 bpc)
+[lstm_ptb-danp-lr0.01] t=2102.6s step=10001 (4.8 st/s) train 11.6214 | val 13.3835 (19.308 bpc) | test 13.2510 (19.117 bpc) DIVERGED
+[lstm_ptb-danp-lr0.01] diverged: steps=10001 train_time=2102.6s wall=2106.6s val_loss=13.3835 test_loss=13.2510 test_bpc=19.1172 -> results/lstm_ptb-danp-lr0.01.json

@@ -1,0 +1,17 @@
+# 04:26:47 /opt/conda/bin/python -m zoo.train --task lstm_ptb --opt inp --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[lstm_ptb-inp-lr0.1] lstm_ptb: ptb-char vocab=50 train=5101617 valid=399781 test=449944 chars (6246/7030 eval windows) batch=64x64 source=github:wojzaremba/lstm
+[lstm_ptb-inp-lr0.1] params=41810 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[lstm_ptb-inp-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 3.9107 (5.642 bpc) | test 3.9108 (5.642 bpc)
+[lstm_ptb-inp-lr0.1] t=300.5s step=2081 (6.9 st/s) train 3.4723 | val 3.0658 (4.423 bpc) | test 3.0334 (4.376 bpc)
+[lstm_ptb-inp-lr0.1] t=600.4s step=4161 (6.9 st/s) train 2.8821 | val 2.6891 (3.880 bpc) | test 2.6661 (3.846 bpc)
+[lstm_ptb-inp-lr0.1] t=900.3s step=6241 (6.9 st/s) train 2.7586 | val 2.6524 (3.827 bpc) | test 2.6384 (3.806 bpc)
+[lstm_ptb-inp-lr0.1] t=1202.3s step=8341 (7.0 st/s) train 2.7038 | val 2.6953 (3.888 bpc) | test 2.6729 (3.856 bpc)
+[lstm_ptb-inp-lr0.1] t=1500.5s step=10421 (7.0 st/s) train 2.8174 | val 2.7549 (3.974 bpc) | test 2.7363 (3.948 bpc)
+[lstm_ptb-inp-lr0.1] t=1801.6s step=12521 (7.0 st/s) train 2.7993 | val 2.8205 (4.069 bpc) | test 2.7887 (4.023 bpc)
+[lstm_ptb-inp-lr0.1] t=2102.4s step=14621 (7.0 st/s) train 2.7941 | val 2.6964 (3.890 bpc) | test 2.6683 (3.849 bpc)
+[lstm_ptb-inp-lr0.1] t=2401.0s step=16701 (7.0 st/s) train 2.8806 | val 2.8487 (4.110 bpc) | test 2.8044 (4.046 bpc)
+[lstm_ptb-inp-lr0.1] t=2701.5s step=18801 (7.0 st/s) train 2.7872 | val 2.7755 (4.004 bpc) | test 2.7529 (3.972 bpc)
+[lstm_ptb-inp-lr0.1] t=3001.6s step=20901 (7.0 st/s) train 2.7693 | val 2.6978 (3.892 bpc) | test 2.6794 (3.866 bpc)
+[lstm_ptb-inp-lr0.1] t=3301.5s step=23001 (7.0 st/s) train 2.8165 | val 2.7766 (4.006 bpc) | test 2.7692 (3.995 bpc)
+[lstm_ptb-inp-lr0.1] t=3601.4s step=25101 (7.0 st/s) train 2.7839 | val 2.8850 (4.162 bpc) | test 2.8658 (4.134 bpc)
+[lstm_ptb-inp-lr0.1] done: steps=25101 train_time=3601.4s wall=3606.6s val_loss=2.8850 test_loss=2.8658 test_bpc=4.1345 -> results/lstm_ptb-inp-lr0.1.json

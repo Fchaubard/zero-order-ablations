@@ -1,0 +1,391 @@
+96 configs (4 tasks x 8 opts x 3 lrs, order=interleaved); 0 already complete in results/, 96 to run on 8 worker(s): ['0', '1', '2', '3', '4', '5', '6', '7']
+[  1/96] run  mlp_mnist-bp-lr0.1
+[  2/96] run  conv_cifar10-bp-lr0.1
+[  3/96] run  lstm_ptb-bp-lr0.1
+[  4/96] run  transformer_ptb-bp-lr0.1
+[  5/96] run  mlp_mnist-spsa-lr0.1
+[  6/96] run  conv_cifar10-spsa-lr0.1
+[  7/96] run  lstm_ptb-spsa-lr0.1
+[  8/96] run  transformer_ptb-spsa-lr0.1
+[  9/96] run  mlp_mnist-rs-lr0.1
+[ 10/96] run  conv_cifar10-rs-lr0.1
+[ 11/96] run  lstm_ptb-rs-lr0.1
+[ 12/96] run  transformer_ptb-rs-lr0.1
+[ 13/96] run  mlp_mnist-np-lr0.1
+[ 14/96] run  conv_cifar10-np-lr0.1
+[ 15/96] run  lstm_ptb-np-lr0.1
+[ 16/96] run  transformer_ptb-np-lr0.1
+[ 17/96] run  mlp_mnist-anp-lr0.1
+[ 18/96] run  conv_cifar10-anp-lr0.1
+[ 19/96] run  lstm_ptb-anp-lr0.1
+[ 20/96] run  transformer_ptb-anp-lr0.1
+[ 21/96] run  mlp_mnist-inp-lr0.1
+[ 22/96] run  conv_cifar10-inp-lr0.1
+[ 23/96] run  lstm_ptb-inp-lr0.1
+[ 24/96] run  transformer_ptb-inp-lr0.1
+[ 25/96] run  mlp_mnist-danp-lr0.1
+[ 26/96] run  conv_cifar10-danp-lr0.1
+[ 27/96] run  lstm_ptb-danp-lr0.1
+[ 28/96] run  transformer_ptb-danp-lr0.1
+[ 29/96] run  mlp_mnist-ff-lr0.1
+[ 30/96] run  conv_cifar10-ff-lr0.1
+[ 31/96] run  lstm_ptb-ff-lr0.1
+[ 32/96] run  transformer_ptb-ff-lr0.1
+[ 33/96] run  mlp_mnist-bp-lr0.01
+[ 34/96] run  conv_cifar10-bp-lr0.01
+[ 35/96] run  lstm_ptb-bp-lr0.01
+[ 36/96] run  transformer_ptb-bp-lr0.01
+[ 37/96] run  mlp_mnist-spsa-lr0.01
+[ 38/96] run  conv_cifar10-spsa-lr0.01
+[ 39/96] run  lstm_ptb-spsa-lr0.01
+[ 40/96] run  transformer_ptb-spsa-lr0.01
+[ 41/96] run  mlp_mnist-rs-lr0.01
+[ 42/96] run  conv_cifar10-rs-lr0.01
+[ 43/96] run  lstm_ptb-rs-lr0.01
+[ 44/96] run  transformer_ptb-rs-lr0.01
+[ 45/96] run  mlp_mnist-np-lr0.01
+[ 46/96] run  conv_cifar10-np-lr0.01
+[ 47/96] run  lstm_ptb-np-lr0.01
+[ 48/96] run  transformer_ptb-np-lr0.01
+[ 49/96] run  mlp_mnist-anp-lr0.01
+[ 50/96] run  conv_cifar10-anp-lr0.01
+[ 51/96] run  lstm_ptb-anp-lr0.01
+[ 52/96] run  transformer_ptb-anp-lr0.01
+[ 53/96] run  mlp_mnist-inp-lr0.01
+[ 54/96] run  conv_cifar10-inp-lr0.01
+[ 55/96] run  lstm_ptb-inp-lr0.01
+[ 56/96] run  transformer_ptb-inp-lr0.01
+[ 57/96] run  mlp_mnist-danp-lr0.01
+[ 58/96] run  conv_cifar10-danp-lr0.01
+[ 59/96] run  lstm_ptb-danp-lr0.01
+[ 60/96] run  transformer_ptb-danp-lr0.01
+[ 61/96] run  mlp_mnist-ff-lr0.01
+[ 62/96] run  conv_cifar10-ff-lr0.01
+[ 63/96] run  lstm_ptb-ff-lr0.01
+[ 64/96] run  transformer_ptb-ff-lr0.01
+[ 65/96] run  mlp_mnist-bp-lr0.001
+[ 66/96] run  conv_cifar10-bp-lr0.001
+[ 67/96] run  lstm_ptb-bp-lr0.001
+[ 68/96] run  transformer_ptb-bp-lr0.001
+[ 69/96] run  mlp_mnist-spsa-lr0.001
+[ 70/96] run  conv_cifar10-spsa-lr0.001
+[ 71/96] run  lstm_ptb-spsa-lr0.001
+[ 72/96] run  transformer_ptb-spsa-lr0.001
+[ 73/96] run  mlp_mnist-rs-lr0.001
+[ 74/96] run  conv_cifar10-rs-lr0.001
+[ 75/96] run  lstm_ptb-rs-lr0.001
+[ 76/96] run  transformer_ptb-rs-lr0.001
+[ 77/96] run  mlp_mnist-np-lr0.001
+[ 78/96] run  conv_cifar10-np-lr0.001
+[ 79/96] run  lstm_ptb-np-lr0.001
+[ 80/96] run  transformer_ptb-np-lr0.001
+[ 81/96] run  mlp_mnist-anp-lr0.001
+[ 82/96] run  conv_cifar10-anp-lr0.001
+[ 83/96] run  lstm_ptb-anp-lr0.001
+[ 84/96] run  transformer_ptb-anp-lr0.001
+[ 85/96] run  mlp_mnist-inp-lr0.001
+[ 86/96] run  conv_cifar10-inp-lr0.001
+[ 87/96] run  lstm_ptb-inp-lr0.001
+[ 88/96] run  transformer_ptb-inp-lr0.001
+[ 89/96] run  mlp_mnist-danp-lr0.001
+[ 90/96] run  conv_cifar10-danp-lr0.001
+[ 91/96] run  lstm_ptb-danp-lr0.001
+[ 92/96] run  transformer_ptb-danp-lr0.001
+[ 93/96] run  mlp_mnist-ff-lr0.001
+[ 94/96] run  conv_cifar10-ff-lr0.001
+[ 95/96] run  lstm_ptb-ff-lr0.001
+[ 96/96] run  transformer_ptb-ff-lr0.001
+[03:13:41] START  gpu0   mlp_mnist-bp-lr0.1                 (1/96) -> runs/mlp_mnist-bp-lr0.1.log
+[03:13:41] START  gpu1   conv_cifar10-bp-lr0.1              (2/96) -> runs/conv_cifar10-bp-lr0.1.log
+[03:13:41] START  gpu2   lstm_ptb-bp-lr0.1                  (3/96) -> runs/lstm_ptb-bp-lr0.1.log
+[03:13:41] START  gpu3   transformer_ptb-bp-lr0.1           (4/96) -> runs/transformer_ptb-bp-lr0.1.log
+[03:13:41] START  gpu4   mlp_mnist-spsa-lr0.1               (5/96) -> runs/mlp_mnist-spsa-lr0.1.log
+[03:13:42] START  gpu5   conv_cifar10-spsa-lr0.1            (6/96) -> runs/conv_cifar10-spsa-lr0.1.log
+[03:13:42] START  gpu6   lstm_ptb-spsa-lr0.1                (7/96) -> runs/lstm_ptb-spsa-lr0.1.log
+[03:13:42] START  gpu7   transformer_ptb-spsa-lr0.1         (8/96) -> runs/transformer_ptb-spsa-lr0.1.log
+[03:23:55] DONE   gpu5   conv_cifar10-spsa-lr0.1            exit=0    10m13s test_loss=7.2251 acc=0.1001 steps=102561 DIVERGED
+[03:23:55] START  gpu5   mlp_mnist-rs-lr0.1                 (9/96) -> runs/mlp_mnist-rs-lr0.1.log
+[03:34:07] DONE   gpu5   mlp_mnist-rs-lr0.1                 exit=0    10m12s test_loss=170.5727 acc=0.1029 steps=188021 DIVERGED
+[03:34:07] START  gpu5   conv_cifar10-rs-lr0.1              (10/96) -> runs/conv_cifar10-rs-lr0.1.log
+[04:04:22] DONE   gpu4   mlp_mnist-spsa-lr0.1               exit=0    50m40s test_loss=2.3020 acc=0.1135 steps=888541 DIVERGED
+[04:04:22] START  gpu4   lstm_ptb-rs-lr0.1                  (11/96) -> runs/lstm_ptb-rs-lr0.1.log
+[04:13:56] DONE   gpu6   lstm_ptb-spsa-lr0.1                exit=0  1h00m14s test_loss=3.9651 bpc=5.720 steps=34281
+[04:13:56] START  gpu6   transformer_ptb-rs-lr0.1           (12/96) -> runs/transformer_ptb-rs-lr0.1.log
+[04:14:05] DONE   gpu7   transformer_ptb-spsa-lr0.1         exit=0  1h00m23s test_loss=6.8929 bpc=9.944 steps=226141
+[04:14:05] START  gpu7   mlp_mnist-np-lr0.1                 (13/96) -> runs/mlp_mnist-np-lr0.1.log
+[04:14:08] DONE   gpu2   lstm_ptb-bp-lr0.1                  exit=0  1h00m27s test_loss=1.8346 bpc=2.647 steps=132001
+[04:14:08] START  gpu2   conv_cifar10-np-lr0.1              (14/96) -> runs/conv_cifar10-np-lr0.1.log
+[04:14:28] DONE   gpu4   lstm_ptb-rs-lr0.1                  exit=0    10m06s test_loss=15.6886 bpc=22.634 steps=5521 DIVERGED
+[04:14:28] START  gpu4   lstm_ptb-np-lr0.1                  (15/96) -> runs/lstm_ptb-np-lr0.1.log
+[04:14:49] DONE   gpu3   transformer_ptb-bp-lr0.1           exit=0  1h01m07s test_loss=1.7802 bpc=2.568 steps=908761
+[04:14:49] START  gpu3   transformer_ptb-np-lr0.1           (16/96) -> runs/transformer_ptb-np-lr0.1.log
+[04:15:36] DONE   gpu1   conv_cifar10-bp-lr0.1              exit=0  1h01m55s test_loss=2.3054 acc=0.1000 steps=2963481
+[04:15:36] START  gpu1   mlp_mnist-anp-lr0.1                (17/96) -> runs/mlp_mnist-anp-lr0.1.log
+[04:16:40] DONE   gpu0   mlp_mnist-bp-lr0.1                 exit=0  1h02m59s test_loss=1.8574 acc=0.2090 steps=4944501
+[04:16:40] START  gpu0   conv_cifar10-anp-lr0.1             (18/96) -> runs/conv_cifar10-anp-lr0.1.log
+[04:24:04] DONE   gpu6   transformer_ptb-rs-lr0.1           exit=0    10m08s test_loss=9.5383 bpc=13.761 steps=38361 DIVERGED
+[04:24:04] START  gpu6   lstm_ptb-anp-lr0.1                 (19/96) -> runs/lstm_ptb-anp-lr0.1.log
+[04:24:14] DONE   gpu7   mlp_mnist-np-lr0.1                 exit=0    10m09s test_loss=2.3006 acc=0.1037 steps=105541 DIVERGED
+[04:24:14] START  gpu7   transformer_ptb-anp-lr0.1          (20/96) -> runs/transformer_ptb-anp-lr0.1.log
+[04:24:16] DONE   gpu2   conv_cifar10-np-lr0.1              exit=0    10m08s test_loss=1258126.9655 acc=0.1000 steps=60701 DIVERGED
+[04:24:16] START  gpu2   mlp_mnist-inp-lr0.1                (21/96) -> runs/mlp_mnist-inp-lr0.1.log
+[04:24:37] DONE   gpu4   lstm_ptb-np-lr0.1                  exit=0    10m09s test_loss=22.8148 bpc=32.915 steps=3801 DIVERGED
+[04:24:37] START  gpu4   conv_cifar10-inp-lr0.1             (22/96) -> runs/conv_cifar10-inp-lr0.1.log
+[04:26:47] DONE   gpu0   conv_cifar10-anp-lr0.1             exit=0    10m08s test_loss=23.1429 acc=0.1000 steps=45081 DIVERGED
+[04:26:47] START  gpu0   lstm_ptb-inp-lr0.1                 (23/96) -> runs/lstm_ptb-inp-lr0.1.log
+[04:34:12] DONE   gpu6   lstm_ptb-anp-lr0.1                 exit=0    10m08s test_loss=192.3259 bpc=277.468 steps=3181 DIVERGED
+[04:34:12] START  gpu6   transformer_ptb-inp-lr0.1          (24/96) -> runs/transformer_ptb-inp-lr0.1.log
+[04:34:21] DONE   gpu7   transformer_ptb-anp-lr0.1          exit=0    10m07s test_loss=306.2163 bpc=441.777 steps=16881 DIVERGED
+[04:34:21] START  gpu7   mlp_mnist-danp-lr0.1               (25/96) -> runs/mlp_mnist-danp-lr0.1.log
+[04:34:26] DONE   gpu7   mlp_mnist-danp-lr0.1               exit=0        5s test_loss=nan acc=0.0980 steps=21 DIVERGED
+[04:34:26] START  gpu7   conv_cifar10-danp-lr0.1            (26/96) -> runs/conv_cifar10-danp-lr0.1.log
+[04:34:33] DONE   gpu7   conv_cifar10-danp-lr0.1            exit=0        6s test_loss=nan acc=0.1000 steps=21 DIVERGED
+[04:34:33] START  gpu7   lstm_ptb-danp-lr0.1                (27/96) -> runs/lstm_ptb-danp-lr0.1.log
+[04:34:36] DONE   gpu5   conv_cifar10-rs-lr0.1              exit=0  1h00m29s test_loss=2.4058 acc=0.0940 steps=647121
+[04:34:36] START  gpu5   transformer_ptb-danp-lr0.1         (28/96) -> runs/transformer_ptb-danp-lr0.1.log
+[04:44:41] DONE   gpu7   lstm_ptb-danp-lr0.1                exit=0    10m08s test_loss=271.5667 bpc=391.788 steps=2881 DIVERGED
+[04:44:41] START  gpu7   mlp_mnist-ff-lr0.1                 (29/96) -> runs/mlp_mnist-ff-lr0.1.log
+[04:44:43] DONE   gpu5   transformer_ptb-danp-lr0.1         exit=0    10m08s test_loss=26.5508 bpc=38.305 steps=14481 DIVERGED
+[04:44:43] START  gpu5   conv_cifar10-ff-lr0.1              (30/96) -> runs/conv_cifar10-ff-lr0.1.log
+[05:15:02] DONE   gpu3   transformer_ptb-np-lr0.1           exit=0  1h00m14s test_loss=6.7461 bpc=9.733 steps=126641
+[05:15:02] START  gpu3   lstm_ptb-ff-lr0.1                  (31/96) -> runs/lstm_ptb-ff-lr0.1.log
+[05:15:58] DONE   gpu1   mlp_mnist-anp-lr0.1                exit=0  1h00m22s test_loss=2.3192 acc=0.1135 steps=483481
+[05:15:58] START  gpu1   transformer_ptb-ff-lr0.1           (32/96) -> runs/transformer_ptb-ff-lr0.1.log
+[05:24:44] DONE   gpu2   mlp_mnist-inp-lr0.1                exit=0  1h00m28s test_loss=2.3215 acc=0.0980 steps=646141
+[05:24:44] START  gpu2   mlp_mnist-bp-lr0.01                (33/96) -> runs/mlp_mnist-bp-lr0.01.log
+[05:24:58] DONE   gpu4   conv_cifar10-inp-lr0.1             exit=0  1h00m21s test_loss=2.3228 acc=0.1000 steps=418261
+[05:24:58] START  gpu4   conv_cifar10-bp-lr0.01             (34/96) -> runs/conv_cifar10-bp-lr0.01.log
+[05:26:57] DONE   gpu0   lstm_ptb-inp-lr0.1                 exit=0  1h00m09s test_loss=2.8658 bpc=4.134 steps=25101
+[05:26:57] START  gpu0   lstm_ptb-bp-lr0.01                 (35/96) -> runs/lstm_ptb-bp-lr0.01.log
+[05:34:28] DONE   gpu6   transformer_ptb-inp-lr0.1          exit=0  1h00m16s test_loss=5.8796 bpc=8.482 steps=169381
+[05:34:28] START  gpu6   transformer_ptb-bp-lr0.01          (36/96) -> runs/transformer_ptb-bp-lr0.01.log
+[05:35:17] DONE   gpu2   mlp_mnist-bp-lr0.01                exit=0    10m33s test_loss=177.4022 acc=0.6711 steps=789781 DIVERGED
+[05:35:17] START  gpu2   mlp_mnist-spsa-lr0.01              (37/96) -> runs/mlp_mnist-spsa-lr0.01.log
+[05:45:30] DONE   gpu5   conv_cifar10-ff-lr0.1              exit=0  1h00m47s test_loss=2.3110 acc=0.1000 steps=1093781
+[05:45:30] START  gpu5   conv_cifar10-spsa-lr0.01           (38/96) -> runs/conv_cifar10-spsa-lr0.01.log
+[05:45:52] DONE   gpu7   mlp_mnist-ff-lr0.1                 exit=0  1h01m11s test_loss=2.2880 acc=0.1215 steps=1881381
+[05:45:52] START  gpu7   lstm_ptb-spsa-lr0.01               (39/96) -> runs/lstm_ptb-spsa-lr0.01.log
+[06:15:22] DONE   gpu3   lstm_ptb-ff-lr0.1                  exit=0  1h00m20s test_loss=2.8588 bpc=4.124 steps=143981
+[06:15:22] START  gpu3   transformer_ptb-spsa-lr0.01        (40/96) -> runs/transformer_ptb-spsa-lr0.01.log
+[06:16:50] DONE   gpu1   transformer_ptb-ff-lr0.1           exit=0  1h00m52s test_loss=5.6936 bpc=8.214 steps=773461
+[06:16:50] START  gpu1   mlp_mnist-rs-lr0.01                (41/96) -> runs/mlp_mnist-rs-lr0.01.log
+[06:26:50] DONE   gpu4   conv_cifar10-bp-lr0.01             exit=0  1h01m52s test_loss=2.4025 acc=0.5019 steps=2933841
+[06:26:50] START  gpu4   conv_cifar10-rs-lr0.01             (42/96) -> runs/conv_cifar10-rs-lr0.01.log
+[06:27:18] DONE   gpu0   lstm_ptb-bp-lr0.01                 exit=0  1h00m21s test_loss=1.3397 bpc=1.933 steps=146621
+[06:27:18] START  gpu0   lstm_ptb-rs-lr0.01                 (43/96) -> runs/lstm_ptb-rs-lr0.01.log
+[06:30:53] DONE   gpu5   conv_cifar10-spsa-lr0.01           exit=0    45m22s test_loss=2.3134 acc=0.1001 steps=472941 DIVERGED
+[06:30:53] START  gpu5   transformer_ptb-rs-lr0.01          (44/96) -> runs/transformer_ptb-rs-lr0.01.log
+[06:35:30] DONE   gpu6   transformer_ptb-bp-lr0.01          exit=0  1h01m02s test_loss=1.3155 bpc=1.898 steps=915901
+[06:35:30] START  gpu6   mlp_mnist-np-lr0.01                (45/96) -> runs/mlp_mnist-np-lr0.01.log
+[06:36:00] DONE   gpu2   mlp_mnist-spsa-lr0.01              exit=0  1h00m43s test_loss=5.5023 acc=0.1810 steps=1088021
+[06:36:00] START  gpu2   conv_cifar10-np-lr0.01             (46/96) -> runs/conv_cifar10-np-lr0.01.log
+[06:42:02] DONE   gpu4   conv_cifar10-rs-lr0.01             exit=0    15m12s test_loss=38.7241 acc=0.1001 steps=157041 DIVERGED
+[06:42:02] START  gpu4   lstm_ptb-np-lr0.01                 (47/96) -> runs/lstm_ptb-np-lr0.01.log
+[06:46:01] DONE   gpu7   lstm_ptb-spsa-lr0.01               exit=0  1h00m09s test_loss=2.1066 bpc=3.039 steps=34241
+[06:46:01] START  gpu7   transformer_ptb-np-lr0.01          (48/96) -> runs/transformer_ptb-np-lr0.01.log
+[06:46:08] DONE   gpu2   conv_cifar10-np-lr0.01             exit=0    10m08s test_loss=326.9017 acc=0.1001 steps=61141 DIVERGED
+[06:46:08] START  gpu2   mlp_mnist-anp-lr0.01               (49/96) -> runs/mlp_mnist-anp-lr0.01.log
+[07:15:41] DONE   gpu3   transformer_ptb-spsa-lr0.01        exit=0  1h00m19s test_loss=2.5392 bpc=3.663 steps=222621
+[07:15:41] START  gpu3   conv_cifar10-anp-lr0.01            (50/96) -> runs/conv_cifar10-anp-lr0.01.log
+[07:17:34] DONE   gpu1   mlp_mnist-rs-lr0.01                exit=0  1h00m44s test_loss=4.8333 acc=0.1609 steps=1143521
+[07:17:34] START  gpu1   lstm_ptb-anp-lr0.01                (51/96) -> runs/lstm_ptb-anp-lr0.01.log
+[07:27:28] DONE   gpu0   lstm_ptb-rs-lr0.01                 exit=0  1h00m11s test_loss=2.3101 bpc=3.333 steps=32801
+[07:27:28] START  gpu0   transformer_ptb-anp-lr0.01         (52/96) -> runs/transformer_ptb-anp-lr0.01.log
+[07:31:12] DONE   gpu5   transformer_ptb-rs-lr0.01          exit=0  1h00m20s test_loss=2.7258 bpc=3.933 steps=229481
+[07:31:12] START  gpu5   mlp_mnist-inp-lr0.01               (53/96) -> runs/mlp_mnist-inp-lr0.01.log
+[07:35:58] DONE   gpu6   mlp_mnist-np-lr0.01                exit=0  1h00m28s test_loss=2.3023 acc=0.1135 steps=650221
+[07:35:58] START  gpu6   conv_cifar10-inp-lr0.01            (54/96) -> runs/conv_cifar10-inp-lr0.01.log
+[07:37:37] DONE   gpu0   transformer_ptb-anp-lr0.01         exit=0    10m09s test_loss=27.6010 bpc=39.820 steps=16281 DIVERGED
+[07:37:37] START  gpu0   lstm_ptb-inp-lr0.01                (55/96) -> runs/lstm_ptb-inp-lr0.01.log
+[07:42:12] DONE   gpu4   lstm_ptb-np-lr0.01                 exit=0  1h00m10s test_loss=2.3555 bpc=3.398 steps=22741
+[07:42:12] START  gpu4   transformer_ptb-inp-lr0.01         (56/96) -> runs/transformer_ptb-inp-lr0.01.log
+[07:46:15] DONE   gpu7   transformer_ptb-np-lr0.01          exit=0  1h00m14s test_loss=3.1797 bpc=4.587 steps=127501
+[07:46:15] START  gpu7   mlp_mnist-danp-lr0.01              (57/96) -> runs/mlp_mnist-danp-lr0.01.log
+[07:46:30] DONE   gpu2   mlp_mnist-anp-lr0.01               exit=0  1h00m22s test_loss=0.6194 acc=0.8614 steps=483981
+[07:46:30] START  gpu2   conv_cifar10-danp-lr0.01           (58/96) -> runs/conv_cifar10-danp-lr0.01.log
+[08:02:42] DONE   gpu1   lstm_ptb-anp-lr0.01                exit=0    45m08s test_loss=9.6026 bpc=13.854 steps=14941 DIVERGED
+[08:02:42] START  gpu1   lstm_ptb-danp-lr0.01               (59/96) -> runs/lstm_ptb-danp-lr0.01.log
+[08:15:58] DONE   gpu3   conv_cifar10-anp-lr0.01            exit=0  1h00m17s test_loss=2.3363 acc=0.1000 steps=285021
+[08:15:58] START  gpu3   transformer_ptb-danp-lr0.01        (60/96) -> runs/transformer_ptb-danp-lr0.01.log
+[08:31:41] DONE   gpu5   mlp_mnist-inp-lr0.01               exit=0  1h00m29s test_loss=21.0098 acc=0.5572 steps=660721 DIVERGED
+[08:31:41] START  gpu5   mlp_mnist-ff-lr0.01                (61/96) -> runs/mlp_mnist-ff-lr0.01.log
+[08:36:19] DONE   gpu6   conv_cifar10-inp-lr0.01            exit=0  1h00m21s test_loss=2.3031 acc=0.1000 steps=434121
+[08:36:19] START  gpu6   conv_cifar10-ff-lr0.01             (62/96) -> runs/conv_cifar10-ff-lr0.01.log
+[08:37:46] DONE   gpu0   lstm_ptb-inp-lr0.01                exit=0  1h00m09s test_loss=1.9893 bpc=2.870 steps=24881
+[08:37:46] START  gpu0   lstm_ptb-ff-lr0.01                 (63/96) -> runs/lstm_ptb-ff-lr0.01.log
+[08:37:52] DONE   gpu1   lstm_ptb-danp-lr0.01               exit=0    35m09s test_loss=13.2510 bpc=19.117 steps=10001 DIVERGED
+[08:37:52] START  gpu1   transformer_ptb-ff-lr0.01          (64/96) -> runs/transformer_ptb-ff-lr0.01.log
+[08:42:28] DONE   gpu4   transformer_ptb-inp-lr0.01         exit=0  1h00m17s test_loss=2.6377 bpc=3.805 steps=169481
+[08:42:28] START  gpu4   mlp_mnist-bp-lr0.001               (65/96) -> runs/mlp_mnist-bp-lr0.001.log
+[08:46:35] DONE   gpu7   mlp_mnist-danp-lr0.01              exit=0  1h00m20s test_loss=1.1904 acc=0.9370 steps=390041
+[08:46:35] START  gpu7   conv_cifar10-bp-lr0.001            (66/96) -> runs/conv_cifar10-bp-lr0.001.log
+[08:46:44] DONE   gpu2   conv_cifar10-danp-lr0.01           exit=0  1h00m14s test_loss=1.2847 acc=0.6038 steps=217981
+[08:46:44] START  gpu2   lstm_ptb-bp-lr0.001                (67/96) -> runs/lstm_ptb-bp-lr0.001.log
+[08:56:58] DONE   gpu7   conv_cifar10-bp-lr0.001            exit=0    10m23s test_loss=24.4747 acc=0.6742 steps=502441 DIVERGED
+[08:56:58] START  gpu7   transformer_ptb-bp-lr0.001         (68/96) -> runs/transformer_ptb-bp-lr0.001.log
+[09:16:10] DONE   gpu3   transformer_ptb-danp-lr0.01        exit=0  1h00m12s test_loss=2.5255 bpc=3.643 steps=86761
+[09:16:10] START  gpu3   mlp_mnist-spsa-lr0.001             (69/96) -> runs/mlp_mnist-spsa-lr0.001.log
+[09:32:51] DONE   gpu5   mlp_mnist-ff-lr0.01                exit=0  1h01m10s test_loss=2.2413 acc=0.1404 steps=1872041
+[09:32:51] START  gpu5   conv_cifar10-spsa-lr0.001          (70/96) -> runs/conv_cifar10-spsa-lr0.001.log
+[09:37:06] DONE   gpu6   conv_cifar10-ff-lr0.01             exit=0  1h00m46s test_loss=2.0842 acc=0.2341 steps=1102001
+[09:37:06] START  gpu6   lstm_ptb-spsa-lr0.001              (71/96) -> runs/lstm_ptb-spsa-lr0.001.log
+[09:38:06] DONE   gpu0   lstm_ptb-ff-lr0.01                 exit=0  1h00m19s test_loss=2.6884 bpc=3.879 steps=139681
+[09:38:06] START  gpu0   transformer_ptb-spsa-lr0.001       (72/96) -> runs/transformer_ptb-spsa-lr0.001.log
+[09:38:45] DONE   gpu1   transformer_ptb-ff-lr0.01          exit=0  1h00m53s test_loss=2.9593 bpc=4.269 steps=777601
+[09:38:45] START  gpu1   mlp_mnist-rs-lr0.001               (73/96) -> runs/mlp_mnist-rs-lr0.001.log
+[09:45:23] DONE   gpu4   mlp_mnist-bp-lr0.001               exit=0  1h02m55s test_loss=2.3548 acc=0.9740 steps=4834641
+[09:45:23] START  gpu4   conv_cifar10-rs-lr0.001            (74/96) -> runs/conv_cifar10-rs-lr0.001.log
+[09:47:06] DONE   gpu2   lstm_ptb-bp-lr0.001                exit=0  1h00m22s test_loss=1.2310 bpc=1.776 steps=147521
+[09:47:06] START  gpu2   lstm_ptb-rs-lr0.001                (75/96) -> runs/lstm_ptb-rs-lr0.001.log
+[09:58:05] DONE   gpu7   transformer_ptb-bp-lr0.001         exit=0  1h01m07s test_loss=1.2622 bpc=1.821 steps=1020981
+[09:58:05] START  gpu7   transformer_ptb-rs-lr0.001         (76/96) -> runs/transformer_ptb-rs-lr0.001.log
+[10:16:53] DONE   gpu3   mlp_mnist-spsa-lr0.001             exit=0  1h00m43s test_loss=1.0394 acc=0.7223 steps=1094921
+[10:16:53] START  gpu3   mlp_mnist-np-lr0.001               (77/96) -> runs/mlp_mnist-np-lr0.001.log
+[10:33:19] DONE   gpu5   conv_cifar10-spsa-lr0.001          exit=0  1h00m28s test_loss=2.4681 acc=0.1197 steps=623601
+[10:33:19] START  gpu5   conv_cifar10-np-lr0.001            (78/96) -> runs/conv_cifar10-np-lr0.001.log
+[10:37:15] DONE   gpu6   lstm_ptb-spsa-lr0.001              exit=0  1h00m09s test_loss=2.0483 bpc=2.955 steps=34261
+[10:37:15] START  gpu6   lstm_ptb-np-lr0.001                (79/96) -> runs/lstm_ptb-np-lr0.001.log
+[10:38:25] DONE   gpu0   transformer_ptb-spsa-lr0.001       exit=0  1h00m19s test_loss=2.1810 bpc=3.147 steps=219141
+[10:38:25] START  gpu0   transformer_ptb-np-lr0.001         (80/96) -> runs/transformer_ptb-np-lr0.001.log
+[10:39:29] DONE   gpu1   mlp_mnist-rs-lr0.001               exit=0  1h00m44s test_loss=1.4115 acc=0.6201 steps=1142181
+[10:39:29] START  gpu1   mlp_mnist-anp-lr0.001              (81/96) -> runs/mlp_mnist-anp-lr0.001.log
+[10:45:52] DONE   gpu4   conv_cifar10-rs-lr0.001            exit=0  1h00m29s test_loss=2.4918 acc=0.1250 steps=629681
+[10:45:52] START  gpu4   conv_cifar10-anp-lr0.001           (82/96) -> runs/conv_cifar10-anp-lr0.001.log
+[10:47:16] DONE   gpu2   lstm_ptb-rs-lr0.001                exit=0  1h00m11s test_loss=2.1236 bpc=3.064 steps=34561
+[10:47:16] START  gpu2   lstm_ptb-anp-lr0.001               (83/96) -> runs/lstm_ptb-anp-lr0.001.log
+[10:58:24] DONE   gpu7   transformer_ptb-rs-lr0.001         exit=0  1h00m19s test_loss=2.2794 bpc=3.288 steps=229101
+[10:58:24] START  gpu7   transformer_ptb-anp-lr0.001        (84/96) -> runs/transformer_ptb-anp-lr0.001.log
+[11:17:21] DONE   gpu3   mlp_mnist-np-lr0.001               exit=0  1h00m28s test_loss=2.1408 acc=0.9676 steps=645021
+[11:17:21] START  gpu3   mlp_mnist-inp-lr0.001              (85/96) -> runs/mlp_mnist-inp-lr0.001.log
+[11:33:38] DONE   gpu5   conv_cifar10-np-lr0.001            exit=0  1h00m19s test_loss=1.6135 acc=0.4185 steps=373781
+[11:33:38] START  gpu5   conv_cifar10-inp-lr0.001           (86/96) -> runs/conv_cifar10-inp-lr0.001.log
+[11:37:25] DONE   gpu6   lstm_ptb-np-lr0.001                exit=0  1h00m10s test_loss=2.0153 bpc=2.908 steps=23601
+[11:37:25] START  gpu6   lstm_ptb-inp-lr0.001               (87/96) -> runs/lstm_ptb-inp-lr0.001.log
+[11:38:39] DONE   gpu0   transformer_ptb-np-lr0.001         exit=0  1h00m14s test_loss=2.3569 bpc=3.400 steps=125661
+[11:38:39] START  gpu0   transformer_ptb-inp-lr0.001        (88/96) -> runs/transformer_ptb-inp-lr0.001.log
+[11:39:51] DONE   gpu1   mlp_mnist-anp-lr0.001              exit=0  1h00m22s test_loss=0.3811 acc=0.9638 steps=475901
+[11:39:51] START  gpu1   mlp_mnist-danp-lr0.001             (89/96) -> runs/mlp_mnist-danp-lr0.001.log
+[11:46:09] DONE   gpu4   conv_cifar10-anp-lr0.001           exit=0  1h00m17s test_loss=1.1767 acc=0.5982 steps=274301
+[11:46:09] START  gpu4   conv_cifar10-danp-lr0.001          (90/96) -> runs/conv_cifar10-danp-lr0.001.log
+[11:47:27] DONE   gpu2   lstm_ptb-anp-lr0.001               exit=0  1h00m11s test_loss=3.2324 bpc=4.663 steps=19841
+[11:47:27] START  gpu2   lstm_ptb-danp-lr0.001              (91/96) -> runs/lstm_ptb-danp-lr0.001.log
+[11:58:37] DONE   gpu7   transformer_ptb-anp-lr0.001        exit=0  1h00m13s test_loss=3.4122 bpc=4.923 steps=100961
+[11:58:37] START  gpu7   transformer_ptb-danp-lr0.001       (92/96) -> runs/transformer_ptb-danp-lr0.001.log
+[12:17:50] DONE   gpu3   mlp_mnist-inp-lr0.001              exit=0  1h00m29s test_loss=0.9162 acc=0.9703 steps=633721
+[12:17:50] START  gpu3   mlp_mnist-ff-lr0.001               (93/96) -> runs/mlp_mnist-ff-lr0.001.log
+[12:34:00] DONE   gpu5   conv_cifar10-inp-lr0.001           exit=0  1h00m22s test_loss=1.3395 acc=0.5273 steps=415321
+[12:34:00] START  gpu5   conv_cifar10-ff-lr0.001            (94/96) -> runs/conv_cifar10-ff-lr0.001.log
+[12:37:34] DONE   gpu6   lstm_ptb-inp-lr0.001               exit=0  1h00m10s test_loss=1.9545 bpc=2.820 steps=24941
+[12:37:34] START  gpu6   lstm_ptb-ff-lr0.001                (95/96) -> runs/lstm_ptb-ff-lr0.001.log
+[12:38:55] DONE   gpu0   transformer_ptb-inp-lr0.001        exit=0  1h00m16s test_loss=2.1512 bpc=3.104 steps=168001
+[12:38:55] START  gpu0   transformer_ptb-ff-lr0.001         (96/96) -> runs/transformer_ptb-ff-lr0.001.log
+[12:40:11] DONE   gpu1   mlp_mnist-danp-lr0.001             exit=0  1h00m19s test_loss=0.7515 acc=0.9417 steps=383541
+[12:46:23] DONE   gpu4   conv_cifar10-danp-lr0.001          exit=0  1h00m14s test_loss=1.3713 acc=0.6332 steps=211521
+[12:47:37] DONE   gpu2   lstm_ptb-danp-lr0.001              exit=0  1h00m10s test_loss=2.6076 bpc=3.762 steps=17041
+[12:58:48] DONE   gpu7   transformer_ptb-danp-lr0.001       exit=0  1h00m11s test_loss=2.5538 bpc=3.684 steps=87061
+[13:19:01] DONE   gpu3   mlp_mnist-ff-lr0.001               exit=0  1h01m11s test_loss=2.1274 acc=0.1915 steps=1840881
+[13:34:47] DONE   gpu5   conv_cifar10-ff-lr0.001            exit=0  1h00m47s test_loss=1.8857 acc=0.3296 steps=1105981
+[13:37:56] DONE   gpu6   lstm_ptb-ff-lr0.001                exit=0  1h00m21s test_loss=2.7761 bpc=4.005 steps=139641
+[13:39:48] DONE   gpu0   transformer_ptb-ff-lr0.001         exit=0  1h00m53s test_loss=2.9831 bpc=4.304 steps=776401
+
+sweep finished in 10h26m08s
+name                                gpu exit   elapsed    steps  val_loss test_loss  acc/bpc  status
+----------------------------------------------------------------------------------------------------
+mlp_mnist-bp-lr0.1                    0    0  1h02m59s  4944501    1.8257    1.8574   0.2090  ok
+conv_cifar10-bp-lr0.1                 1    0  1h01m55s  2963481    2.3054    2.3054   0.1000  ok
+lstm_ptb-bp-lr0.1                     2    0  1h00m27s   132001    1.8582    1.8346   2.6468  ok
+transformer_ptb-bp-lr0.1              3    0  1h01m07s   908761    1.8016    1.7802   2.5683  ok
+mlp_mnist-spsa-lr0.1                  4    0    50m40s   888541  957.4566    2.3020   0.1135  diverged
+conv_cifar10-spsa-lr0.1               5    0    10m13s   102561    7.2923    7.2251   0.1001  diverged
+lstm_ptb-spsa-lr0.1                   6    0  1h00m14s    34281    3.9913    3.9651   5.7204  ok
+transformer_ptb-spsa-lr0.1            7    0  1h00m23s   226141    6.8654    6.8929   9.9443  ok
+mlp_mnist-rs-lr0.1                    5    0    10m12s   188021   52.9241  170.5727   0.1029  diverged
+conv_cifar10-rs-lr0.1                 5    0  1h00m29s   647121    2.3946    2.4058   0.0940  ok
+lstm_ptb-rs-lr0.1                     4    0    10m06s     5521   15.8015   15.6886  22.6339  diverged
+transformer_ptb-rs-lr0.1              6    0    10m08s    38361    9.4527    9.5383  13.7608  diverged
+mlp_mnist-np-lr0.1                    7    0    10m09s   105541    2.3005    2.3006   0.1037  diverged
+conv_cifar10-np-lr0.1                 2    0    10m08s    60701 1860284.1690 1258126.9655   0.1000  diverged
+lstm_ptb-np-lr0.1                     4    0    10m09s     3801   23.0361   22.8148  32.9148  diverged
+transformer_ptb-np-lr0.1              3    0  1h00m14s   126641    6.6166    6.7461   9.7326  ok
+mlp_mnist-anp-lr0.1                   1    0  1h00m22s   483481    2.3234    2.3192   0.1135  ok
+conv_cifar10-anp-lr0.1                0    0    10m08s    45081   23.4736   23.1429   0.1000  diverged
+lstm_ptb-anp-lr0.1                    6    0    10m08s     3181  195.2798  192.3259 277.4677  diverged
+transformer_ptb-anp-lr0.1             7    0    10m07s    16881  305.3036  306.2163 441.7768  diverged
+mlp_mnist-inp-lr0.1                   2    0  1h00m28s   646141    2.3250    2.3215   0.0980  ok
+conv_cifar10-inp-lr0.1                4    0  1h00m21s   418261    2.3272    2.3228   0.1000  ok
+lstm_ptb-inp-lr0.1                    0    0  1h00m09s    25101    2.8850    2.8658   4.1345  ok
+transformer_ptb-inp-lr0.1             6    0  1h00m16s   169381    5.9206    5.8796   8.4825  ok
+mlp_mnist-danp-lr0.1                  7    0        5s       21       nan       nan   0.0980  diverged
+conv_cifar10-danp-lr0.1               7    0        6s       21       nan       nan   0.1000  diverged
+lstm_ptb-danp-lr0.1                   7    0    10m08s     2881  271.9411  271.5667 391.7879  diverged
+transformer_ptb-danp-lr0.1            5    0    10m08s    14481   26.6852   26.5508  38.3046  diverged
+mlp_mnist-ff-lr0.1                    7    0  1h01m11s  1881381    2.2876    2.2880   0.1215  ok
+conv_cifar10-ff-lr0.1                 5    0  1h00m47s  1093781    2.3112    2.3110   0.1000  ok
+lstm_ptb-ff-lr0.1                     3    0  1h00m20s   143981    2.8623    2.8588   4.1243  ok
+transformer_ptb-ff-lr0.1              1    0  1h00m52s   773461    5.7070    5.6936   8.2141  ok
+mlp_mnist-bp-lr0.01                   2    0    10m33s   789781   51.1071  177.4022   0.6711  diverged
+conv_cifar10-bp-lr0.01                4    0  1h01m52s  2933841    1.3566    2.4025   0.5019  ok
+lstm_ptb-bp-lr0.01                    0    0  1h00m21s   146621    1.3711    1.3397   1.9328  ok
+transformer_ptb-bp-lr0.01             6    0  1h01m02s   915901    1.3514    1.3155   1.8979  ok
+mlp_mnist-spsa-lr0.01                 2    0  1h00m43s  1088021    2.1932    5.5023   0.1810  ok
+conv_cifar10-spsa-lr0.01              5    0    45m22s   472941   22.9782    2.3134   0.1001  diverged
+lstm_ptb-spsa-lr0.01                  7    0  1h00m09s    34241    2.1247    2.1066   3.0392  ok
+transformer_ptb-spsa-lr0.01           3    0  1h00m19s   222621    2.5569    2.5392   3.6634  ok
+mlp_mnist-rs-lr0.01                   1    0  1h00m44s  1143521    8.1568    4.8333   0.1609  ok
+conv_cifar10-rs-lr0.01                4    0    15m12s   157041  197.3606   38.7241   0.1001  diverged
+lstm_ptb-rs-lr0.01                    0    0  1h00m11s    32801    2.3296    2.3101   3.3327  ok
+transformer_ptb-rs-lr0.01             5    0  1h00m20s   229481    2.7446    2.7258   3.9326  ok
+mlp_mnist-np-lr0.01                   6    0  1h00m28s   650221    2.3034    2.3023   0.1135  ok
+conv_cifar10-np-lr0.01                2    0    10m08s    61141  314.5932  326.9017   0.1001  diverged
+lstm_ptb-np-lr0.01                    4    0  1h00m10s    22741    2.3798    2.3555   3.3983  ok
+transformer_ptb-np-lr0.01             7    0  1h00m14s   127501    3.2055    3.1797   4.5873  ok
+mlp_mnist-anp-lr0.01                  2    0  1h00m22s   483981    0.5192    0.6194   0.8614  ok
+conv_cifar10-anp-lr0.01               3    0  1h00m17s   285021    2.3315    2.3363   0.1000  ok
+lstm_ptb-anp-lr0.01                   1    0    45m08s    14941    9.5916    9.6026  13.8536  diverged
+transformer_ptb-anp-lr0.01            0    0    10m09s    16281   27.7828   27.6010  39.8198  diverged
+mlp_mnist-inp-lr0.01                  5    0  1h00m29s   660721    8.9173   21.0098   0.5572  diverged
+conv_cifar10-inp-lr0.01               6    0  1h00m21s   434121    2.3030    2.3031   0.1000  ok
+lstm_ptb-inp-lr0.01                   0    0  1h00m09s    24881    2.0069    1.9893   2.8699  ok
+transformer_ptb-inp-lr0.01            4    0  1h00m17s   169481    2.6513    2.6377   3.8054  ok
+mlp_mnist-danp-lr0.01                 7    0  1h00m20s   390041    1.0326    1.1904   0.9370  ok
+conv_cifar10-danp-lr0.01              2    0  1h00m14s   217981    1.2415    1.2847   0.6038  ok
+lstm_ptb-danp-lr0.01                  1    0    35m09s    10001   13.3835   13.2510  19.1172  diverged
+transformer_ptb-danp-lr0.01           3    0  1h00m12s    86761    2.5432    2.5255   3.6435  ok
+mlp_mnist-ff-lr0.01                   5    0  1h01m10s  1872041    2.2426    2.2413   0.1404  ok
+conv_cifar10-ff-lr0.01                6    0  1h00m46s  1102001    2.0811    2.0842   0.2341  ok
+lstm_ptb-ff-lr0.01                    0    0  1h00m19s   139681    2.6987    2.6884   3.8786  ok
+transformer_ptb-ff-lr0.01             1    0  1h00m53s   777601    2.9579    2.9593   4.2694  ok
+mlp_mnist-bp-lr0.001                  4    0  1h02m55s  4834641    2.2391    2.3548   0.9740  ok
+conv_cifar10-bp-lr0.001               7    0    10m23s   502441   23.7350   24.4747   0.6742  diverged
+lstm_ptb-bp-lr0.001                   2    0  1h00m22s   147521    1.2678    1.2310   1.7759  ok
+transformer_ptb-bp-lr0.001            7    0  1h01m07s  1020981    1.3000    1.2622   1.8210  ok
+mlp_mnist-spsa-lr0.001                3    0  1h00m43s  1094921    0.9166    1.0394   0.7223  ok
+conv_cifar10-spsa-lr0.001             5    0  1h00m28s   623601    2.3004    2.4681   0.1197  ok
+lstm_ptb-spsa-lr0.001                 6    0  1h00m09s    34261    2.0664    2.0483   2.9551  ok
+transformer_ptb-spsa-lr0.001          0    0  1h00m19s   219141    2.2010    2.1810   3.1465  ok
+mlp_mnist-rs-lr0.001                  1    0  1h00m44s  1142181    1.2381    1.4115   0.6201  ok
+conv_cifar10-rs-lr0.001               4    0  1h00m29s   629681    2.4014    2.4918   0.1250  ok
+lstm_ptb-rs-lr0.001                   2    0  1h00m11s    34561    2.1407    2.1236   3.0637  ok
+transformer_ptb-rs-lr0.001            7    0  1h00m19s   229101    2.2975    2.2794   3.2885  ok
+mlp_mnist-np-lr0.001                  3    0  1h00m28s   645021    1.9846    2.1408   0.9676  ok
+conv_cifar10-np-lr0.001               5    0  1h00m19s   373781    1.5968    1.6135   0.4185  ok
+lstm_ptb-np-lr0.001                   6    0  1h00m10s    23601    2.0329    2.0153   2.9075  ok
+transformer_ptb-np-lr0.001            0    0  1h00m14s   125661    2.3736    2.3569   3.4003  ok
+mlp_mnist-anp-lr0.001                 1    0  1h00m22s   475901    0.3634    0.3811   0.9638  ok
+conv_cifar10-anp-lr0.001              4    0  1h00m17s   274301    1.1432    1.1767   0.5982  ok
+lstm_ptb-anp-lr0.001                  2    0  1h00m11s    19841    3.2421    3.2324   4.6634  ok
+transformer_ptb-anp-lr0.001           7    0  1h00m13s   100961    3.4333    3.4122   4.9227  ok
+mlp_mnist-inp-lr0.001                 3    0  1h00m29s   633721    0.9351    0.9162   0.9703  ok
+conv_cifar10-inp-lr0.001              5    0  1h00m22s   415321    1.3214    1.3395   0.5273  ok
+lstm_ptb-inp-lr0.001                  6    0  1h00m10s    24941    1.9710    1.9545   2.8198  ok
+transformer_ptb-inp-lr0.001           0    0  1h00m16s   168001    2.1700    2.1512   3.1035  ok
+mlp_mnist-danp-lr0.001                1    0  1h00m19s   383541    0.6428    0.7515   0.9417  ok
+conv_cifar10-danp-lr0.001             4    0  1h00m14s   211521    1.2887    1.3713   0.6332  ok
+lstm_ptb-danp-lr0.001                 2    0  1h00m10s    17041    2.6268    2.6076   3.7620  ok
+transformer_ptb-danp-lr0.001          7    0  1h00m11s    87061    2.5642    2.5538   3.6843  ok
+mlp_mnist-ff-lr0.001                  3    0  1h01m11s  1840881    2.1231    2.1274   0.1915  ok
+conv_cifar10-ff-lr0.001               5    0  1h00m47s  1105981    1.8804    1.8857   0.3296  ok
+lstm_ptb-ff-lr0.001                   6    0  1h00m21s   139641    2.7892    2.7761   4.0051  ok
+transformer_ptb-ff-lr0.001            0    0  1h00m53s   776401    2.9760    2.9831   4.3037  ok
+96 runs finished, 0 failed
+status table: /opt/conda/bin/python -m zoo.status --out results --grid

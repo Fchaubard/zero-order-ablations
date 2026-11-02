@@ -1,0 +1,15 @@
+# 03:13:41 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt spsa --lr 0.1 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-spsa-lr0.1] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-spsa-lr0.1] params=39578 fp/step=16 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-spsa-lr0.1] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+[mlp_mnist-spsa-lr0.1] t=300.1s step=88661 (295.5 st/s) train 9.7188 | val 262.3934 acc 0.1060 | test 57.1548 acc 0.1135
+[mlp_mnist-spsa-lr0.1] t=600.0s step=177461 (296.0 st/s) train 8.4463 | val 5.7372 acc 0.0968 | test 117.8263 acc 0.1009
+[mlp_mnist-spsa-lr0.1] t=900.0s step=266461 (296.7 st/s) train 9.3396 | val 74.9236 acc 0.1060 | test 272.9524 acc 0.1135
+[mlp_mnist-spsa-lr0.1] t=1200.1s step=355321 (296.1 st/s) train 6.7578 | val 2.5664 acc 0.0966 | test 2.5408 acc 0.1009
+[mlp_mnist-spsa-lr0.1] t=1500.0s step=444181 (296.2 st/s) train 6.7916 | val 722.1177 acc 0.1126 | test 40.1130 acc 0.1027
+[mlp_mnist-spsa-lr0.1] t=1800.0s step=532941 (295.9 st/s) train 9.0281 | val 2843.5705 acc 0.0968 | test 727.2419 acc 0.1010
+[mlp_mnist-spsa-lr0.1] t=2100.0s step=621741 (296.0 st/s) train 9.6456 | val 94.8034 acc 0.0978 | test 448.0652 acc 0.0980
+[mlp_mnist-spsa-lr0.1] t=2400.0s step=710761 (296.7 st/s) train 7.1201 | val 407.7732 acc 0.1060 | test 2.3595 acc 0.1135
+[mlp_mnist-spsa-lr0.1] t=2700.0s step=799781 (296.8 st/s) train 13.0989 | val 664.3522 acc 0.0986 | test 617.0822 acc 0.1031
+[mlp_mnist-spsa-lr0.1] t=3000.0s step=888541 (295.9 st/s) train 10.3530 | val 957.4566 acc 0.1060 | test 2.3020 acc 0.1135 DIVERGED
+[mlp_mnist-spsa-lr0.1] diverged: steps=888541 train_time=3000.0s wall=3034.0s val_loss=957.4566 test_loss=2.3020 test_acc=0.1135 -> results/mlp_mnist-spsa-lr0.1.json

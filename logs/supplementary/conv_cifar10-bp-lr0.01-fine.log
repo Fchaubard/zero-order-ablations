@@ -1,0 +1,24 @@
+[conv_cifar10-bp-lr0.01] conv_cifar10: cifar10 shape=(3, 32, 32) train=45000 valid=5000 test=10000 batch=128 eval_batch=2048
+[conv_cifar10-bp-lr0.01] params=39450 fp/step=1 device=cuda (NVIDIA GeForce RTX 5090) budget=600s eval_every=30s seed=0 wandb=off
+[conv_cifar10-bp-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 2.3946 acc 0.0922 | test 2.4058 acc 0.0940
+[conv_cifar10-bp-lr0.01] t=30.0s step=24441 (814.1 st/s) train 0.9822 | val 1.2565 acc 0.6282 | test 1.3316 acc 0.6116
+[conv_cifar10-bp-lr0.01] t=60.0s step=49101 (822.4 st/s) train 0.9172 | val 1.3418 acc 0.6132 | test 1.3353 acc 0.6098
+[conv_cifar10-bp-lr0.01] t=90.0s step=73861 (825.4 st/s) train 0.9329 | val 1.5318 acc 0.6244 | test 1.4705 acc 0.6152
+[conv_cifar10-bp-lr0.01] t=120.0s step=98581 (823.8 st/s) train 0.9370 | val 1.2789 acc 0.6290 | test 1.3053 acc 0.6184
+[conv_cifar10-bp-lr0.01] t=150.0s step=123261 (822.6 st/s) train 0.9253 | val 1.2697 acc 0.6362 | test 1.3877 acc 0.6114
+[conv_cifar10-bp-lr0.01] t=180.0s step=148181 (830.8 st/s) train 0.9143 | val 1.3645 acc 0.6314 | test 1.6081 acc 0.6090
+[conv_cifar10-bp-lr0.01] t=210.0s step=173061 (829.4 st/s) train 0.9144 | val 1.4538 acc 0.6260 | test 1.5753 acc 0.6071
+[conv_cifar10-bp-lr0.01] t=240.0s step=197921 (828.4 st/s) train 0.8997 | val 1.6305 acc 0.6124 | test 1.6819 acc 0.5984
+[conv_cifar10-bp-lr0.01] t=270.0s step=222741 (827.4 st/s) train 0.9265 | val 1.4426 acc 0.6104 | test 1.6530 acc 0.5988
+[conv_cifar10-bp-lr0.01] t=300.0s step=247421 (822.7 st/s) train 0.9295 | val 1.4474 acc 0.6178 | test 1.4785 acc 0.6036
+[conv_cifar10-bp-lr0.01] t=330.0s step=272101 (822.7 st/s) train 0.9381 | val 1.6704 acc 0.6138 | test 1.7818 acc 0.5944
+[conv_cifar10-bp-lr0.01] t=360.0s step=296721 (820.5 st/s) train 0.9388 | val 1.5318 acc 0.5934 | test 1.5502 acc 0.5865
+[conv_cifar10-bp-lr0.01] t=390.0s step=321401 (822.8 st/s) train 0.9460 | val 1.5819 acc 0.6136 | test 1.6527 acc 0.6043
+[conv_cifar10-bp-lr0.01] t=420.0s step=346081 (822.6 st/s) train 0.9548 | val 2.2511 acc 0.5894 | test 1.8591 acc 0.5879
+[conv_cifar10-bp-lr0.01] t=450.0s step=370701 (820.7 st/s) train 0.9767 | val 1.8983 acc 0.6184 | test 2.1031 acc 0.6076
+[conv_cifar10-bp-lr0.01] t=480.0s step=395341 (821.1 st/s) train 0.9933 | val 1.9987 acc 0.5820 | test 2.0790 acc 0.5703
+[conv_cifar10-bp-lr0.01] t=510.0s step=419941 (820.0 st/s) train 1.0481 | val 1.8230 acc 0.5718 | test 1.8446 acc 0.5528
+[conv_cifar10-bp-lr0.01] t=540.0s step=444541 (820.5 st/s) train 1.1887 | val 1.7504 acc 0.5468 | test 1.6404 acc 0.5289
+[conv_cifar10-bp-lr0.01] t=570.0s step=469141 (819.7 st/s) train 1.2060 | val 1.6646 acc 0.5174 | test 1.8742 acc 0.5008
+[conv_cifar10-bp-lr0.01] t=600.0s step=493721 (819.2 st/s) train 1.1996 | val 1.7587 acc 0.5472 | test 1.6738 acc 0.5374
+[conv_cifar10-bp-lr0.01] done: steps=493721 train_time=600.0s wall=617.7s val_loss=1.7587 test_loss=1.6738 test_acc=0.5374 -> results_supp/conv_cifar10-bp-lr0.01.json

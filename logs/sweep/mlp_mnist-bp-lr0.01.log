@@ -1,0 +1,7 @@
+# 05:24:44 /opt/conda/bin/python -m zoo.train --task mlp_mnist --opt bp --lr 0.01 --budget 3600 --eval-every 300 --seed 0 --out results --data-root ./data --wandb-project zoo-survey
+[mlp_mnist-bp-lr0.01] mlp_mnist: mnist shape=(1, 28, 28) train=55000 valid=5000 test=10000 batch=128 eval_batch=2048
+[mlp_mnist-bp-lr0.01] params=39578 fp/step=1 device=cuda (NVIDIA GeForce RTX 5090) budget=3600s eval_every=300s seed=0 wandb=on
+[mlp_mnist-bp-lr0.01] t=0.0s step=0 (nan st/s) train nan | val 2.7443 acc 0.1380 | test 2.7873 acc 0.1271
+[mlp_mnist-bp-lr0.01] t=300.0s step=403341 (1344.4 st/s) train 0.7166 | val 24.3233 acc 0.6728 | test 60.4381 acc 0.6581
+[mlp_mnist-bp-lr0.01] t=600.0s step=789781 (1288.1 st/s) train 1.3443 | val 51.1071 acc 0.6852 | test 177.4022 acc 0.6711 DIVERGED
+[mlp_mnist-bp-lr0.01] diverged: steps=789781 train_time=600.0s wall=630.3s val_loss=51.1071 test_loss=177.4022 test_acc=0.6711 -> results/mlp_mnist-bp-lr0.01.json
