@@ -77,6 +77,7 @@
 \newcommand{\btheta}{\boldsymbol{\theta}}
 \newcommand{\bxi}{\boldsymbol{\xi}}
 \newcommand{\bz}{\mathbf{z}}
+\newcommand{\bv}{\mathbf{v}}
 \newcommand{\bh}{\mathbf{h}}
 \newcommand{\ba}{\mathbf{a}}
 \newcommand{\bb}{\mathbf{b}}
@@ -563,7 +564,7 @@ history and final metrics.
 All runs use one RTX~5090 (32\,GB) per run on a single 8-GPU node (Intel Xeon
 Platinum 8490H, NVIDIA driver 580.173, CUDA 12.8, PyTorch 2.9.1, Python 3.11) rented
 on vast.ai, and the code at \url{https://github.com/Fchaubard/zero-order-ablations}
-(commit \texttt{GITCOMMIT}).
+(commit \texttt{db100bc}).
 
 % ====================================================================================
 \section{Results}
@@ -587,8 +588,8 @@ method in each row is set in bold; backpropagation and forward-forward are refer
   a diverged run.}
   \label{tab:main}
   \centering
-  \small
-  \setlength{\tabcolsep}{4pt}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
   \input{tables/main_table}
 \end{table}
 
@@ -654,8 +655,8 @@ sequential LSTM time steps).
   $\varepsilon$.}
   \label{tab:throughput}
   \centering
-  \small
-  \setlength{\tabcolsep}{4pt}
+  \footnotesize
+  \setlength{\tabcolsep}{2pt}
   \input{tables/throughput_table}
 \end{table}
 
