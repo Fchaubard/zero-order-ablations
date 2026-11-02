@@ -1,7 +1,10 @@
 % ------------------------------------------------------------------------------------
 % References for "A ZOO Deep Learning Survey".
-% Entries verified against the publisher / arXiv / PMLR record on 2026-11-01 unless an
-% "UNVERIFIED" comment says otherwise.
+% Entries verified against the publisher / arXiv / PMLR record on 2026-11-01 (venue
+% re-check and additions on 2026-11-02) unless an "UNVERIFIED" comment says otherwise.
+% Checked 2026-11-02 and still arXiv-only (no journal/conference DOI found via Crossref or
+% the arXiv journal-ref field): salimans2017, hansen2016, dalm2024, ahmad2024, baydin2022,
+% hinton2022, ba2016.
 % ------------------------------------------------------------------------------------
 
 % ----------------------------------------------------------- SPSA / smoothing / ES
@@ -170,11 +173,14 @@
 % could be found; the closest match is the (first-order) Adam convergence analysis
 % below, which is cited by later adaptive-ZO papers.  Replace if another paper was meant
 % (e.g. ZO-AdaMU, Jiang et al., AAAI 2024, or MeZO-Adam in Zhang et al. ICML 2024).
+% Published in TMLR (Feb 2025; OpenReview id QIzRdjIWnS); arXiv 2404.01436.  Venue
+% updated 2026-11-02; key kept.
 @article{zhang2024adam,
   author  = {Zhang, Qi and Zhou, Yi and Zou, Shaofeng},
   title   = {Convergence guarantees for {RMSProp} and {Adam} in generalized-smooth non-convex optimization with affine noise variance},
-  journal = {arXiv preprint arXiv:2404.01436},
-  year    = {2024}
+  journal = {Transactions on Machine Learning Research},
+  year    = {2025},
+  note    = {arXiv:2404.01436}
 }
 
 % ----------------------------------------------------------- node perturbation
@@ -228,14 +234,31 @@
   year      = {2022}
 }
 
-% arXiv 2310.00965.  v1 (Oct 2023) was titled "Effective learning with node perturbation
-% in multi-layer neural networks"; later versions (v6+, current v8 of June 2026) carry
-% the title below.  No journal/conference publication (e.g. TMLR) could be confirmed.
+% Verified 2026-11-02 against Crossref (DOI 10.1103/PhysRevX.13.021006, published 11 Apr 2023).
+@article{zuge2023weight,
+  author  = {Z{\"u}ge, Paul and Klos, Christian and Memmesheimer, Raoul-Martin},
+  title   = {Weight versus node perturbation learning in temporally extended tasks: Weight perturbation often performs similarly or better},
+  journal = {Physical Review X},
+  volume  = {13},
+  number  = {2},
+  pages   = {021006},
+  year    = {2023},
+  doi     = {10.1103/PhysRevX.13.021006}
+}
+
+% Journal version (verified 2026-11-02 via Crossref + IOP): Neuromorphic Computing and
+% Engineering 6(3):034020, published Sept 2026, open access.  arXiv 2310.00965 v1 (Oct 2023)
+% was titled "Effective learning with node perturbation in deep neural networks".
 @article{dalm2023,
   author  = {Dalm, Sander and van Gerven, Marcel and Ahmad, Nasir},
   title   = {Node perturbation can effectively train multi-layer neural networks},
-  journal = {arXiv preprint arXiv:2310.00965},
-  year    = {2023}
+  journal = {Neuromorphic Computing and Engineering},
+  volume  = {6},
+  number  = {3},
+  pages   = {034020},
+  year    = {2026},
+  doi     = {10.1088/2634-4386/ae9be4},
+  note    = {arXiv:2310.00965}
 }
 
 % Published in TMLR in 2023 (arXiv 2203.13203 first posted March 2022).
@@ -299,6 +322,16 @@
   booktitle = {Advances in Neural Information Processing Systems},
   volume    = {29},
   year      = {2016}
+}
+
+% Verified 2026-11-02 against the NeurIPS proceedings BibTeX (NeurIPS 2021, vol. 34, pp. 10053--10066).
+@inproceedings{clark2021credit,
+  author    = {Clark, David G. and Abbott, L. F. and Chung, SueYeon},
+  title     = {Credit assignment through broadcasting a global error vector},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {34},
+  pages     = {10053--10066},
+  year      = {2021}
 }
 
 @inproceedings{jaderberg2017,
@@ -421,11 +454,47 @@
   year    = {1993}
 }
 
-% Unpublished manuscript (widely cited for the character-level PTB split); UNVERIFIED
-% beyond citing papers -- no formal venue exists.
-@unpublished{mikolov2012,
-  author = {Mikolov, Tom{\'a}{\v{s}} and Sutskever, Ilya and Deoras, Anoop and Le, Hai-Son and Kombrink, Stefan and {\v{C}}ernock{\'y}, Jan},
-  title  = {Subword language modeling with neural networks},
-  note   = {Preprint, \url{http://www.fit.vutbr.cz/~imikolov/rnnlm/char.pdf}},
-  year   = {2012}
+% 2026-11-02: replaced the previous bare-URL unpublished entry (Mikolov, Sutskever, Deoras,
+% Le, Kombrink, Cernocky, "Subword language modeling with neural networks", 2012,
+% fit.vutbr.cz/~imikolov/rnnlm/char.pdf) with Mikolov's PhD thesis, which documents the
+% RNN-LM Penn Treebank setup.  Verified against the Brno FIT thesis record
+% (fit.vut.cz/study/phd-thesis/283/, defended 2 Oct 2012).  Key kept unchanged.
+@phdthesis{mikolov2012,
+  author = {Mikolov, Tom{\'a}{\v{s}}},
+  title  = {Statistical language models based on neural networks},
+  school = {Brno University of Technology, Faculty of Information Technology},
+  year   = {2012},
+  note   = {\url{https://www.fit.vut.cz/study/phd-thesis/283/}}
+}
+
+% ----------------------------------------------------------- this work / companion code
+% Repository verified 2026-11-02 (README title "1.5-SPSA for Large Language Models").
+@misc{chaubard2025spsa15,
+  author       = {Chaubard, Francois},
+  title        = {1.5-{SPSA} for Large Language Models},
+  howpublished = {GitHub repository},
+  note         = {\url{https://github.com/Fchaubard/1.5-SPSA-LLM}},
+  year         = {2025}
+}
+
+@unpublished{chaubard2025anp15,
+  author = {Chaubard, Francois},
+  title  = {1.5-{ANP}: Curvature-preconditioned activity perturbation for constant-memory recurrent and token-local pretraining},
+  note   = {Manuscript},
+  year   = {2025}
+}
+
+@inproceedings{loshchilov2019,
+  title     = {Decoupled weight decay regularization},
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019},
+  note      = {arXiv:1711.05101}
+}
+
+@misc{pezeshki2023ff,
+  title        = {pytorch\_forward\_forward: a reimplementation of {H}inton's forward-forward algorithm},
+  author       = {Pezeshki, Mohammad},
+  howpublished = {GitHub repository, \url{https://github.com/mohammadpz/pytorch_forward_forward}},
+  year         = {2023}
 }

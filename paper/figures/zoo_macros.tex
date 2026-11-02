@@ -1,51 +1,72 @@
 % Shared pgfplots macros for the stage-2 figures (input from the preamble of main.tex).
 \usepgfplotslibrary{fillbetween}
 
-% Probe-method cycle list (SPSA, RS, NP, ANP, INP, DANP) = zoocycle without BP and FF.
-\pgfplotscreateplotcyclelist{zooprobecycle}{%
-  color=zoospsa, solid, mark=o,         mark size=1.3pt\\
-  color=zoors,   solid, mark=square*,   mark size=1.2pt\\
-  color=zoonp,   solid, mark=triangle*, mark size=1.5pt\\
-  color=zooanp,  solid, mark=diamond*,  mark size=1.5pt\\
-  color=zooinp,  solid, mark=pentagon*, mark size=1.5pt\\
-  color=zoodanp, solid, mark=x,         mark size=1.8pt\\
+% Ten-method cycle: the 1.5-order variants reuse their parent's colour, dashed.
+%   bp  spsa  spsa15  rs  np  anp  anp15  inp  danp  ff
+\pgfplotscreateplotcyclelist{zoocycleX}{%
+  color=black,   dashed, thick, mark=none\\
+  color=zoospsa, solid,  mark=o,         mark size=1.3pt\\
+  color=zoospsa, densely dashed, mark=*, mark size=1.3pt\\
+  color=zoors,   solid,  mark=square*,   mark size=1.2pt\\
+  color=zoonp,   solid,  mark=triangle*, mark size=1.5pt\\
+  color=zooanp,  solid,  mark=diamond*,  mark size=1.5pt\\
+  color=zooanp,  densely dashed, mark=diamond, mark size=1.5pt\\
+  color=zooinp,  solid,  mark=pentagon*, mark size=1.5pt\\
+  color=zoodanp, solid,  mark=x,         mark size=1.8pt\\
+  color=zooff,   solid,  mark=+,         mark size=1.8pt\\
+}
+% Eight probe estimators for the alignment figure (same order without bp and ff).
+\pgfplotscreateplotcyclelist{zooprobecycleX}{%
+  color=zoospsa, solid,  mark=o,         mark size=1.3pt\\
+  color=zoospsa, densely dashed, mark=*, mark size=1.3pt\\
+  color=zoors,   solid,  mark=square*,   mark size=1.2pt\\
+  color=zoonp,   solid,  mark=triangle*, mark size=1.5pt\\
+  color=zooanp,  solid,  mark=diamond*,  mark size=1.5pt\\
+  color=zooanp,  densely dashed, mark=diamond, mark size=1.5pt\\
+  color=zooinp,  solid,  mark=pentagon*, mark size=1.5pt\\
+  color=zoodanp, solid,  mark=x,         mark size=1.8pt\\
 }
 
 % Seed band (min..max over seeds) of one method: #1 csv, #2 column prefix, #3 colour.
-% The two boundary paths are invisible and kept out of the legend.
 \newcommand{\zooband}[3]{%
   \addplot [name path=#2max, draw=none, forget plot] table [x=time, y=#2_max, col sep=comma] {#1};
   \addplot [name path=#2min, draw=none, forget plot] table [x=time, y=#2_min, col sep=comma] {#1};
   \addplot [#3!30, forget plot] fill between [of=#2max and #2min];
 }
-% All eight bands of a curve2_{task}.csv file.
-\newcommand{\zoobands}[1]{%
-  \zooband{#1}{bp}{black}
-  \zooband{#1}{spsa}{zoospsa}
-  \zooband{#1}{rs}{zoors}
-  \zooband{#1}{np}{zoonp}
-  \zooband{#1}{anp}{zooanp}
-  \zooband{#1}{inp}{zooinp}
-  \zooband{#1}{danp}{zoodanp}
-  \zooband{#1}{ff}{zooff}
+% The ten seed-mean curves of a curve2_{task}.csv file (zoocycleX order).
+\newcommand{\zoomeansX}[1]{%
+  \addplot table [x=time, y=bp_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=spsa_mean,   col sep=comma] {#1};
+  \addplot table [x=time, y=spsa15_mean, col sep=comma] {#1};
+  \addplot table [x=time, y=rs_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=np_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=anp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=anp15_mean,  col sep=comma] {#1};
+  \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
+  \addplot table [x=time, y=ff_mean,     col sep=comma] {#1};
 }
-% The eight seed-mean curves of a curve2_{task}.csv file (zoocycle order, marks every 10 min).
-\newcommand{\zoomeans}[1]{%
-  \addplot table [x=time, y=bp_mean,   col sep=comma] {#1};
-  \addplot table [x=time, y=spsa_mean, col sep=comma] {#1};
-  \addplot table [x=time, y=rs_mean,   col sep=comma] {#1};
-  \addplot table [x=time, y=np_mean,   col sep=comma] {#1};
-  \addplot table [x=time, y=anp_mean,  col sep=comma] {#1};
-  \addplot table [x=time, y=inp_mean,  col sep=comma] {#1};
-  \addplot table [x=time, y=danp_mean, col sep=comma] {#1};
-  \addplot table [x=time, y=ff_mean,   col sep=comma] {#1};
+% The ten curves of a CSV with plain method columns and x column #1 (zoocycleX order).
+\newcommand{\zooplotsX}[2]{%
+  \addplot table [x=#1, y=bp,     col sep=comma] {#2};
+  \addplot table [x=#1, y=spsa,   col sep=comma] {#2};
+  \addplot table [x=#1, y=spsa15, col sep=comma] {#2};
+  \addplot table [x=#1, y=rs,     col sep=comma] {#2};
+  \addplot table [x=#1, y=np,     col sep=comma] {#2};
+  \addplot table [x=#1, y=anp,    col sep=comma] {#2};
+  \addplot table [x=#1, y=anp15,  col sep=comma] {#2};
+  \addplot table [x=#1, y=inp,    col sep=comma] {#2};
+  \addplot table [x=#1, y=danp,   col sep=comma] {#2};
+  \addplot table [x=#1, y=ff,     col sep=comma] {#2};
 }
-% The six probe-method alignment curves of an align_{task}_{state}.csv file.
-\newcommand{\zooalign}[1]{%
-  \addplot table [x=passes, y=spsa, col sep=comma] {#1};
-  \addplot table [x=passes, y=rs,   col sep=comma] {#1};
-  \addplot table [x=passes, y=np,   col sep=comma] {#1};
-  \addplot table [x=passes, y=anp,  col sep=comma] {#1};
-  \addplot table [x=passes, y=inp,  col sep=comma] {#1};
-  \addplot table [x=passes, y=danp, col sep=comma] {#1};
+% The eight probe-estimator alignment curves of an align_{task}_{state}.csv file.
+\newcommand{\zooalignX}[1]{%
+  \addplot table [x=passes, y=spsa,   col sep=comma] {#1};
+  \addplot table [x=passes, y=spsa15, col sep=comma] {#1};
+  \addplot table [x=passes, y=rs,     col sep=comma] {#1};
+  \addplot table [x=passes, y=np,     col sep=comma] {#1};
+  \addplot table [x=passes, y=anp,    col sep=comma] {#1};
+  \addplot table [x=passes, y=anp15,  col sep=comma] {#1};
+  \addplot table [x=passes, y=inp,    col sep=comma] {#1};
+  \addplot table [x=passes, y=danp,   col sep=comma] {#1};
 }

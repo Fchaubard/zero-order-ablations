@@ -1,11 +1,11 @@
 % Figure: test loss vs training time of the selected runs, mean over seeds (line) and
 % min-max band over seeds (shaded).  Data: data/curve2_{task}.csv with columns
-% time,{opt}_mean,{opt}_min,{opt}_max for opt in bp,spsa,rs,np,anp,inp,danp,ff.
+% time,{opt}_mean,{opt}_min,{opt}_max; bands_{task}.tex lists the methods with bands.
 \begin{tikzpicture}
   \begin{groupplot}[
-      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
-      width=0.5\linewidth, height=4.4cm,
-      cycle list name=zoocycle,
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.5cm},
+      width=0.5\linewidth, height=4.3cm,
+      cycle list name=zoocycleX,
       ymode=log, log ticks with fixed point,
       xmin=0, xmax=60,
       xlabel={training time (min)}, ylabel={test loss},
@@ -17,22 +17,22 @@
       grid=major, grid style={gray!25},
     ]
     \nextgroupplot[title={MNIST / MLP}, ymin=0.08, ymax=3,
-      legend to name=zoolegendB, legend columns=8,
-      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.5em}},
-      legend entries={BP, SPSA, RS, NP, ANP, INP, DANP, FF}]
+      legend to name=zoolegendX, legend columns=10,
+      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.4em}},
+      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, FF}]
     \input{figures/bands_mlp_mnist}
-    \zoomeans{data/curve2_mlp_mnist.csv}
+    \zoomeansX{data/curve2_mlp_mnist.csv}
 
     \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3]
     \input{figures/bands_conv_cifar10}
-    \zoomeans{data/curve2_conv_cifar10.csv}
+    \zoomeansX{data/curve2_conv_cifar10.csv}
 
     \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5]
     \input{figures/bands_lstm_ptb}
-    \zoomeans{data/curve2_lstm_ptb.csv}
+    \zoomeansX{data/curve2_lstm_ptb.csv}
 
     \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5]
     \input{figures/bands_transformer_ptb}
-    \zoomeans{data/curve2_transformer_ptb.csv}
+    \zoomeansX{data/curve2_transformer_ptb.csv}
   \end{groupplot}
 \end{tikzpicture}
