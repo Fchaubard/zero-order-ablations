@@ -118,7 +118,10 @@ def read_jobs(args, path: str):
             if not line:
                 continue
             argv = _job_argv(args, line)
-            targs = train_parse_args(argv)
+            try:
+                targs = train_parse_args(argv)
+            except SystemExit as e:       # argparse exits on an unknown option / choice: report, never die
+                raise ValueError(f"line {i} of {path} does not parse ({line!r}): {e}") from None
             name = name_from_args(targs)
             jobs.append((i, argv, os.path.join(targs.out, name + ".json"), name))
     return jobs
@@ -203,12 +206,12 @@ class Sweep:
         path = getattr(self.args, "extra_jobs", None)
         if not path or not os.path.exists(path):
             return None
+        try:
+            jobs = read_jobs(self.args, path)
+        except BaseException as e:  # noqa: BLE001  (a worker must survive any problem with the extra file)
+            self.say(f"could not read {path}: {e!r}")      # outside the lock: say() takes it
+            return None
         with self.lock:
-            try:
-                jobs = read_jobs(self.args, path)
-            except Exception as e:  # noqa: BLE001
-                self.say(f"could not read {path}: {e!r}")
-                return None
             for i, argv, rpath, name in jobs:
                 if name in self.started or is_complete(load_json(rpath)):
                     continue
@@ -231,7 +234,7 @@ class Sweep:
                 else:
                     idx, task, opt, lr, seed = item
                     self.run_one(gpu, idx, task, opt, lr, seed)
-            except Exception as e:  # noqa: BLE001
+            except BaseException as e:  # noqa: BLE001
                 self.say(f"worker gpu{gpu} crashed on {item}: {e!r}")
 
     def terminate(self):
