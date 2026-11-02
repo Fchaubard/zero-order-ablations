@@ -38,7 +38,8 @@ python -m zoo.train --task mlp_mnist --opt spsa --lr 0.01 --budget 3600 --eval-e
 
 `--budget` counts only seconds spent inside `opt.step` (evaluation and logging are excluded).
 The run writes `results/mlp_mnist-spsa-lr0.01.json` after every evaluation (`history`, then
-`final`), stops early and sets `diverged` on NaN or a 10x loss blow-up, and logs to wandb with
+`final`), stops early and sets `diverged` on NaN or a 2x loss blow-up (train or validation,
+at two consecutive evaluations), and logs to wandb with
 `train_time` as the x-axis.  Add `--no-wandb` to skip wandb, `--synthetic` for a smoke run on
 random data, `--budget 20 --eval-every 5` for a quick look.
 

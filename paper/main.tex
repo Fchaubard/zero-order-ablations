@@ -514,19 +514,22 @@ dropout or weight decay.
   max-pooling. The LSTM \citep{hochreiter1997} has one layer of 80 units; the
   Transformer \citep{vaswani2017} uses two pre-LN blocks, model width 48, 4 heads,
   feed-forward width 64, learned positional embeddings and context length $T=64$.
-  $V$ is the character vocabulary size.}
+  $V$ is the character vocabulary size. \emph{Units} is the number of pre-activation
+  units one node-perturbation probe perturbs for a single example, summed over layers,
+  time steps and spatial positions; it is the effective search dimension of the
+  \NP{} family, as $P$ is for \SPSA{} and \RS{}.}
   \label{tab:tasks}
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{llllr}
+  \begin{tabular}{llllrr}
     \toprule
-    Key & Data & Split & Model & Params \\
+    Key & Data & Split & Model & Params & Units \\
     \midrule
-    \texttt{mlp\_mnist}       & MNIST      & 55k / 5k / 10k & MLP 784--48--32--10                          & 39,578 \\
-    \texttt{conv\_cifar10}    & CIFAR-10   & 45k / 5k / 10k & conv16--conv32--conv32--fc48--10             & 39,450 \\
-    \texttt{lstm\_ptb}        & PTB (char) & standard       & emb32--LSTM80--$V$                           & 41,810 \\
-    \texttt{transformer\_ptb} & PTB (char) & standard       & emb48 $+$ pos64--2 blocks ($d{=}48$, $d_{\text{ff}}{=}64$)--$V$ & 39,250 \\
+    \texttt{mlp\_mnist}       & MNIST      & 55k / 5k / 10k & MLP 784--48--32--10                          & 39,578 & 90 \\
+    \texttt{conv\_cifar10}    & CIFAR-10   & 45k / 5k / 10k & conv16--conv32--conv32--fc48--10             & 39,450 & 26,682 \\
+    \texttt{lstm\_ptb}        & PTB (char) & standard       & emb32--LSTM80--$V$                           & 41,810 & 25,728 \\
+    \texttt{transformer\_ptb} & PTB (char) & standard       & emb48 $+$ pos64--2 blocks--$V$                  & 39,250 & 45,232 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -546,9 +549,10 @@ family) and batch-mean losses where it does not (\SPSA{}, \RS{}).
 \paragraph{Budget and evaluation.}
 Each run trains for \textbf{one hour of wall-clock} on a single NVIDIA RTX~5090;
 evaluation time is excluded from the clock. Validation and test loss (and accuracy or
-bits-per-character) are evaluated every 5 minutes of training time and at the end. A
-run whose training loss becomes NaN, or exceeds 10$\times$ its initial value at two
-consecutive evaluations, is stopped and marked as diverged.
+bits-per-character) are evaluated at initialisation, every 5 minutes of training time
+and at the end. A run is stopped and marked as diverged when a loss becomes NaN, or
+when at two consecutive evaluations its training loss exceeds 2$\times$ its initial
+value or its validation loss exceeds 2$\times$ its value at initialisation.
 
 \paragraph{Model selection and reporting.}
 For each (task, optimizer) pair we select the $\varepsilon$ with the lowest final
@@ -774,6 +778,26 @@ the one with the lowest validation loss.
   \input{tables/full_grid}
 \end{table}
 
+Table~\ref{tab:earlystop} complements the protocol's final-loss numbers with an
+early-stopping oracle: for each (task, optimizer) pair it reports the test loss at the
+5-minute evaluation, over all three $\varepsilon$ and all evaluation times, with the
+lowest validation loss. It shows what each method reaches at its best point, which for
+several probe methods and for backpropagation at the larger step sizes lies well before
+the end of the hour (Section~\ref{sec:curves}).
+
+\begin{table}[ht]
+  \caption{Early-stopping oracle: test loss and test accuracy (\%) or bits per
+  character at the evaluation with the lowest validation loss over all $\varepsilon$
+  and all evaluation times; the third row of each block gives that $\varepsilon$ and
+  the minute of training at which it occurred (0 = initialisation, i.e.\ no
+  improvement). Best probe method per task in bold.}
+  \label{tab:earlystop}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \input{tables/early_stop_table}
+\end{table}
+
 \section{Implementation details and hyper-parameters}
 \label{app:impl}
 
@@ -826,8 +850,8 @@ for all blocks except the LSTM block ($\theta=0.25$, Section~\ref{sec:methods}).
 
 \paragraph{Evaluation.}
 Validation and test metrics are computed with the plain forward of the full
-validation / test set every 5 minutes of training time (the clock is paused during
-evaluation) and at 60 minutes. For \FF{}, evaluation uses the neutral-label pass and
+validation / test set at initialisation, every 5 minutes of training time (the clock
+is paused during evaluation) and at 60 minutes. For \FF{}, evaluation uses the neutral-label pass and
 the trained readout.
 
 \paragraph{Hyper-parameters.}
