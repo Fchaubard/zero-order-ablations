@@ -74,6 +74,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--python", default=sys.executable)
     p.add_argument("--synthetic", action="store_true", help="pass --synthetic to every run (smoke test)")
     p.add_argument("--train-arg", action="append", default=[], help="extra argument forwarded to zoo.train (repeatable)")
+    p.add_argument("--extra-jobs", default=None,
+                   help="job-list mode only: a second file that is re-read whenever a worker needs a job; its "
+                        "not-yet-started lines take precedence over the main queue (lets jobs be added to a running sweep)")
     p.add_argument("--jobs", default=None,
                    help="file with one zoo.train argument line per run (e.g. '--task mlp_mnist --opt np --lr 0.001 "
                         "--seed 1 --sigma 0.01 --out results_decouple'); replaces the tasks x opts x lrs grid. "
@@ -158,6 +161,7 @@ class Sweep:
         self.procs: List[subprocess.Popen] = []
         self.rows: List[dict] = []
         self.stop = threading.Event()
+        self.started = set()          # names of jobs taken from --extra-jobs
 
     def say(self, msg: str):
         with self.lock:
@@ -194,12 +198,33 @@ class Sweep:
             self.rows.append({"idx": idx, "name": name, "gpu": gpu, "exit": rc, "elapsed": elapsed,
                               "summary": summary, **{k: rec.get(k) for k in ("step", "val_loss", "test_loss", "test_acc", "test_bpc")}})
 
+    def _extra_job(self):
+        """Next not-yet-started job of --extra-jobs (re-read on every call), or None."""
+        path = getattr(self.args, "extra_jobs", None)
+        if not path or not os.path.exists(path):
+            return None
+        with self.lock:
+            try:
+                jobs = read_jobs(self.args, path)
+            except Exception as e:  # noqa: BLE001
+                self.say(f"could not read {path}: {e!r}")
+                return None
+            for i, argv, rpath, name in jobs:
+                if name in self.started or is_complete(load_json(rpath)):
+                    continue
+                self.started.add(name)
+                self.total += 1
+                return (self.total - 1, argv, rpath, name)
+        return None
+
     def worker(self, gpu: str):
         while not self.stop.is_set():
-            try:
-                item = self.q.get_nowait()
-            except queue.Empty:
-                return
+            item = self._extra_job()
+            if item is None:
+                try:
+                    item = self.q.get_nowait()
+                except queue.Empty:
+                    return
             try:
                 if len(item) == 4 and isinstance(item[1], list):      # job-list mode: (idx, argv, path, name)
                     self.run_job(gpu, *item)
