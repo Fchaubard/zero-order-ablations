@@ -1,0 +1,30 @@
+% Figure: equal-compute view -- test loss vs number of forward passes (interpolated between
+% evaluations, mean over seeds of the selected runs).  Data: data/passes_{task}.csv with
+% columns passes,bp,spsa,rs,np,anp,inp,danp,ff.
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
+      width=0.5\linewidth, height=4.2cm,
+      cycle list name=zoocycle,
+      xmode=log, ymode=log, log ticks with fixed point,
+      xlabel={forward passes}, ylabel={test loss},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      title style={font=\small, yshift=-1ex},
+      every axis plot/.append style={line width=0.7pt, mark repeat=4},
+      unbounded coords=jump,
+      grid=major, grid style={gray!25},
+    ]
+    \nextgroupplot[title={MNIST / MLP}, ymin=0.08, ymax=3]
+    \zooplots{passes}{data/passes_mlp_mnist.csv}
+
+    \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3]
+    \zooplots{passes}{data/passes_conv_cifar10.csv}
+
+    \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5]
+    \zooplots{passes}{data/passes_lstm_ptb.csv}
+
+    \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5]
+    \zooplots{passes}{data/passes_transformer_ptb.csv}
+  \end{groupplot}
+\end{tikzpicture}

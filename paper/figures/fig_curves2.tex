@@ -1,0 +1,38 @@
+% Figure: test loss vs training time of the selected runs, mean over seeds (line) and
+% min-max band over seeds (shaded).  Data: data/curve2_{task}.csv with columns
+% time,{opt}_mean,{opt}_min,{opt}_max for opt in bp,spsa,rs,np,anp,inp,danp,ff.
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
+      width=0.5\linewidth, height=4.4cm,
+      cycle list name=zoocycle,
+      ymode=log, log ticks with fixed point,
+      xmin=0, xmax=60,
+      xlabel={training time (min)}, ylabel={test loss},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      title style={font=\small, yshift=-1ex},
+      every axis plot/.append style={line width=0.7pt, mark repeat=10, mark phase=5},
+      unbounded coords=jump,
+      grid=major, grid style={gray!25},
+    ]
+    \nextgroupplot[title={MNIST / MLP}, ymin=0.08, ymax=3,
+      legend to name=zoolegendB, legend columns=8,
+      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.5em}},
+      legend entries={BP, SPSA, RS, NP, ANP, INP, DANP, FF}]
+    \zoobands{data/curve2_mlp_mnist.csv}
+    \zoomeans{data/curve2_mlp_mnist.csv}
+
+    \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3]
+    \zoobands{data/curve2_conv_cifar10.csv}
+    \zoomeans{data/curve2_conv_cifar10.csv}
+
+    \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5]
+    \zoobands{data/curve2_lstm_ptb.csv}
+    \zoomeans{data/curve2_lstm_ptb.csv}
+
+    \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5]
+    \zoobands{data/curve2_transformer_ptb.csv}
+    \zoomeans{data/curve2_transformer_ptb.csv}
+  \end{groupplot}
+\end{tikzpicture}
