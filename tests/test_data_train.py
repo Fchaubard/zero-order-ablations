@@ -7,6 +7,8 @@ import subprocess
 import sys
 
 import pytest
+
+from zoo.optimizers import ALL_OPTIMIZERS
 import torch
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -131,7 +133,6 @@ def test_sweep_dry_run_lists_96_configs(tmp_path):
     r = run(["zoo.sweep", "--dry-run", "--gpus", "0,1,2,3,4,5,6,7", "--tasks", "all", "--opts", "all",
              "--lrs", "0.1,0.01,0.001", "--out", str(out), "--logdir", str(tmp_path / "runs")])
     assert r.returncode == 0, r.stderr
-    from zoo.optimizers import ALL_OPTIMIZERS
     n = 4 * len(ALL_OPTIMIZERS) * 3
     lines = [l for l in r.stdout.splitlines() if l.startswith("[") and f"/{n}]" in l]
     assert len(lines) == n
