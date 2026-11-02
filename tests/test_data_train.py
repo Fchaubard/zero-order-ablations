@@ -131,11 +131,13 @@ def test_sweep_dry_run_lists_96_configs(tmp_path):
     r = run(["zoo.sweep", "--dry-run", "--gpus", "0,1,2,3,4,5,6,7", "--tasks", "all", "--opts", "all",
              "--lrs", "0.1,0.01,0.001", "--out", str(out), "--logdir", str(tmp_path / "runs")])
     assert r.returncode == 0, r.stderr
-    lines = [l for l in r.stdout.splitlines() if l.startswith("[") and "/96]" in l]
-    assert len(lines) == 96
-    assert "dry run: 96 configs would run, 0 skipped" in r.stdout
+    from zoo.optimizers import ALL_OPTIMIZERS
+    n = 4 * len(ALL_OPTIMIZERS) * 3
+    lines = [l for l in r.stdout.splitlines() if l.startswith("[") and f"/{n}]" in l]
+    assert len(lines) == n
+    assert f"dry run: {n} configs would run, 0 skipped" in r.stdout
     names = [l.split()[-1] for l in lines]
-    assert len(set(names)) == 96
+    assert len(set(names)) == n
     first8 = names[:8]
     assert {n.split("-")[0] for n in first8} == set(TASKS)     # interleaved: 4 tasks x 2 opts
     assert {n.split("-")[1] for n in first8} == {"bp", "spsa"}
@@ -144,7 +146,7 @@ def test_sweep_dry_run_lists_96_configs(tmp_path):
     (out / "mlp_mnist-bp-lr0.1.json").write_text(json.dumps({"config": {}, "final": {"test_loss": 1.0}}))
     (out / "mlp_mnist-bp-lr0.01.json").write_text(json.dumps({"config": {}, "final": {}, "error": "x"}))
     r = run(["zoo.sweep", "--dry-run", "--gpus", "0", "--out", str(out), "--logdir", str(tmp_path / "runs")])
-    assert "dry run: 95 configs would run, 1 skipped" in r.stdout, r.stdout
+    assert f"dry run: {n - 1} configs would run, 1 skipped" in r.stdout, r.stdout
     assert "skip mlp_mnist-bp-lr0.1" in r.stdout and "run  mlp_mnist-bp-lr0.01" in r.stdout
 
 
@@ -162,5 +164,5 @@ def test_sweep_runs_on_cpu_and_status_reads_it(tmp_path):
     assert s.returncode == 0, s.stdout + s.stderr
     assert "1 result files: 1 complete" in s.stdout
     rows = (tmp_path / "grid.csv").read_text().splitlines()
-    assert rows[0] == "task,bp,spsa,rs,np,anp,inp,danp,ff" and rows[1].startswith("mlp_mnist,")
+    assert rows[0] == "task," + ",".join(ALL_OPTIMIZERS) and rows[1].startswith("mlp_mnist,")
     assert rows[1].split(",")[1] != "-"

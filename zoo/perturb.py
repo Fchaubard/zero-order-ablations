@@ -49,6 +49,8 @@ class _Ctx:
         self.mode: str = "bp"          # "bp" | "clean" | "noisy"
         self.sigma: float = 0.0        # probe std used in "noisy" mode
         self.noise_layer: Optional[int] = None  # None = perturb all layers (NP/ANP/DANP); int = only that layer (INP)
+        self.sign: float = 1.0         # +1 / -1: antithetic pairs (1.5-ANP) reuse the probes of the + pass
+        self.xi_bank: Optional[List[List[torch.Tensor]]] = None   # per layer, per call: probes to reuse (None = draw)
         self.layers: List["PLayer"] = []
 
     def set_layers(self, layers: List["PLayer"]):
@@ -125,8 +127,11 @@ class PLayer(nn.Module):
             return a
         if mode == "noisy":
             if ctx.noise_layer is None or ctx.noise_layer == self.index:
-                xi = torch.randn_like(a)
-                a = a + ctx.sigma * xi
+                if ctx.xi_bank is not None:
+                    xi = ctx.xi_bank[self.index][len(self.xi)]   # same probe as the + pass of this pair
+                else:
+                    xi = torch.randn_like(a)
+                a = a + (ctx.sign * ctx.sigma) * xi
                 self.xi.append(xi)
             else:
                 self.xi.append(None)

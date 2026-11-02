@@ -32,7 +32,7 @@ from zoo.optimizers import get_optimizer, per_sample_loss  # noqa: E402
 from zoo.perturb import ctx, layer_params, players  # noqa: E402
 
 TASKS = ["mlp_mnist", "conv_cifar10", "lstm_ptb", "transformer_ptb"]
-ESTIMATORS = ["spsa", "rs", "np", "anp", "inp", "danp"]
+ESTIMATORS = ["spsa", "rs", "np", "anp", "inp", "danp", "spsa15", "anp15"]
 SIGMAS = [0.1, 0.01, 0.001]
 PASSES = [16, 64, 256, 1024, 4096]
 PRECISIONS = ["fp32", "tf32", "fp64"]
@@ -102,14 +102,14 @@ def estimate(name, model, data, x, y, sigma, passes, danp_steps=500):
             for layer in opt.layers:
                 layer.decorrelation_update(opt.lr_decor)
         ctx.reset()
-    if name == "spsa":
+    if name in ("spsa", "spsa15"):
         g = opt.estimate_grad(x, y, n_pairs=max(1, passes // 2))
         return [g[a:b].view_as(p) for p, (a, b) in zip(opt.flat.params, opt.flat.slices)], None
     if name == "rs":
         g = rs_pseudo_grad(opt, x, y, rounds=max(1, passes // 16))
         return [g[a:b].view_as(p) for p, (a, b) in zip(opt.flat.params, opt.flat.slices)], None
     # node-perturbation family: estimate_grad writes into p.grad
-    n = max(1, passes // len(opt.layers)) if name == "inp" else passes
+    n = max(1, passes // len(opt.layers)) if name == "inp" else (max(1, passes // 2) if name == "anp15" else passes)
     for p in params:
         p.grad = None
     opt.estimate_grad(x, y, n_passes=n)

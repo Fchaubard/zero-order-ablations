@@ -20,6 +20,10 @@ reviews asked for.  Every line is a ``zoo.train`` argument string consumed by
   C. decoupling    lr = 1e-3 with sigma in {1e-2, 1e-4} for the 6 probe methods x 4 tasks, and
                    lr = 1e-2 with sigma = 1e-3 for SPSA / NP / ANP / INP x 4 tasks; 30 min -> results_decouple/
   D. rs jump       direct-jump random search (rsj) at the selected RS eps x 4 tasks, 1 h -> results_v2/
+  E. 1.5-order     spsa15 / anp15 (17 passes: 1 clean + 8 antithetic pairs), added after stage 1:
+                   eps screening {0.1, 0.01, 0.001} x 4 tasks under the stage-2 protocol (--extra, injected
+                   into the running sweep), then seeds 1, 2 at the selected eps (--extra-seeds, once the
+                   screening is in results_v2/)
 """
 from __future__ import annotations
 
@@ -37,9 +41,49 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--summary", default="results/summary.json")
     ap.add_argument("--out", default="jobs/stage2.txt")
+    ap.add_argument("--extra", default=None, help="write group E (1.5-order eps screening) to this file instead")
+    ap.add_argument("--extra-seeds", default=None, help="write group E seeds 1, 2 at the eps selected from --v2")
+    ap.add_argument("--v2", default="results_v2")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.extra or a.extra_seeds:
+        new = ["spsa15", "anp15"]
+        if a.extra:
+            lines.append("# E. 1.5-order rules: eps screening under the stage-2 protocol (1 h, 1-minute evaluations)")
+            for e in (0.1, 0.01, 0.001):
+                for t in TASKS:
+                    for o in new:
+                        lines.append(f"--task {t} --opt {o} --lr {e:g} --seed 0 --budget 3600 --eval-every 60 --out results_v2")
+            path = a.extra
+        else:
+            import glob
+            import math
+            lines.append("# E. 1.5-order rules: seeds 1, 2 at the eps with the lowest best-validation loss of the screening")
+            for t in TASKS:
+                for o in new:
+                    best = None
+                    for e in (0.1, 0.01, 0.001):
+                        f = os.path.join(a.v2, f"{t}-{o}-lr{e:g}.json")
+                        if not os.path.exists(f):
+                            continue
+                        r = json.load(open(f))
+                        if "final" not in r:
+                            continue
+                        v = min((h["val_loss"] for h in r["history"] if h.get("val_loss") is not None and not math.isnan(h["val_loss"])), default=None)
+                        if v is not None and (best is None or v < best[0]):
+                            best = (v, e)
+                    if best is None:
+                        print(f"  {t}/{o}: screening incomplete, skipped")
+                        continue
+                    for seed in (1, 2):
+                        lines.append(f"--task {t} --opt {o} --lr {best[1]:g} --seed {seed} --budget 3600 --eval-every 60 --out results_v2")
+            path = a.extra_seeds
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        print(f"{sum(1 for l in lines if not l.startswith('#'))} jobs -> {path}")
+        return
 
     def job(task, opt, lr, seed=0, out="results_v2", budget=3600, extra=""):
         lines.append(f"--task {task} --opt {opt} --lr {lr:g} --seed {seed} --budget {budget} --eval-every 60 --out {out}{(' ' + extra) if extra else ''}")

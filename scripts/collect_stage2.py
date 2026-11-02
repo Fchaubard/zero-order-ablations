@@ -39,8 +39,8 @@ from collections import defaultdict
 
 TASKS = ["mlp_mnist", "conv_cifar10", "lstm_ptb", "transformer_ptb"]
 IMAGE = ["mlp_mnist", "conv_cifar10"]
-OPTS = ["bp", "spsa", "rs", "np", "anp", "inp", "danp", "ff"]
-PROBE = ["spsa", "rs", "np", "anp", "inp", "danp"]
+OPTS = ["bp", "spsa", "rs", "np", "anp", "inp", "danp", "ff", "spsa15", "anp15"]
+PROBE = ["spsa", "rs", "np", "anp", "inp", "danp", "spsa15", "anp15"]
 TASK_LABEL = {"mlp_mnist": "MNIST / MLP", "conv_cifar10": "CIFAR-10 / ConvNet",
               "lstm_ptb": "PTB / char-LSTM", "transformer_ptb": "PTB / char-Transformer"}
 LN2 = math.log(2)
@@ -408,7 +408,7 @@ def main():
     apath = os.path.join(a.align, "alignment.csv")
     if os.path.exists(apath):
         rows = list(csv.DictReader(open(apath)))
-        ests = ["spsa", "rs", "np", "anp", "inp", "danp"]
+        ests = ["spsa", "rs", "np", "anp", "inp", "danp", "spsa15", "anp15"]
         for task in TASKS:
             for state in ("init", "trained"):
                 sub = [r for r in rows if r["task"] == task and r["state"] == state and r["layer"] == "all" and float(r["sigma"]) == 0.001]
