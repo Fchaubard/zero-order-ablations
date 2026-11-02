@@ -179,18 +179,15 @@ class PConv2d(PLayer):
     def _conv(self, x):
         if self.R is None:
             return F.conv2d(x, self.weight, self.bias, padding=self.padding)
-        # decorrelated conv: unfold patches, decorrelate each C*k*k patch vector, matmul with W.
-        N, C, H, W = x.shape
-        cols = F.unfold(x, self.k, padding=self.padding)            # (N, C*k*k, L)
-        L = cols.shape[-1]
-        rows = cols.transpose(1, 2).reshape(N * L, -1)              # (N*L, C*k*k)
-        rows = self._decorrelate(rows)
-        out = rows @ self.weight.reshape(self.out_ch, -1).T          # (N*L, out)
-        if self.bias is not None:
-            out = out + self.bias
-        Ho = H + 2 * self.padding - self.k + 1
-        Wo = W + 2 * self.padding - self.k + 1
-        return out.reshape(N, L, self.out_ch).transpose(1, 2).reshape(N, self.out_ch, Ho, Wo)
+        # Decorrelated conv (Dalm et al. 2024): the decorrelation of every C*k*k patch vector
+        # is itself a convolution whose kernel is R reshaped to (d, C, k, k) -- output channel j
+        # is <R[j], patch> -- followed by W applied as a 1x1 conv over the d decorrelated
+        # channels.  Identical to unfold -> R -> matmul, but two cuDNN calls and no copies.
+        d = self.decor_dim
+        xd = F.conv2d(x, self.R.view(d, self.in_ch, self.k, self.k), None, padding=self.padding)
+        if ctx.mode == "clean":
+            self.hd.append(xd.detach().permute(0, 2, 3, 1).reshape(-1, d))   # (N*L, d) rows for the R update
+        return F.conv2d(xd, self.weight.view(self.out_ch, d, 1, 1), self.bias)
 
     def forward(self, x):
         mode = ctx.mode
