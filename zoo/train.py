@@ -109,6 +109,12 @@ def evaluate(opt, data: Data, split: str) -> dict:
     out = {"loss": loss, "acc": correct.item() / max(n_tok, 1), "n": n_rows}
     if data.kind == "lm":
         out["bpc"] = loss / LN2
+    if data.kind == "cls" and hasattr(opt, "predict_goodness"):
+        # forward-forward: Hinton's label-accumulation inference (one pass per candidate label)
+        corr_g = torch.zeros((), dtype=torch.float64, device=data.device)
+        for x, y in data.eval_batches(split):
+            corr_g += (opt.predict_goodness(x).argmax(1) == y).double().sum()
+        out["acc_goodness"] = corr_g.item() / max(n_tok, 1)
     return out
 
 
@@ -224,6 +230,8 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
         }
         if is_lm:
             rec["val_bpc"], rec["test_bpc"] = val["bpc"], test["bpc"]
+        if "acc_goodness" in test:
+            rec["val_acc_goodness"], rec["test_acc_goodness"] = val["acc_goodness"], test["acc_goodness"]
         history.append(rec)
         # ---- divergence watchdog (PROTOCOL.md); skipped at the step-0 evaluation
         if train_loss is None:
