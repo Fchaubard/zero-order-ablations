@@ -22,7 +22,7 @@ def test_mlp_learns_synthetic_problem():
     x, y = _synthetic_cls()
     model = build_model("mlp_mnist")
     opt = get_optimizer("ff", model, lr=0.01, task_kind="cls", n_classes=10)
-    assert opt.forward_passes_per_step == 2
+    assert opt.forward_passes_per_step == 3   # positive + negative + neutral-label pass on images
 
     loss0 = None
     for step in range(150):
@@ -41,6 +41,13 @@ def test_mlp_learns_synthetic_problem():
     assert float(loss) < float(loss0)
 
     # Hinton's label-accumulation inference
+    # Hinton's all-but-first accumulation needs the second block to separate, which on this
+    # synthetic problem takes a few hundred steps; the all-blocks variant is informative at once.
+    gm_all = opt.predict_goodness(x, all_blocks=True)
+    g_acc_all = (gm_all.argmax(1) == y).float().mean().item()
+    assert g_acc_all > 0.6, f"all-blocks goodness inference accuracy {g_acc_all:.3f} <= 0.6"
+    for _ in range(450):
+        opt.step(x, y)
     gm = opt.predict_goodness(x)
     assert gm.shape == (512, 10)
     g_acc = (gm.argmax(1) == y).float().mean().item()

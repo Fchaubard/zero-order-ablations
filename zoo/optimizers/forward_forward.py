@@ -83,6 +83,9 @@ class ForwardForward(BaseOptimizer):
         self.corrupt_frac = float(corrupt_frac)    # LM negatives: fraction of corrupted positions
         self.neutral_value = float(neutral_value)  # Hinton: neutral label = ten entries of 0.1
         self.ln_f = getattr(model, "ln_f", None)   # CharTransformer applies ln_f before the readout
+        # Compute: images forward a 3N batch (positive, negative, neutral-label pass for the readout),
+        # sequences a 2N batch (real, corrupted) -> 3 or 2 N-sized passes per step.
+        self.forward_passes_per_step = 3 if task_kind == "cls" else 2
         self._g_pos: Optional[torch.Tensor] = None
         self._g_neg: Optional[torch.Tensor] = None
         self._readout_loss: Optional[torch.Tensor] = None
@@ -217,18 +220,23 @@ class ForwardForward(BaseOptimizer):
         return self._readout(self._normalise(h))
 
     @torch.no_grad()
-    def predict_goodness(self, x: torch.Tensor) -> torch.Tensor:
-        """Hinton's label-accumulation inference (mohammadpz ``Net.predict``):
-        overlay each candidate label, run the blocks, sum the goodness over all blocks.
+    def predict_goodness(self, x: torch.Tensor, all_blocks: bool = False) -> torch.Tensor:
+        """Hinton's label-accumulation inference: overlay each candidate label, run the blocks and
+        accumulate the goodness.  Hinton (2022, sec. 3.3) accumulates over all hidden layers
+        *except the first* ("it is better to use the goodnesses of all but the first hidden
+        layer"); that is the default here when the model has more than one block.
+        ``all_blocks=True`` sums over every block instead (mohammadpz ``Net.predict``; used for
+        the first 96 runs of the sweep and still logged as ``acc_goodness_all``).
         Returns the (N, n_classes) goodness matrix; ``argmax(1)`` is the prediction.
         Classification only."""
         if self.task_kind != "cls":
             raise ValueError("predict_goodness is defined for classification only")
         ctx.mode = "bp"
         xmax = x.max()
+        first = 0 if (all_blocks or len(self.model.blocks) == 1) else 1
         cols = []
         for label in range(self.n_classes):
             y = torch.full((x.shape[0],), label, dtype=torch.long, device=x.device)
             _, goodness = self._run_blocks(self.model.embed(self._overlay(x, y, xmax)))
-            cols.append(sum(goodness).unsqueeze(1))
+            cols.append(sum(goodness[first:]).unsqueeze(1))
         return torch.cat(cols, 1)

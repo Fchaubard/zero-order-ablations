@@ -70,11 +70,12 @@ class RandomSearch(BaseOptimizer):
         l_star = losses[k_star]
         improved = l_star < l0
         scale = torch.where(improved, (l_star - l0) / eps, torch.zeros_like(l0))
-        ghat = Z[k_star] * scale                                       # 0 when nothing improved
-        return l0, ghat, improved, l0 - l_star
+        z_star = Z[k_star]
+        ghat = z_star * scale                                          # 0 when nothing improved
+        return l0, ghat, improved, l0 - l_star, z_star
 
     def step(self, x, y):
-        l0, ghat, improved, gain = self._search(x, y)                  # 16 forward passes
+        l0, ghat, improved, gain, _ = self._search(x, y)               # 16 forward passes
         self._accepts[self._n_steps % self.acceptance_window] = improved.to(self._accepts.dtype)
         self._n_steps += 1
         self._last_gain = gain
@@ -90,3 +91,25 @@ class RandomSearch(BaseOptimizer):
             "acceptance_rate": float(self._accepts.sum() / n),         # running mean over the last <=100 steps
             "best_improvement": float(self._last_gain),                # L0 - L_k* (negative if no candidate improved)
         }
+
+
+
+@register("rsj")
+class RandomSearchJump(RandomSearch):
+    """Random search with a *direct* jump (ablation; outside the protocol's Adam-for-all rule).
+    Same 1 clean + 15 Gaussian candidates, but when the best candidate improves the batch loss
+    the parameters are set to ``theta + eps z_k*`` directly, otherwise they stay put: the
+    (1+lambda) evolution-strategy / "jumping" rule that the protocol's Adam wrapper only
+    approximates.  No optimizer state; an accepted candidate is exactly the point whose loss
+    was measured."""
+
+    def step(self, x, y):
+        l0, _, improved, gain, z_star = self._search(x, y)             # 16 forward passes
+        self._accepts[self._n_steps % self.acceptance_window] = improved.to(self._accepts.dtype)
+        self._n_steps += 1
+        self._last_gain = gain
+        with torch.no_grad():
+            # theta <- theta + eps z* when improved (torch.where keeps everything on the device)
+            theta = self.flat.get()
+            self.flat.set(torch.where(improved, theta + self.eps * z_star, theta))
+        return l0

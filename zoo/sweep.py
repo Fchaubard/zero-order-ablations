@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 
 from .common import DEFAULT_LRS, TASK_ORDER, fmt_lr, fmt_seconds, is_complete, load_json, result_path, run_name
-from .optimizers import ALL_OPTIMIZERS
+from .optimizers import ALL_OPTIMIZERS, EXTRA_OPTIMIZERS
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORDERS = ("interleaved", "task-major", "opt-major")
@@ -247,7 +247,7 @@ class Sweep:
 def main(argv=None) -> int:
     args = parse_args(argv)
     tasks = _csv(args.tasks, TASK_ORDER, "task")
-    opts = _csv(args.opts, ALL_OPTIMIZERS, "optimizer")
+    opts = _csv(args.opts, ALL_OPTIMIZERS + EXTRA_OPTIMIZERS, "optimizer")
     try:
         lrs = [float(x) for x in args.lrs.split(",") if x.strip()]
     except ValueError:

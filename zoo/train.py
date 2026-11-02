@@ -8,10 +8,13 @@
   sampling, evaluation and logging are excluded from the budget.
 * Every ``--eval-every`` seconds of train time (and once at the end) the model is evaluated
   on the full validation and test splits through ``opt.predict``.
-* Divergence watchdog: a non-finite loss, or a training loss > 2x its initial value, or a
-  validation loss > 2x its step-0 value, at two consecutive evaluations, stops the run and
-  marks it ``diverged`` (the step-0 validation loss is the same clean quantity for every
-  optimizer; the training loss of SPSA is a probe mean and is inflated at large epsilon).
+* Divergence watchdog: a non-finite loss, or a clean validation loss > 2x its step-0 value at
+  two consecutive evaluations, stops the run and marks it ``diverged``.  The reference is the
+  same clean quantity for every optimizer (stage 1 of the sweep, commits db100bc / f5424e9,
+  additionally compared each method's own training loss with its first-step value; SPSA's
+  training loss is a probe mean, which made that clause method-dependent, so it was dropped).
+* ``--save-ckpt`` writes ``{name}.best.pt`` (lowest validation loss so far), ``{name}.5min.pt``
+  (first evaluation at >= 300 s of train time) and ``{name}.final.pt`` next to the JSON.
 * ``results/{task}-{opt}-lr{lr}.json`` is rewritten atomically after every evaluation
   (``history`` grows; ``final`` is only added when the run completes), so a partial result
   survives a crash.  On an exception the JSON carries ``error`` + ``traceback`` and the
@@ -40,12 +43,12 @@ import torch
 from .common import atomic_write_json, fmt_lr, run_name
 from .data import Data
 from .models import TASKS, build_model
-from .optimizers import ALL_OPTIMIZERS, get_optimizer, per_sample_loss
+from .optimizers import ALL_OPTIMIZERS, EXTRA_OPTIMIZERS, get_optimizer, per_sample_loss
 from .optimizers.base import ADAM_BETAS
 from .perturb import count_params, ctx, players
 
 LN2 = math.log(2.0)
-DIVERGE_FACTOR = 2.0   # PROTOCOL.md: train loss > 2x its initial value at two consecutive evaluations -> diverged
+DIVERGE_FACTOR = 2.0   # PROTOCOL.md: validation loss > 2x its step-0 value at two consecutive evaluations -> diverged
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -53,7 +56,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def parse_args(argv=None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--task", required=True, choices=list(TASKS))
-    p.add_argument("--opt", required=True, choices=ALL_OPTIMIZERS)
+    p.add_argument("--opt", required=True, choices=ALL_OPTIMIZERS + EXTRA_OPTIMIZERS)
     p.add_argument("--lr", type=float, required=True, help="learning rate == epsilon (probe scale)")
     p.add_argument("--budget", type=float, default=3600.0, help="seconds of train time (opt.step only)")
     p.add_argument("--eval-every", type=float, default=300.0, help="seconds of train time between evaluations")
@@ -76,6 +79,8 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--weight-decay", type=float, default=0.0, help="decoupled weight decay (AdamW); 0 = protocol")
     p.add_argument("--tf32", action=argparse.BooleanOptionalAction, default=False,
                    help="allow TF32 for cuDNN convolutions / matmuls (default: full fp32 arithmetic)")
+    p.add_argument("--save-ckpt", action=argparse.BooleanOptionalAction, default=True,
+                   help="save best-validation / 5-minute / final checkpoints next to the results JSON")
     return p.parse_args(argv)
 
 
@@ -139,11 +144,15 @@ def evaluate(opt, data: Data, split: str) -> dict:
     if data.kind == "lm":
         out["bpc"] = loss / LN2
     if data.kind == "cls" and hasattr(opt, "predict_goodness"):
-        # forward-forward: Hinton's label-accumulation inference (one pass per candidate label)
+        # forward-forward: Hinton's label-accumulation inference (one pass per candidate label);
+        # ``acc_goodness`` = all blocks but the first (Hinton sec. 3.3), ``acc_goodness_all`` = every block
         corr_g = torch.zeros((), dtype=torch.float64, device=data.device)
+        corr_all = torch.zeros((), dtype=torch.float64, device=data.device)
         for x, y in data.eval_batches(split):
             corr_g += (opt.predict_goodness(x).argmax(1) == y).double().sum()
+            corr_all += (opt.predict_goodness(x, all_blocks=True).argmax(1) == y).double().sum()
         out["acc_goodness"] = corr_g.item() / max(n_tok, 1)
+        out["acc_goodness_all"] = corr_all.item() / max(n_tok, 1)
     return out
 
 
@@ -245,6 +254,18 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
     bad_evals, diverged, last_eval_step = 0, False, -1
     stop_reason = None
     ev, lg = _Window(), _Window()
+    ckpt_base = out_path[:-5] if out_path.endswith(".json") else out_path
+    best_val = [float("inf")]
+    saved_5min = [False]
+
+    def save_ckpt(kind: str, val_loss: float):
+        if not getattr(args, "save_ckpt", False):
+            return
+        try:
+            torch.save({"state_dict": opt.model.state_dict(), "step": step, "train_time": train_time,
+                        "val_loss": val_loss, "config": result["config"]}, f"{ckpt_base}.{kind}.pt")
+        except Exception as e:  # noqa: BLE001
+            print(f"[train] checkpoint save failed: {e!r}", flush=True)
 
     def do_eval():
         nonlocal bad_evals, diverged, last_eval_step, stop_reason
@@ -262,18 +283,25 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
             rec["val_bpc"], rec["test_bpc"] = val["bpc"], test["bpc"]
         if "acc_goodness" in test:
             rec["val_acc_goodness"], rec["test_acc_goodness"] = val["acc_goodness"], test["acc_goodness"]
+            rec["val_acc_goodness_all"], rec["test_acc_goodness_all"] = val["acc_goodness_all"], test["acc_goodness_all"]
         history.append(rec)
-        # ---- divergence watchdog (PROTOCOL.md); the step-0 evaluation is the reference
+        # ---- checkpoints: best validation loss so far, first evaluation past 5 minutes, (final: see below)
+        if math.isfinite(val["loss"]) and val["loss"] < best_val[0]:
+            best_val[0] = val["loss"]
+            rec["is_best"] = True
+            save_ckpt("best", val["loss"])
+        if not saved_5min[0] and train_time >= 300.0:
+            saved_5min[0] = True
+            save_ckpt("5min", val["loss"])
+        # ---- divergence watchdog (PROTOCOL.md); the clean step-0 validation loss is the reference
         if train_loss is None:
             initial_val[0] = val["loss"]
-        elif not math.isfinite(train_loss) or not math.isfinite(val["loss"]):
+        elif (train_loss is not None and not math.isfinite(train_loss)) or not math.isfinite(val["loss"]):
             diverged, stop_reason = True, "non-finite loss at evaluation"
-        elif (initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss) or \
-                (initial_val[0] is not None and val["loss"] > DIVERGE_FACTOR * initial_val[0]):
+        elif initial_val[0] is not None and val["loss"] > DIVERGE_FACTOR * initial_val[0]:
             bad_evals += 1
             if bad_evals >= 2:
-                which = "train" if (initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss) else "validation"
-                diverged, stop_reason = True, f"{which} loss > {DIVERGE_FACTOR:g}x its initial value at two consecutive evals"
+                diverged, stop_reason = True, f"validation loss > {DIVERGE_FACTOR:g}x its step-0 value at two consecutive evals"
         else:
             bad_evals = 0
         result.update(diverged=diverged, train_time=train_time, steps=step, status="running",
@@ -332,7 +360,9 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
                 next_eval += eval_every
     if last_eval_step != step:
         do_eval()
-    result.update(train_time=train_time, steps=step, diverged=diverged, stop_reason=stop_reason)
+    save_ckpt("final", history[-1]["val_loss"])
+    result.update(train_time=train_time, steps=step, diverged=diverged, stop_reason=stop_reason,
+                  best_val_loss=best_val[0])
 
 
 # ----------------------------------------------------------------------------- main
@@ -389,6 +419,14 @@ def main(argv=None) -> int:
                       wall_time_total=time.time() - wall0)
         atomic_write_json(out_path, result)
         logger.summary({f"final/{k}": v for k, v in final.items()} | {"diverged": result["diverged"]})
+        if logger.run is not None and args.save_ckpt:
+            try:
+                for kind in ("best", "5min", "final"):
+                    pth = out_path[:-5] + f".{kind}.pt"
+                    if os.path.exists(pth):
+                        logger.wandb.save(pth, base_path=os.path.dirname(pth), policy="now")
+            except Exception as e:  # noqa: BLE001
+                print(f"[train] wandb checkpoint upload failed: {e!r}", flush=True)
         logger.finish(0)
         if not args.quiet:
             extra = f" test_acc={final['test_acc']:.4f}" if data.kind == "cls" else f" test_bpc={final['test_bpc']:.4f}"

@@ -81,7 +81,7 @@ def rs_pseudo_grad(opt, x, y, rounds):
     """Average over ``rounds`` RS steps of the pseudo-gradient fed to Adam (0 when no candidate improved)."""
     g = None
     for _ in range(rounds):
-        _, ghat, _, _ = opt._search(x, y)
+        _, ghat, _, _, _ = opt._search(x, y)
         g = ghat.clone() if g is None else g + ghat
     return g / rounds
 

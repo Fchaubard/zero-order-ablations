@@ -27,8 +27,9 @@ def get_optimizer(name, model, lr, task_kind, n_classes, **kw) -> BaseOptimizer:
 _MODULE_OF = {
     "backprop": ("bp",),
     "spsa": ("spsa",),
-    "random_search": ("rs",),
+    "random_search": ("rs", "rsj"),
     "node_perturbation": ("np", "anp", "inp", "danp"),
     "forward_forward": ("ff",),
 }
 ALL_OPTIMIZERS = ["bp", "spsa", "rs", "np", "anp", "inp", "danp", "ff"]
+EXTRA_OPTIMIZERS = ["rsj"]   # ablations outside the protocol (direct-jump random search)
