@@ -8,8 +8,10 @@
   sampling, evaluation and logging are excluded from the budget.
 * Every ``--eval-every`` seconds of train time (and once at the end) the model is evaluated
   on the full validation and test splits through ``opt.predict``.
-* Divergence watchdog: a non-finite training loss, or a train loss > 2x the initial one at
-  two consecutive evaluations, stops the run and marks it ``diverged``.
+* Divergence watchdog: a non-finite loss, or a training loss > 2x its initial value, or a
+  validation loss > 2x its step-0 value, at two consecutive evaluations, stops the run and
+  marks it ``diverged`` (the step-0 validation loss is the same clean quantity for every
+  optimizer; the training loss of SPSA is a probe mean and is inflated at large epsilon).
 * ``results/{task}-{opt}-lr{lr}.json`` is rewritten atomically after every evaluation
   (``history`` grows; ``final`` is only added when the run completes), so a partial result
   survives a crash.  On an exception the JSON carries ``error`` + ``traceback`` and the
@@ -212,6 +214,7 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
     train_time, step = 0.0, 0
     next_eval, next_log = eval_every, log_every
     initial_loss: Optional[float] = None
+    initial_val = [None]                      # clean validation loss at step 0 (optimizer-independent reference)
     bad_evals, diverged, last_eval_step = 0, False, -1
     stop_reason = None
     ev, lg = _Window(), _Window()
@@ -233,15 +236,17 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
         if "acc_goodness" in test:
             rec["val_acc_goodness"], rec["test_acc_goodness"] = val["acc_goodness"], test["acc_goodness"]
         history.append(rec)
-        # ---- divergence watchdog (PROTOCOL.md); skipped at the step-0 evaluation
+        # ---- divergence watchdog (PROTOCOL.md); the step-0 evaluation is the reference
         if train_loss is None:
-            pass
+            initial_val[0] = val["loss"]
         elif not math.isfinite(train_loss) or not math.isfinite(val["loss"]):
             diverged, stop_reason = True, "non-finite loss at evaluation"
-        elif initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss:
+        elif (initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss) or \
+                (initial_val[0] is not None and val["loss"] > DIVERGE_FACTOR * initial_val[0]):
             bad_evals += 1
             if bad_evals >= 2:
-                diverged, stop_reason = True, f"train loss > {DIVERGE_FACTOR:g}x initial ({initial_loss:.4g}) at two consecutive evals"
+                which = "train" if (initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss) else "validation"
+                diverged, stop_reason = True, f"{which} loss > {DIVERGE_FACTOR:g}x its initial value at two consecutive evals"
         else:
             bad_evals = 0
         result.update(diverged=diverged, train_time=train_time, steps=step, status="running",

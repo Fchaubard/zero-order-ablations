@@ -38,8 +38,9 @@ augmentation, no dropout, no weight decay.  Inputs standardised (MNIST, CIFAR pe
   where it does not (SPSA, RS).
 * Budget: **1 hour of training wall-clock per run** on one RTX 5090 (evaluation time
   is excluded from the clock).  Evaluate on validation + test every 5 minutes of train
-  time and at the end.  A run whose training loss is NaN, or > 2x its initial value
-  at two consecutive evaluations, is stopped early and marked diverged.
+  time and at the end.  A run whose loss is NaN, or whose training loss is > 2x its initial
+  value or whose validation loss is > 2x its step-0 value at two consecutive evaluations,
+  is stopped early and marked diverged (recorded at its last evaluation).
 * Model selection: for each (task, optimizer) pick the epsilon with the lowest final
   **validation** loss; report that run's final **test** loss (and test accuracy for
   classification; bits-per-character = loss / ln 2 for LM).

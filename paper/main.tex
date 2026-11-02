@@ -852,7 +852,7 @@ beyond the $\varepsilon$ sweep.
     Decorrelation rate $\eta_R$ (\DANP{}) & $10^{-3}$, fixed \\
     Training budget & 60 min wall-clock per run, evaluation excluded \\
     Evaluation interval & every 5 min of training time, and at the end \\
-    Divergence rule & NaN, or $>2\times$ initial training loss at two consecutive evaluations \\
+    Divergence rule & NaN, or training loss $>2\times$ its initial value, or validation loss $>2\times$ its step-0 value, at two consecutive evaluations \\
     Seeds & 1 per configuration \\
     \bottomrule
   \end{tabular}
