@@ -301,10 +301,12 @@ in MeZO \citep{malladi2023}; no clean pass is spent, and the training loss logge
 and uses the three-point second difference along every direction to damp the step where
 the loss is sharp:
 \begin{equation}
-  \ghat_{\SPSAb}=\frac{1}{K}\sum_{k=1}^{K}
-    \frac{\loss(\btheta+\sigma\bz_k)-\loss(\btheta-\sigma\bz_k)}{2\sigma\,c_k}\,\bz_k,
-  \qquad
-  c_k=\max\!\Bigl(\bigl|\tfrac{\loss(\btheta+\sigma\bz_k)-2\loss_0+\loss(\btheta-\sigma\bz_k)}{\sigma^{2}}\bigr|^{\alpha},\,\lambda\Bigr),
+\begin{aligned}
+  \ghat_{\SPSAb}&=\frac{1}{K}\sum_{k=1}^{K}
+    \frac{\loss(\btheta+\sigma\bz_k)-\loss(\btheta-\sigma\bz_k)}{2\sigma\,c_k}\,\bz_k,\\
+  c_k&=\max\bigl(\hat\kappa_k^{\,\alpha},\lambda\bigr),\qquad
+  \hat\kappa_k=\frac{|\loss(\btheta+\sigma\bz_k)-2\loss_0+\loss(\btheta-\sigma\bz_k)|}{\sigma^{2}},
+\end{aligned}
   \label{eq:spsa15}
 \end{equation}
 with the saturating exponent $\alpha=0.1$ and floor $\lambda=1$ of the published code.
@@ -467,20 +469,20 @@ part of what the equal-pass budget compares.
   the MLP and the LSTM, 5 for the ConvNet, 15 for the Transformer).}
   \label{tab:budget}
   \centering
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{lcccl}
+  \scriptsize
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{lccll}
     \toprule
     Method & Clean & Probe passes & Backward & Estimate per step \\
     \midrule
-    \BP{}    & 1 & 0  & 1 full      & exact gradient \\
-    \SPSA{}  & 0 & 16 & --          & 8 central differences, averaged \\
-    \SPSAb{} & 1 & 16 & --          & 8 curvature-scaled central differences \\
-    \RS{}    & 1 & 15 & --          & best of 15 candidates \\
+    \BP{}    & 1 & 0  & full      & exact gradient \\
+    \SPSA{}  & 0 & 16 & --        & 8 central differences, averaged \\
+    \SPSAb{} & 1 & 16 & --        & 8 curvature-scaled central differences \\
+    \RS{}    & 1 & 15 & --        & best of 15 candidates \\
     \NP{}, \ANP{}, \DANP{} & 1 & 15 (all layers) & -- & 15 noise draws, averaged (\DANP{}: $+\bR_l$ update) \\
     \ANPb{}  & 1 & 16 (all layers, 8 pairs) & -- & 8 curvature-scaled central differences per unit \\
-    \INP{}   & 1 & 15 (one layer each) & --      & $\lfloor 15/L\rfloor$ draws per layer \\
-    \FF{}    & 3 / 2 (pos., neg., neutral) & 0 & per block, local & local goodness gradients \\
+    \INP{}   & 1 & 15 (one layer each) & -- & $\lfloor 15/L\rfloor$ draws per layer \\
+    \FF{}    & 3 / 2 & 0 & per block & local goodness gradients \\
     \bottomrule
   \end{tabular}
 \end{table}
