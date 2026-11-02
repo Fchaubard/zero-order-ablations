@@ -40,15 +40,16 @@ def _csv(s: str, allowed: List[str], what: str) -> List[str]:
     return items
 
 
-def enumerate_configs(tasks: List[str], opts: List[str], lrs: List[float], order: str) -> List[Tuple[str, str, float]]:
-    """``interleaved`` = sort by (lr, opt, task): consecutive configs round-robin over the tasks,
-    so every batch of 8 covers all 4 tasks and 2 optimizers at the same epsilon."""
+def enumerate_configs(tasks: List[str], opts: List[str], lrs: List[float], order: str,
+                      seeds: List[int] = (0,)) -> List[Tuple[str, str, float, int]]:
+    """``interleaved`` = sort by (seed, lr, opt, task): consecutive configs round-robin over the
+    tasks, so every batch of 8 covers all 4 tasks and 2 optimizers at the same epsilon."""
     if order == "task-major":
-        return [(t, o, lr) for t in tasks for o in opts for lr in lrs]
+        return [(t, o, lr, s) for s in seeds for t in tasks for o in opts for lr in lrs]
     if order == "opt-major":
-        return [(t, o, lr) for o in opts for t in tasks for lr in lrs]
+        return [(t, o, lr, s) for s in seeds for o in opts for t in tasks for lr in lrs]
     if order == "interleaved":
-        return [(t, o, lr) for lr in lrs for o in opts for t in tasks]
+        return [(t, o, lr, s) for s in seeds for lr in lrs for o in opts for t in tasks]
     raise ValueError(order)
 
 
@@ -60,7 +61,8 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--lrs", default=",".join(fmt_lr(x) for x in DEFAULT_LRS))
     p.add_argument("--budget", type=float, default=3600.0)
     p.add_argument("--eval-every", type=float, default=300.0)
-    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--seed", type=int, default=0, help="single seed (ignored when --seeds is given)")
+    p.add_argument("--seeds", default=None, help="comma list of seeds, e.g. 0,1,2 (seed 0 keeps the plain run name)")
     p.add_argument("--out", default="results")
     p.add_argument("--logdir", default="runs")
     p.add_argument("--data-root", default="./data")
@@ -72,12 +74,16 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--python", default=sys.executable)
     p.add_argument("--synthetic", action="store_true", help="pass --synthetic to every run (smoke test)")
     p.add_argument("--train-arg", action="append", default=[], help="extra argument forwarded to zoo.train (repeatable)")
+    p.add_argument("--jobs", default=None,
+                   help="file with one zoo.train argument line per run (e.g. '--task mlp_mnist --opt np --lr 0.001 "
+                        "--seed 1 --sigma 0.01 --out results_decouple'); replaces the tasks x opts x lrs grid. "
+                        "--budget/--eval-every/--out/--data-root/--wandb-project are defaults a line may override.")
     return p.parse_args(argv)
 
 
-def build_cmd(args, task: str, opt: str, lr: float) -> List[str]:
+def build_cmd(args, task: str, opt: str, lr: float, seed: int = 0) -> List[str]:
     cmd = [args.python, "-m", "zoo.train", "--task", task, "--opt", opt, "--lr", fmt_lr(lr),
-           "--budget", f"{args.budget:g}", "--eval-every", f"{args.eval_every:g}", "--seed", str(args.seed),
+           "--budget", f"{args.budget:g}", "--eval-every", f"{args.eval_every:g}", "--seed", str(seed),
            "--out", args.out, "--data-root", args.data_root, "--wandb-project", args.wandb_project]
     if args.no_wandb:
         cmd.append("--no-wandb")
@@ -85,6 +91,34 @@ def build_cmd(args, task: str, opt: str, lr: float) -> List[str]:
         cmd.append("--synthetic")
     cmd.extend(args.train_arg)
     return cmd
+
+
+def _job_argv(args, line: str) -> List[str]:
+    """Sweep defaults first, then the job line (argparse keeps the last occurrence)."""
+    import shlex
+    base = ["--budget", f"{args.budget:g}", "--eval-every", f"{args.eval_every:g}", "--out", args.out,
+            "--data-root", args.data_root, "--wandb-project", args.wandb_project]
+    if args.no_wandb:
+        base.append("--no-wandb")
+    if args.synthetic:
+        base.append("--synthetic")
+    return base + args.train_arg + shlex.split(line)
+
+
+def read_jobs(args, path: str):
+    """Returns [(line_no, argv, result_path, run_name)] for the non-empty, non-comment lines."""
+    from .train import name_from_args, parse_args as train_parse_args
+    jobs = []
+    with open(path) as f:
+        for i, raw in enumerate(f, 1):
+            line = raw.split("#", 1)[0].strip()
+            if not line:
+                continue
+            argv = _job_argv(args, line)
+            targs = train_parse_args(argv)
+            name = name_from_args(targs)
+            jobs.append((i, argv, os.path.join(targs.out, name + ".json"), name))
+    return jobs
 
 
 def _now() -> str:
@@ -116,7 +150,7 @@ def _final_summary(path: str) -> Tuple[str, dict]:
 class Sweep:
     def __init__(self, args, configs):
         self.args = args
-        self.q: "queue.Queue[Tuple[int, str, str, float]]" = queue.Queue()
+        self.q: "queue.Queue[Tuple[int, str, str, float, int]]" = queue.Queue()
         for i, c in enumerate(configs):
             self.q.put((i, *c))
         self.total = len(configs)
@@ -129,9 +163,15 @@ class Sweep:
         with self.lock:
             print(f"[{_now()}] {msg}", flush=True)
 
-    def run_one(self, gpu: str, idx: int, task: str, opt: str, lr: float):
-        name = run_name(task, opt, lr)
-        cmd = build_cmd(self.args, task, opt, lr)
+    def run_one(self, gpu: str, idx: int, task: str, opt: str, lr: float, seed: int = 0):
+        name = run_name(task, opt, lr, seed)
+        cmd = build_cmd(self.args, task, opt, lr, seed)
+        self._run_cmd(gpu, idx, name, cmd, result_path(self.args.out, task, opt, lr, seed))
+
+    def run_job(self, gpu: str, idx: int, argv: List[str], path: str, name: str):
+        self._run_cmd(gpu, idx, name, [self.args.python, "-m", "zoo.train", *argv], path)
+
+    def _run_cmd(self, gpu: str, idx: int, name: str, cmd: List[str], path: str):
         env = dict(os.environ)
         env["CUDA_VISIBLE_DEVICES"] = "" if gpu == "cpu" else gpu
         env.setdefault("PYTHONUNBUFFERED", "1")
@@ -148,7 +188,7 @@ class Sweep:
             with self.lock:
                 self.procs.remove(proc)
         elapsed = time.time() - t0
-        summary, rec = _final_summary(result_path(self.args.out, task, opt, lr))
+        summary, rec = _final_summary(path)
         self.say(f"DONE   gpu{gpu:<3} {name:34s} exit={rc} {fmt_seconds(elapsed):>9s} {summary}")
         with self.lock:
             self.rows.append({"idx": idx, "name": name, "gpu": gpu, "exit": rc, "elapsed": elapsed,
@@ -157,13 +197,17 @@ class Sweep:
     def worker(self, gpu: str):
         while not self.stop.is_set():
             try:
-                idx, task, opt, lr = self.q.get_nowait()
+                item = self.q.get_nowait()
             except queue.Empty:
                 return
             try:
-                self.run_one(gpu, idx, task, opt, lr)
+                if len(item) == 4 and isinstance(item[1], list):      # job-list mode: (idx, argv, path, name)
+                    self.run_job(gpu, *item)
+                else:
+                    idx, task, opt, lr, seed = item
+                    self.run_one(gpu, idx, task, opt, lr, seed)
             except Exception as e:  # noqa: BLE001
-                self.say(f"worker gpu{gpu} crashed on {run_name(task, opt, lr)}: {e!r}")
+                self.say(f"worker gpu{gpu} crashed on {item}: {e!r}")
 
     def terminate(self):
         self.stop.set()
@@ -212,7 +256,33 @@ def main(argv=None) -> int:
     if not gpus:
         raise SystemExit("--gpus must list at least one GPU id (or 'cpu')")
 
-    all_configs = enumerate_configs(tasks, opts, lrs, args.order)
+    if args.jobs:
+        jobs = read_jobs(args, args.jobs)
+        todo = [(i, argv, path, name) for i, argv, path, name in jobs if args.force or not is_complete(load_json(path))]
+        done = {name for _, _, _, name in jobs} - {name for _, _, _, name in todo}
+        print(f"{len(jobs)} jobs in {args.jobs}; {len(done)} already complete, {len(todo)} to run on {len(gpus)} worker(s): {gpus}", flush=True)
+        for i, argv, path, name in jobs:
+            print(f"[{i:3d}] {'run ' if name not in done else 'skip'} {name}  ->  {path}")
+        if args.dry_run:
+            if todo:
+                print("example command:", " ".join([args.python, "-m", "zoo.train", *todo[0][1]]))
+            print(f"dry run: {len(todo)} jobs would run, {len(done)} skipped")
+            return 0
+        if not todo:
+            print("nothing to do")
+            return 0
+        os.makedirs(args.logdir, exist_ok=True)
+        sweep = Sweep(args, [])
+        for j, (i, argv, path, name) in enumerate(todo):
+            sweep.q.put((j, argv, path, name))
+        sweep.total = len(todo)
+        return _run_sweep(args, sweep, gpus)
+
+    try:
+        seeds = [int(x) for x in args.seeds.split(",") if x.strip()] if args.seeds else [args.seed]
+    except ValueError:
+        raise SystemExit(f"bad --seeds {args.seeds!r}")
+    all_configs = enumerate_configs(tasks, opts, lrs, args.order, seeds)
     todo, skipped = [], []
     for c in all_configs:
         path = result_path(args.out, *c)
@@ -220,7 +290,7 @@ def main(argv=None) -> int:
             skipped.append(c)
         else:
             todo.append(c)
-    print(f"{len(all_configs)} configs ({len(tasks)} tasks x {len(opts)} opts x {len(lrs)} lrs, order={args.order}); "
+    print(f"{len(all_configs)} configs ({len(tasks)} tasks x {len(opts)} opts x {len(lrs)} lrs x {len(seeds)} seeds, order={args.order}); "
           f"{len(skipped)} already complete in {args.out}/, {len(todo)} to run on {len(gpus)} worker(s): {gpus}",
           flush=True)
     for i, c in enumerate(all_configs):
@@ -238,6 +308,10 @@ def main(argv=None) -> int:
     os.makedirs(args.out, exist_ok=True)
     os.makedirs(args.logdir, exist_ok=True)
     sweep = Sweep(args, todo)
+    return _run_sweep(args, sweep, gpus)
+
+
+def _run_sweep(args, sweep: "Sweep", gpus: List[str]) -> int:
     threads = [threading.Thread(target=sweep.worker, args=(g,), daemon=True, name=f"gpu{g}") for g in gpus]
     t0 = time.time()
     for t in threads:

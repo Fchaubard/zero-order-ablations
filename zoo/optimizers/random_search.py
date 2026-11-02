@@ -37,6 +37,7 @@ class RandomSearch(BaseOptimizer):
     def __init__(self, model, lr, task_kind, n_classes,
                  loss_fn: Optional[Callable] = None, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
+        self.n_candidates = max(1, self.forward_passes_per_step - 1)   # 16 passes -> 1 clean + 15 candidates
         self.loss_fn = loss_fn if loss_fn is not None else default_loss_fn
         self.flat = _FlatParams([p for p in model.parameters() if p.requires_grad])
         dev = self.flat.params[0].device

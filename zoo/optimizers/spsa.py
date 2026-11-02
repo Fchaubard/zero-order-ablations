@@ -89,6 +89,7 @@ class SPSA(BaseOptimizer):
     def __init__(self, model, lr, task_kind, n_classes,
                  loss_fn: Optional[Callable] = None, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
+        self.n_pairs = max(1, self.forward_passes_per_step // 2)   # 16 passes -> 8 antithetic pairs
         self.loss_fn = loss_fn if loss_fn is not None else default_loss_fn
         self.flat = _FlatParams([p for p in model.parameters() if p.requires_grad])
         self._last_g: Optional[torch.Tensor] = None   # (n_pairs,) projected gradients of the last step

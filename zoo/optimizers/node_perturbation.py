@@ -68,6 +68,7 @@ class _NodePerturbation(BaseOptimizer):
 
     def __init__(self, model, lr, task_kind, n_classes, lr_decor: float = LR_DECOR, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
+        self.n_noisy = max(1, self.forward_passes_per_step - 1)   # 16 passes -> 1 clean + 15 noisy
         self.layers = players(model)
         ctx.set_layers(self.layers)
         self.lr_decor = lr_decor

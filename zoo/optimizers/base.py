@@ -28,13 +28,23 @@ class BaseOptimizer:
     name = "base"
     forward_passes_per_step = 16   # the budget every zero-order method must respect
 
-    def __init__(self, model: torch.nn.Module, lr: float, task_kind: str, n_classes: int, **kw):
+    def __init__(self, model: torch.nn.Module, lr: float, task_kind: str, n_classes: int,
+                 sigma: float | None = None, n_passes: int | None = None, weight_decay: float = 0.0, **kw):
         self.model = model
-        self.lr = lr              # == epsilon (probe scale) for every zero-order method
-        self.eps = lr
+        self.lr = lr
+        # PROTOCOL.md ties the probe scale to the learning rate (sigma = None -> eps = lr); the
+        # decoupling ablation passes an explicit sigma.
+        self.eps = lr if sigma is None else float(sigma)
         self.task_kind = task_kind   # "cls" or "lm"
         self.n_classes = n_classes
-        self.adam = torch.optim.Adam(model.parameters(), lr=lr, betas=ADAM_BETAS)
+        # Forward-pass budget per step (protocol: 16); subclasses derive their probe counts from it.
+        if n_passes is not None:
+            self.forward_passes_per_step = int(n_passes)
+        self.weight_decay = float(weight_decay)
+        if self.weight_decay > 0:   # decoupled weight decay (AdamW); only used for the backprop reference ablation
+            self.adam = torch.optim.AdamW(model.parameters(), lr=lr, betas=ADAM_BETAS, weight_decay=self.weight_decay)
+        else:
+            self.adam = torch.optim.Adam(model.parameters(), lr=lr, betas=ADAM_BETAS)
 
     def step(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError

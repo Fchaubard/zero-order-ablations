@@ -15,12 +15,14 @@ def fmt_lr(lr) -> str:
     return f"{float(lr):g}"
 
 
-def run_name(task: str, opt: str, lr) -> str:
-    return f"{task}-{opt}-lr{fmt_lr(lr)}"
+def run_name(task: str, opt: str, lr, seed: int = 0, tag: str = "") -> str:
+    """Seed 0 keeps the historical name ``{task}-{opt}-lr{eps}``; other seeds append ``-s{seed}``;
+    ``tag`` (e.g. ``-sig0.001-K64``) records non-protocol settings, see ``zoo.train.run_tag``."""
+    return f"{task}-{opt}-lr{fmt_lr(lr)}" + (tag or "") + (f"-s{int(seed)}" if int(seed) != 0 else "")
 
 
-def result_path(out_dir: str, task: str, opt: str, lr) -> str:
-    return os.path.join(out_dir, run_name(task, opt, lr) + ".json")
+def result_path(out_dir: str, task: str, opt: str, lr, seed: int = 0, tag: str = "") -> str:
+    return os.path.join(out_dir, run_name(task, opt, lr, seed, tag) + ".json")
 
 
 def atomic_write_json(path: str, obj) -> None:

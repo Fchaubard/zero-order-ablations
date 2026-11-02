@@ -67,7 +67,34 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--log-every", type=int, default=100, help="steps between train-stat log lines")
     p.add_argument("--synthetic", action="store_true", help="random data of the right shapes (smoke tests)")
     p.add_argument("--quiet", action="store_true")
+    # ---- ablation knobs (PROTOCOL.md defaults when omitted; each one is recorded in the run name) ----
+    p.add_argument("--sigma", type=float, default=None,
+                   help="probe scale decoupled from the learning rate (default: sigma = lr, the protocol's tie)")
+    p.add_argument("--passes", type=int, default=None,
+                   help="forward passes per step for the probe methods (default 16; SPSA uses passes/2 pairs, "
+                        "RS / NP / ANP / DANP passes-1 probes, INP max(1, (passes-1)//L) draws per layer)")
+    p.add_argument("--weight-decay", type=float, default=0.0, help="decoupled weight decay (AdamW); 0 = protocol")
+    p.add_argument("--tf32", action=argparse.BooleanOptionalAction, default=False,
+                   help="allow TF32 for cuDNN convolutions / matmuls (default: full fp32 arithmetic)")
     return p.parse_args(argv)
+
+
+def run_tag(args) -> str:
+    """Name suffix for non-protocol settings, e.g. ``-sig0.001``, ``-K64``, ``-wd0.0001``, ``-tf32``."""
+    tag = ""
+    if getattr(args, "sigma", None) is not None:
+        tag += f"-sig{fmt_lr(args.sigma)}"
+    if getattr(args, "passes", None) is not None:
+        tag += f"-K{int(args.passes)}"
+    if getattr(args, "weight_decay", 0.0):
+        tag += f"-wd{fmt_lr(args.weight_decay)}"
+    if getattr(args, "tf32", False):
+        tag += "-tf32"
+    return tag
+
+
+def name_from_args(args) -> str:
+    return run_name(args.task, args.opt, args.lr, args.seed, run_tag(args))
 
 
 def seed_everything(seed: int) -> None:
@@ -311,7 +338,7 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
 # ----------------------------------------------------------------------------- main
 def main(argv=None) -> int:
     args = parse_args(argv)
-    name = run_name(args.task, args.opt, args.lr)
+    name = name_from_args(args)
     os.makedirs(args.out, exist_ok=True)
     out_path = os.path.join(args.out, name + ".json")
     seed_everything(args.seed)
@@ -321,12 +348,21 @@ def main(argv=None) -> int:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True
+        # Precision: the probe methods correlate per-example loss differences of order sigma with
+        # the injected noise, and at sigma = 1e-3 those differences are of the same order as TF32's
+        # ~1e-3 relative rounding.  PyTorch leaves TF32 ON for cuDNN convolutions by default (and
+        # off for matmul), so the ConvNet runs would otherwise mix precisions; make it explicit.
+        torch.backends.cudnn.allow_tf32 = bool(args.tf32)
+        torch.backends.cuda.matmul.allow_tf32 = bool(args.tf32)
 
     config = {**vars(args), "lr": args.lr, "lr_str": fmt_lr(args.lr), "name": name, "device": str(device),
               "hostname": socket.gethostname(),
               "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
               "git_commit": git_commit(), "torch": torch.__version__, "python": platform.python_version(),
-              "betas": list(ADAM_BETAS), "argv": sys.argv[1:]}
+              "betas": list(ADAM_BETAS), "argv": sys.argv[1:], "tag": run_tag(args),
+              "sigma_eff": args.lr if args.sigma is None else args.sigma,
+              "passes_eff": None, "precision": "tf32" if args.tf32 else "fp32",
+              "cudnn_allow_tf32": torch.backends.cudnn.allow_tf32, "matmul_allow_tf32": torch.backends.cuda.matmul.allow_tf32}
     result = {"config": config, "history": [], "diverged": False, "status": "starting", "wall_time_total": 0.0}
     wall0 = time.time()
     logger: Optional[WandbLogger] = None
@@ -334,16 +370,19 @@ def main(argv=None) -> int:
         data = Data(args.task, device, root=args.data_root, _synthetic=args.synthetic)
         model = build_model(args.task, vocab=data.n_classes).to(device)
         ctx.set_layers(players(model))
-        opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes)
+        opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes,
+                            sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay)
         config.update(n_params=count_params(model), batch_size=data.batch_size, seq_len=data.seq_len,
                       kind=data.kind, n_classes=data.n_classes, n_train=data.n_train, data_source=data.source,
-                      forward_passes_per_step=int(getattr(opt, "forward_passes_per_step", 1)))
+                      forward_passes_per_step=int(getattr(opt, "forward_passes_per_step", 1)),
+                      passes_eff=int(getattr(opt, "forward_passes_per_step", 1)), eps_eff=float(getattr(opt, "eps", args.lr)))
         logger = WandbLogger(args.wandb, args.wandb_project, name, args.task, config)
         if not args.quiet:
             print(f"[{name}] {data.summary()}", flush=True)
             print(f"[{name}] params={config['n_params']} fp/step={config['forward_passes_per_step']} "
                   f"device={device} ({config['gpu'] or 'cpu'}) budget={args.budget:g}s eval_every={args.eval_every:g}s "
-                  f"seed={args.seed} wandb={'on' if logger.run else 'off'}", flush=True)
+                  f"seed={args.seed} lr={args.lr:g} sigma={config['eps_eff']:g} wd={args.weight_decay:g} "
+                  f"precision={config['precision']} wandb={'on' if logger.run else 'off'}", flush=True)
         train_loop(args, data, opt, result, logger, out_path, wall0, quiet=args.quiet)
         final = dict(result["history"][-1])
         result.update(final=final, status="diverged" if result["diverged"] else "done",
