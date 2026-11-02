@@ -20,19 +20,19 @@
       legend to name=zoolegendB, legend columns=8,
       legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.5em}},
       legend entries={BP, SPSA, RS, NP, ANP, INP, DANP, FF}]
-    \zoobands{data/curve2_mlp_mnist.csv}
+    \input{figures/bands_mlp_mnist}
     \zoomeans{data/curve2_mlp_mnist.csv}
 
     \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3]
-    \zoobands{data/curve2_conv_cifar10.csv}
+    \input{figures/bands_conv_cifar10}
     \zoomeans{data/curve2_conv_cifar10.csv}
 
     \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5]
-    \zoobands{data/curve2_lstm_ptb.csv}
+    \input{figures/bands_lstm_ptb}
     \zoomeans{data/curve2_lstm_ptb.csv}
 
     \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5]
-    \zoobands{data/curve2_transformer_ptb.csv}
+    \input{figures/bands_transformer_ptb}
     \zoomeans{data/curve2_transformer_ptb.csv}
   \end{groupplot}
 \end{tikzpicture}
