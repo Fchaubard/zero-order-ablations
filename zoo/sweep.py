@@ -247,7 +247,8 @@ class Sweep:
 def main(argv=None) -> int:
     args = parse_args(argv)
     tasks = _csv(args.tasks, TASK_ORDER, "task")
-    opts = _csv(args.opts, ALL_OPTIMIZERS + EXTRA_OPTIMIZERS, "optimizer")
+    # "all" = the protocol's 8 optimizers; ablation optimizers (EXTRA_OPTIMIZERS) only when named
+    opts = ALL_OPTIMIZERS if args.opts.strip().lower() == "all" else _csv(args.opts, ALL_OPTIMIZERS + EXTRA_OPTIMIZERS, "optimizer")
     try:
         lrs = [float(x) for x in args.lrs.split(",") if x.strip()]
     except ValueError:
