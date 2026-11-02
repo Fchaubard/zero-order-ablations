@@ -8,7 +8,7 @@
   sampling, evaluation and logging are excluded from the budget.
 * Every ``--eval-every`` seconds of train time (and once at the end) the model is evaluated
   on the full validation and test splits through ``opt.predict``.
-* Divergence watchdog: a non-finite training loss, or a train loss > 10x the initial one at
+* Divergence watchdog: a non-finite training loss, or a train loss > 2x the initial one at
   two consecutive evaluations, stops the run and marks it ``diverged``.
 * ``results/{task}-{opt}-lr{lr}.json`` is rewritten atomically after every evaluation
   (``history`` grows; ``final`` is only added when the run completes), so a partial result
@@ -43,6 +43,7 @@ from .optimizers.base import ADAM_BETAS
 from .perturb import count_params, ctx, players
 
 LN2 = math.log(2.0)
+DIVERGE_FACTOR = 2.0   # PROTOCOL.md: train loss > 2x its initial value at two consecutive evaluations -> diverged
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -229,10 +230,10 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
             pass
         elif not math.isfinite(train_loss) or not math.isfinite(val["loss"]):
             diverged, stop_reason = True, "non-finite loss at evaluation"
-        elif initial_loss is not None and train_loss > 10.0 * initial_loss:
+        elif initial_loss is not None and train_loss > DIVERGE_FACTOR * initial_loss:
             bad_evals += 1
             if bad_evals >= 2:
-                diverged, stop_reason = True, f"train loss > 10x initial ({initial_loss:.4g}) at two consecutive evals"
+                diverged, stop_reason = True, f"train loss > {DIVERGE_FACTOR:g}x initial ({initial_loss:.4g}) at two consecutive evals"
         else:
             bad_evals = 0
         result.update(diverged=diverged, train_time=train_time, steps=step, status="running",
