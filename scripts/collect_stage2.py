@@ -215,12 +215,17 @@ def main():
                 runs = seeds_of(task, opt, eps)
                 if not runs:
                     continue
+                # the screening criterion is the seed-0 run (PROTOCOL.md: select, then replicate); the seed mean is
+                # used only where seed 0 is missing
                 if opt == "ff" and task in IMAGE:
                     evs = {sd_: best_eval(r, "val_acc_goodness", maximize=True) for sd_, r in runs.items()}
-                    crit = -mean([e["val_acc_goodness"] for e in evs.values() if e])
+                    vals = {sd_: -e["val_acc_goodness"] for sd_, e in evs.items() if e}
                 else:
                     evs = {sd_: best_eval(r, "val_loss") for sd_, r in runs.items()}
-                    crit = mean([e["val_loss"] for e in evs.values() if e])
+                    vals = {sd_: e["val_loss"] for sd_, e in evs.items() if e}
+                if not vals:
+                    continue
+                crit = vals[0] if 0 in vals else mean(list(vals.values()))
                 cands.append((crit, eps, runs, evs))
             if cands:
                 crit, eps, runs, evs = min(cands, key=lambda c: c[0])
