@@ -1308,6 +1308,20 @@ with huge logits. The screening of \SPSAb{} and \ANPb{} under the stage-2 settin
 Transformer.
 
 \begin{table}[ht]
+  \caption{Tied $\varepsilon$ screening of every (task, method) pair: the lowest
+  validation loss over the hour at each value (\FF{} on the image tasks: goodness
+  validation accuracy), with the selected value in bold. Values at
+  $\varepsilon\le10^{-4}$ come from one-hour runs under the stage-2 settings; the first
+  three columns are stage-1 runs where no stage-2 run exists. Every selected value has a
+  worse neighbour on each side except where the grid ends at $10^{-5}$.}
+  \label{tab:eps}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/eps_table}
+\end{table}
+
+\begin{table}[ht]
   \caption{Stage 1: final validation / test loss of all 96 runs of the original eight
   methods (seed 0, 5-minute evaluations). Bold: the $\varepsilon$ with the lowest
   \emph{final} validation loss. A dagger marks a diverged run (last finite evaluation
@@ -1539,7 +1553,7 @@ beyond the $\varepsilon$ screening.
   \begin{tabular}{l p{7.9cm}}
     \toprule
     Optimizer & Adam, $(\beta_1,\beta_2)=(0.9,0.99)$, $\epsilon_{\text{Adam}}=10^{-8}$, no schedule, no weight decay (AdamW $10^{-2}$ in the \BP{} ablation only) \\
-    Learning rate $\eta$ $=$ probe scale $\sigma$ $=\varepsilon$ & $\{0.1, 0.01, 0.001, 0.0001\}$ (untied grid in Section~\ref{sec:decouple}; own recipes in Section~\ref{sec:own}) \\
+    Learning rate $\eta$ $=$ probe scale $\sigma$ $=\varepsilon$ & $\{0.1, 0.01, 0.001, 0.0001\}$, $10^{-5}$ on the image tasks (Table~\ref{tab:eps}) (untied grid in Section~\ref{sec:decouple}; own recipes in Section~\ref{sec:own}) \\
     Probe distribution & $\mathcal{N}(\mathbf{0},\bI)$, scaled by $\sigma$ \\
     Forward passes per step & 16 (probe methods), 17 (\SPSAb{}, \ANPb{}), 3 / 2 (\FF{}), 1 $+$ 1 backward (\BP{}) \\
     \SPSA{}, \SPSAb{} pairs / \RS{} candidates & 8 / 15 \\
