@@ -430,9 +430,8 @@ hardware, software, code commits and logging.
 
 Table~\ref{tab:main} reports the best-validation-checkpoint test loss and accuracy or
 bits per character of every method on every task, Table~\ref{tab:final} the same runs
-at the end of the hour, Table~\ref{tab:eps} the screening behind every selection and
-Appendix~\ref{app:selected} the selected $\varepsilon$, the minute of the best
-checkpoint and the seeds. On the image tasks the node-perturbation family leads and
+at the end of the hour and Table~\ref{tab:eps} the screening behind every selection
+(Appendix~\ref{app:selected}: minute of the best checkpoint and seeds). On the image tasks the node-perturbation family leads and
 three of its members tie: \INP{} and \NP{} share the lowest loss on MNIST (0.107,
 96.9\,\%) with \ANP{} 0.003 behind, and \ANP{}, \INP{} and \NP{} are within 0.02 of
 each other on CIFAR-10 (1.060--1.081, 62--63\,\%), where \DANP{} has the highest
@@ -498,12 +497,10 @@ above \BP{}. Per forward pass the node rules lead on the image tasks and trail o
 \label{sec:bpref}
 
 With Adam and no schedule, backpropagation completes 4.3M steps on MNIST and 2.0M on
-CIFAR-10 in the hour and overfits the 40k-parameter models within minutes. At
-$\eta=10^{-3}$ its CIFAR-10 validation loss is already above its initial value at the
-first evaluation (the best checkpoint of that run is step 0), and at $\eta=10^{-4}$,
-the selected reference on both image tasks, the best checkpoint sits at minute 1--2
-(97.1\,\% and 69.2\,\%) and the end-of-hour accuracy is 97.1 and 65.6\,\%
-(Table~\ref{tab:bp}, Appendix~\ref{app:extra}). On the sequence tasks $\eta=10^{-3}$
+CIFAR-10 in the hour and overfits within minutes: at $\eta=10^{-3}$ its CIFAR-10
+validation loss never returns below its initial value, and at $\eta=10^{-4}$, the
+selected reference on both image tasks, the best checkpoint sits at minute 1--2 (97.1
+and 69.2\,\%) and the hour ends at 97.1 and 65.6\,\% (Table~\ref{tab:bp}). On the sequence tasks $\eta=10^{-3}$
 is best, \BP{} is still improving at minute 60 (1.78 and 1.82 bits per character) and
 the reference is unproblematic. \TODO{AdamW rows of Table~\ref{tab:bp} land at 12:30
 UTC.}
@@ -560,14 +557,14 @@ Transformer rows of Table~\ref{tab:x} (with and without damping) land at 12:30 U
   $\varepsilon$ screening selected on the image tasks (Adam, $\eta=10^{-4}$), with the
   probe scale decoupled from the step size and the losses evaluated in fp64: test loss
   (accuracy or bits per character) at the best validation checkpoint, seed 0. The
-  $\alpha=0$ columns remove the curvature weighting; ``damped'' is the recurrent-state
-  damping of the LSTM (0.5). The last two columns are the tied-protocol selections of
+  $\alpha=0$ columns remove the curvature weighting; the ``damped'' row is the LSTM with the
+  recurrent-state damping (0.5) of its specification. The last two columns are the tied-protocol selections of
   1.5-ANP and ANP (mean over seeds).}
   \label{tab:x}
   \centering
   \scriptsize
   \setlength{\tabcolsep}{3pt}
-  \resizebox{\linewidth}{!}{\input{tables/x_table}}
+  \input{tables/x_table}
 \end{table}
 
 \subsection{Estimator quality}
@@ -583,7 +580,7 @@ the weight-space rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the
 $\sqrt{K/P}$ scaling of a 40k-dimensional random search. On the ConvNet every estimator is below 0.1 at 16 passes: its 26,682 perturbed
 unit-positions approach the number of weights, so the node estimate needs thousands
 of probes before it carries signal. On the LSTM and the Transformer no estimator
-exceeds 0.26 even at 4096 passes (the gate and attention layers get 0.04--0.2):
+exceeds 0.26 even at 4096 passes:
 perturbations that propagate through shared weights over 64 positions decorrelate the
 loss difference from any single unit, and \DANP{} and \ANPb{} are the least affected.
 \SPSAb{} is indistinguishable from \SPSA{} at every probe count, and \ANPb{}'s
@@ -691,18 +688,15 @@ stage 2 reports the best validation checkpoint as primary and the final value fo
 stability. A learning-rate schedule, not in the protocol, would be the other remedy.
 
 \paragraph{Screening, budget and scale.}
-The selection rests on one seed per $\varepsilon$, so the stage-2 error bars are
-conditional on $\varepsilon^{\ast}$ and exclude selection noise, and the stage-1
-divergence counts of Section~\ref{sec:decouple} are single Bernoulli draws per
-configuration. The budget is small and identical for all methods, which favours
+The selection rests on one seed per $\varepsilon$, so the error bars are conditional
+on $\varepsilon^{\ast}$ and exclude selection noise. The budget is small and identical for all methods, which favours
 methods that make progress quickly; the models are small by modern standards, and
 because the variance of weight-space estimators grows with $P$, the standing of
 \SPSA{} and \RS{} against the node-perturbation family may change at larger scale.
 Wall-clock comparisons reward implementations that batch probes well: the probe
 passes of this code are a Python loop and all runs executed eight at a time on one
 host, so steps per hour (Appendix~\ref{app:throughput}) depend on the host and the
-equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comparison. Adam's constants are a protocol choice made
-before any run, shared by every method and not tuned (Appendix~\ref{app:optimizers}).
+equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comparison.
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions, \RS{} is
