@@ -517,8 +517,7 @@ of this to the step size: at fixed $\eta=10^{-4}$ the probe scale ($\sigma\le10^
 30-minute loss of \SPSA{}, \SPSAb{}, \RS{}, \NP{} and \INP{} by at most 0.03 on
 MNIST and 0.09 on CIFAR-10, while \ANP{} and \DANP{} are $\sigma$-sensitive on
 CIFAR-10 (0.14 and 0.21) and \ANPb{} everywhere; on the image tasks $\eta=10^{-2}$
-loses to $10^{-4}$ for every rule but \DANP{} on CIFAR-10. A noisy estimate wants a small Adam step and many of them
-\citep{dalm2023,malladi2023}. On the sequence tasks $\eta=10^{-4}$ loses to $10^{-3}$ for every
+loses to $10^{-4}$ for every rule but \DANP{} on CIFAR-10. A noisy estimate wants a small Adam step and many of them. On the sequence tasks $\eta=10^{-4}$ loses to $10^{-3}$ for every
 rule on the LSTM (12--34k steps per hour) and for
 seven of ten on the Transformer. The best untied cell beats the best tied one by more than 3\,\% only for \ANPb{}
 on both image tasks (24 and 17\,\%, at $\sigma\ge10^{-3}$), \DANP{} on the Transformer
@@ -585,8 +584,8 @@ protocol's 16 passes a direction with cosine 0.4--0.6 to the gradient, rising to
 the weight-space rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the
 $\sqrt{K/P}$ scaling of a 40k-dimensional random search. On the ConvNet every estimator is below 0.1 at 16 passes: its 26,682 perturbed
 unit-positions need thousands of probes before the node estimate carries signal. On the LSTM and the Transformer no estimator exceeds 0.26 and 0.17 at 1024 passes
-(\INP{} reaches 0.40 and 0.33 at 4096): perturbations propagating through shared
-weights over 64 positions decorrelate the loss difference from any single unit.
+(\INP{} reaches 0.40 and 0.33 at 4096), since perturbations propagating through
+shared weights over 64 positions decorrelate the loss difference from any unit.
 \SPSAb{} is indistinguishable from \SPSA{} at every probe count, and \ANPb{}'s
 per-unit factor lowers the alignment of \ANP{} from 0.81 to 0.69 on the MLP and from
 0.52 to 0.27 on the ConvNet at $\sigma=10^{-3}$ while raising it on the sequence
