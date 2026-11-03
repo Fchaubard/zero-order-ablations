@@ -499,8 +499,7 @@ drift, and changes little elsewhere (Table~\ref{tab:bp}).
 \subsection{Probe scale and step size}
 \label{sec:decouple}
 
-The tied screening (Table~\ref{tab:eps}, Figure~\ref{fig:eps}) was decisive but for
-the wrong knob: $\varepsilon=0.1$ collapses most probe runs and \BP{} itself on both
+The tied screening (Table~\ref{tab:eps}) was decisive but for the wrong knob: $\varepsilon=0.1$ collapses most probe runs and \BP{} itself on both
 image tasks, $\varepsilon=0.01$ still loses seven probe runs, $10^{-3}$ loses none,
 and the lower values added after the review improve eight of the ten methods on both
 image tasks once more---\SPSA{} from 0.293 to 0.121 in validation loss on MNIST and
@@ -574,9 +573,8 @@ the weight-space rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the
 $\sqrt{K/P}$ scaling of a 40k-dimensional random search. On the ConvNet every estimator is below 0.1 at 16 passes: its 26,682 perturbed
 unit-positions approach the number of weights, so the node estimate needs thousands
 of probes before it carries signal. On the LSTM and the Transformer no estimator exceeds 0.26 and 0.17 at 1024 passes
-(\INP{} reaches 0.40 and 0.33 at 4096): perturbations that propagate through shared
-weights over 64 positions decorrelate the loss difference from any single unit, and
-\ANPb{}, \DANP{} and \INP{} are the least affected.
+(\INP{} reaches 0.40 and 0.33 at 4096): perturbations propagating through shared
+weights over 64 positions decorrelate the loss difference from any single unit.
 \SPSAb{} is indistinguishable from \SPSA{} at every probe count, and \ANPb{}'s
 per-unit factor lowers the alignment of \ANP{} from 0.81 to 0.69 on the MLP and from
 0.52 to 0.27 on the ConvNet at $\sigma=10^{-3}$ while raising it on the sequence
@@ -677,10 +675,9 @@ The selection rests on one seed per $\varepsilon$, so the error bars are conditi
 on $\varepsilon^{\ast}$ and exclude selection noise. The budget is small and identical for all methods, the models are small by modern
 standards, and because the variance of weight-space estimators grows with $P$ the
 standing of \SPSA{} and \RS{} may change at larger scale.
-Wall-clock comparisons reward implementations that batch probes well: the probe
-passes of this code are a Python loop and all runs executed eight at a time on one
-host, so steps per hour (Appendix~\ref{app:throughput}) depend on the host and the
-equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comparison.
+Wall-clock comparisons reward implementations that batch probes well and depend on
+the host (eight runs at a time here); the equal-pass view (Figure~\ref{fig:passes}) is
+the implementation-independent comparison.
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions, \RS{} is
