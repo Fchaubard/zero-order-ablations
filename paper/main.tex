@@ -497,9 +497,9 @@ above \BP{}. Per forward pass the node rules lead on the image tasks and trail o
 
 With Adam and no schedule, backpropagation completes 4.3M steps on MNIST and 2.0M on
 CIFAR-10 in the hour and overfits within minutes: at $\eta=10^{-3}$ its CIFAR-10
-validation loss never returns below its initial value, and at $\eta=10^{-4}$, the
-selected reference on both image tasks, the best checkpoint sits at minute 1--2 (97.1
-and 69.2\,\%) and the hour ends at 97.1 and 65.6\,\% (Table~\ref{tab:bp}). On the sequence tasks $\eta=10^{-3}$
+validation loss never returns below its initial value, and at the selected
+reference ($\eta=10^{-5}$ on MNIST, $10^{-4}$ on CIFAR-10) the best checkpoint sits at
+minute 1--3 (97.1 and 69.2\,\%) and the hour ends at 97.1 and 65.6\,\% (Table~\ref{tab:bp}). On the sequence tasks $\eta=10^{-3}$
 is best, \BP{} is still improving at minute 60 (1.78 and 1.82 bits per character) and
 the reference is unproblematic. \TODO{AdamW rows of Table~\ref{tab:bp} land at 12:30
 UTC.}
@@ -516,14 +516,14 @@ from 1.62 to 1.27 on CIFAR-10 at $10^{-4}$---while $10^{-5}$ is worse for all bu
 three pairs (\BP{} and \ANP{} on MNIST, \ANPb{} on CIFAR-10, where it ties or wins by
 a margin within seed noise). The untied grid (Table~\ref{tab:decouple},
 Appendix~\ref{app:extra}) attributes this to the step size alone: at fixed
-$\eta=10^{-4}$ the probe scale changes the 30-minute loss by at most 0.02 on MNIST and
-0.1 on CIFAR-10 for every rule except \ANPb{}, whereas $\eta=10^{-2}$ is catastrophic
-for every rule at every $\sigma$. Adam makes each step about $\eta$ per coordinate whatever the estimate's scale, so
+$\eta=10^{-4}$ the probe scale changes the 30-minute loss by at most 0.03 on MNIST and
+0.2 on CIFAR-10 for every rule except \ANPb{}, whereas on the image tasks
+$\eta=10^{-2}$ is catastrophic for every rule at every $\sigma$. Adam makes each step about $\eta$ per coordinate whatever the estimate's scale, so
 a noisy estimate wants a small step and many of them \citep{dalm2023,malladi2023}. On the sequence tasks $\eta=10^{-4}$ loses to $10^{-3}$ for every
 rule on the LSTM (the recurrent model completes only 20--35k steps per hour) and for
-five of ten on the Transformer. The best untied cell beats the best tied one by more
-than 3\,\% only for \ANPb{} on both image tasks (24 and 17\,\%, at
-$\sigma\ge10^{-3}$) and \DANP{} on the Transformer (6\,\%); the tied protocol is
+five of ten on the Transformer. The best untied cell beats the best tied one by more than 3\,\% only for \ANPb{}
+on both image tasks (24 and 17\,\%, at $\sigma\ge10^{-3}$), \DANP{} on the Transformer
+(6\,\%) and \ANP{} on MNIST (4\,\%); the tied protocol is
 therefore not what holds the other rules back.
 
 \subsection{The 1.5-order rules under their own recipe}
@@ -534,15 +534,15 @@ SGD, fp64 losses, their own $(\eta,\sigma)$ and probe-count grids---and
 Table~\ref{tab:x} runs \ANPb{} under the protocol's optimizer at the step size the
 screening selected, with its probe scale freed. Neither recipe beats the protocol: \SPSAb{} with SGD and 64 antithetic pairs
 per step reaches 0.176 on MNIST and 1.336 on CIFAR-10 where its own Adam run stands at
-0.160 and 1.313 after the same 30 minutes, and its $\alpha=0$ control (plain SPSA with
-SGD) is equal or better on every task (0.162, 1.344, 2.845 versus 2.955, 2.259 versus
-2.258). The curvature factor of \SPSAb{} is inert under both optimizers: with
+0.160 and 1.313 after the same 30 minutes, and its $\alpha=0$ control (plain SPSA with SGD) is within 0.01 or better on every
+task (0.162, 1.344, 2.845 versus 2.955, 2.259 versus 2.258). The curvature factor of \SPSAb{} is inert under both optimizers: with
 $\alpha=0.1$ and $\lambda=1$ it varies by 5\,\% across directions and steps. For
 \ANPb{} the picture is the same but more informative. Under Adam at $\eta=10^{-4}$
 with fp64 losses it improves from 0.159 to 0.132 on MNIST and from 1.49 to 1.28 on
 CIFAR-10 (56.9\,\%) at $\sigma=10^{-2}$, i.e.\ its tied selection was limited by a
 probe scale too small for a second difference in fp32, but its $\alpha=0$ control is
-better still (0.112 and 1.120, 97.0 and 60.4\,\%) and matches \ANP{} (0.110, 1.060);
+better still (0.112 and 1.120, 97.0 and 60.4\,\%) and comes within 0.002 and 0.06 of
+\ANP{} (0.110, 1.060);
 $\alpha=0.25$ lies in between and $\alpha=1$ is harmful (0.204 and 1.98). Under its own
 SGD recipe the $\alpha=0$ control again equals or beats the curvature-weighted rule on
 every task. The ingredient that makes \ANPb{} usable on the sequence models, where it
@@ -573,21 +573,23 @@ Figure~\ref{fig:align} measures, on one fixed batch per task, the cosine between
 estimator and the true gradient against the number of forward passes spent on it,
 after a 2000-step backpropagation warm-up, in fp32 on the GPU (Appendices~\ref{app:extra}
 and~\ref{app:align}). On the MLP the node-perturbation rules obtain from the
-protocol's 16 passes a direction with cosine 0.4--0.6 to the gradient, rising to 0.96
-for \NP{} and \INP{} and 0.81--0.83 for \ANP{} and \DANP{} with 1024 passes, whereas
+protocol's 16 passes a direction with cosine 0.4--0.6 to the gradient, rising to
+0.95--0.96 for \NP{} and \INP{} and 0.81--0.83 for \ANP{} and \DANP{} with 1024 passes, whereas
 the weight-space rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the
 $\sqrt{K/P}$ scaling of a 40k-dimensional random search. On the ConvNet every estimator is below 0.1 at 16 passes: its 26,682 perturbed
 unit-positions approach the number of weights, so the node estimate needs thousands
-of probes before it carries signal. On the LSTM and the Transformer no estimator
-exceeds 0.26 even at 4096 passes:
-perturbations that propagate through shared weights over 64 positions decorrelate the
-loss difference from any single unit, and \DANP{} and \ANPb{} are the least affected.
+of probes before it carries signal. On the LSTM and the Transformer no estimator exceeds 0.26 and 0.17 at 1024 passes
+(\INP{} reaches 0.40 and 0.33 at 4096): perturbations that propagate through shared
+weights over 64 positions decorrelate the loss difference from any single unit, and
+\ANPb{}, \DANP{} and \INP{} are the least affected.
 \SPSAb{} is indistinguishable from \SPSA{} at every probe count, and \ANPb{}'s
 per-unit factor lowers the alignment of \ANP{} from 0.81 to 0.69 on the MLP and from
 0.52 to 0.27 on the ConvNet at $\sigma=10^{-3}$ while raising it on the sequence
-models (0.26 versus 0.04 on the LSTM). At $\sigma\le10^{-4}$ the node estimators lose alignment in fp32 (differences at
-the rounding floor), and TF32 convolutions lower the ConvNet cosines of \NP{} and
-\INP{} at $\sigma=10^{-3}$ (Table~\ref{tab:precision}); stage 2 therefore ran in fp32.
+models (0.26 versus 0.04 on the LSTM). Down to $\sigma=10^{-5}$ the first-difference estimators keep their alignment in
+fp32, whereas \ANPb{}'s second difference reaches the rounding floor (0.74 at
+$10^{-2}$ to 0.46 at $10^{-5}$ on the MLP), which is why it needs $\sigma\ge10^{-3}$
+(Section~\ref{sec:own}); TF32 convolutions lower the ConvNet cosines of \NP{} and
+\INP{} at $\sigma=10^{-3}$ (Table~\ref{tab:precision}), so stage 2 ran in fp32.
 
 \begin{figure}[t]
   \centering
@@ -629,20 +631,20 @@ the node family, where \ANP{} beats \NP{} by one point on CIFAR-10 with the same
 count and loses to it by 1.4 bits per character on the LSTM.
 
 \paragraph{Curvature preconditioning.}
-\SPSAb{} reproduces \SPSA{} on every task to within 0.02 in loss (0.140 versus 0.142
+\SPSAb{} reproduces \SPSA{} on every task to within 0.03 in loss (0.140 versus 0.142
 on MNIST, 1.215 versus 1.200 on CIFAR-10, 2.96 versus 2.96 and 3.11 versus 3.15 bits
-per character) at the price of the clean pass (14--17\,\% fewer steps per hour on the
-image tasks, none on the sequence models where the clean pass is amortised): with
+per character) at the price of the clean pass (13--15\,\% fewer steps per hour on the image
+tasks, none on the sequence models where the clean pass is amortised): with
 $\alpha=0.1$ and $\lambda=1$ the per-direction factor is nearly constant and Adam
 removes the remaining common scalar, and Section~\ref{sec:own} shows the same under
-plain SGD. \ANPb{} is 1--4 points behind \ANP{} on the image tasks under the tied
-protocol and 16 points behind on CIFAR-10, because a second difference at
-$\sigma=10^{-4}$ sits at the fp32 rounding floor; with $\sigma=10^{-2}$ and fp64
+plain SGD. \ANPb{} is one point behind \ANP{} on MNIST and 16 points behind on CIFAR-10 under
+the tied protocol, because a second difference at $\sigma\le10^{-4}$ sits at the fp32
+rounding floor; with $\sigma=10^{-2}$ and fp64
 losses it recovers to within 0.02 of \ANP{} on MNIST, and its $\alpha=0$ control
 matches \ANP{} on both tasks. On the sequence models its token-local attribution
 repairs \ANP{}'s failure (3.13 versus 4.28 bits per character on the LSTM, 3.74 versus
-3.92 on the Transformer) without reaching \INP{} or \SPSA{}; it is also 13--32\,\%
-faster per step than \ANP{} (Table~\ref{tab:steps}).
+3.92 on the Transformer) without reaching \INP{} or \SPSA{}; per step it is 7\,\% slower than \ANP{} on the MLP and 15--50\,\% faster on the
+other three models (Table~\ref{tab:steps}).
 
 \paragraph{Activity-based, iterative and decorrelated variants.}
 The measured activity difference (\ANP{}) is worth one point over \NP{} on CIFAR-10
@@ -670,8 +672,8 @@ budget rather than estimator, but at 17--35k steps per hour on the LSTM closing 
 would take days. \FF{}, not a probe method, trains fast (1.7M steps per hour on the
 MLP) but its two inference rules disagree: on MNIST the linear readout peaks early and
 collapses to 14\,\%, whereas label accumulation on the same blocks gives 93.1\,\%; on
-CIFAR-10 both numbers are 26--34\,\%, and on the sequence tasks \FF{} is the
-second-worst rule (3.84 and 4.21 bits per character; Appendix~\ref{app:extra}).
+CIFAR-10 both numbers are 26--34\,\%, and on the sequence tasks \FF{} is second-worst on the LSTM and worst on the
+Transformer (3.84 and 4.21 bits per character; Appendix~\ref{app:extra}).
 
 % ====================================================================================
 \section{Discussion and Limitations}
