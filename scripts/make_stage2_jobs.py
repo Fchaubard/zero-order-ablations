@@ -44,9 +44,43 @@ def main():
     ap.add_argument("--extra", default=None, help="write group E (1.5-order eps screening) to this file instead")
     ap.add_argument("--extra-seeds", default=None, help="write group E seeds 1, 2 at the eps selected from --v2")
     ap.add_argument("--v2", default="results_v2")
+    ap.add_argument("--node2", default=None,
+                    help="write the review-driven extra sweeps (second node) to this file: eps 1e-4 for every pair, "
+                         "alpha = 0 / non-inert controls, and the 1.5-order rules under their own SGD recipe")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.node2:
+        A = "--seed 0 --budget 3600 --eval-every 60"
+        H = "--seed 0 --budget 1800 --eval-every 60"
+        lines.append("# F. tied eps = 1e-4 for every (task, method): the stage-1 grid's lower boundary was selected by 26 of 32 pairs")
+        for t in TASKS:
+            for o in ["bp", "spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "danp", "ff"]:
+                lines.append(f"--task {t} --opt {o} --lr 0.0001 {A} --out results_v2")
+        lines.append("# G. controls for the 1.5-order rules under the protocol (Adam, eps = lr = 1e-3; LSTM anp15 at 1e-2)")
+        for t in TASKS:
+            e = "0.01" if t == "lstm_ptb" else "0.001"
+            lines.append(f"--task {t} --opt anp15 --lr {e} --alpha 0 {A} --out results_v2")          # token-local central-difference ANP
+            lines.append(f"--task {t} --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 {A} --out results_v2")  # non-inert curvature factor
+        lines.append("# H. 1.5-SPSA under its own recipe (plain SGD, lambda = eps tied, alpha 0.1, lambda_reg 1; 8 or 64 pairs) and 1SPSA-SGD control; 30 min screening")
+        for t in TASKS:
+            for e in ("0.01", "0.001", "0.0001"):
+                for K in (17, 129):
+                    lines.append(f"--task {t} --opt spsa15 --lr {e} --optim sgd --passes {K} {H} --out results_15")
+                lines.append(f"--task {t} --opt spsa --lr {e} --optim sgd --passes 16 {H} --out results_15")
+        lines.append("# I. 1.5-ANP under its own recipe (plain SGD, lr decoupled from eps, alpha 0.5, lambda 1e-3) and ANP-SGD control; 30 min screening")
+        for t in TASKS:
+            for lr in ("0.05", "0.01", "0.002"):
+                for sig in ("0.01", "0.001"):
+                    lines.append(f"--task {t} --opt anp15 --lr {lr} --sigma {sig} --optim sgd {H} --out results_15")
+                lines.append(f"--task {t} --opt anp --lr {lr} --sigma 0.001 --optim sgd {H} --out results_15")
+        os.makedirs(os.path.dirname(a.node2) or ".", exist_ok=True)
+        with open(a.node2, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        n = sum(1 for l in lines if not l.startswith("#"))
+        h = sum((3600 if "--budget 3600" in l else 1800) / 3600 for l in lines if not l.startswith("#"))
+        print(f"{n} jobs, {h:.0f} GPU-hours -> {a.node2}")
+        return
     if a.extra or a.extra_seeds:
         new = ["spsa15", "anp15"]
         if a.extra:

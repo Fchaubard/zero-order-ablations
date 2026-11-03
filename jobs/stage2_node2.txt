@@ -1,0 +1,124 @@
+# F. tied eps = 1e-4 for every (task, method): the stage-1 grid's lower boundary was selected by 26 of 32 pairs
+--task mlp_mnist --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rs --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt np --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rs --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt np --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rs --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt np --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ff --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+# G. controls for the 1.5-order rules under the protocol (Adam, eps = lr = 1e-3; LSTM anp15 at 1e-2)
+--task mlp_mnist --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+# H. 1.5-SPSA under its own recipe (plain SGD, lambda = eps tied, alpha 0.1, lambda_reg 1; 8 or 64 pairs) and 1SPSA-SGD control; 30 min screening
+--task mlp_mnist --opt spsa15 --lr 0.01 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa15 --lr 0.01 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa --lr 0.01 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa15 --lr 0.001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa15 --lr 0.001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa --lr 0.001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa15 --lr 0.0001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa15 --lr 0.0001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt spsa --lr 0.0001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.01 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.01 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa --lr 0.01 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa --lr 0.001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.0001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa15 --lr 0.0001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt spsa --lr 0.0001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.01 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.01 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa --lr 0.01 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa --lr 0.001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.0001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa15 --lr 0.0001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt spsa --lr 0.0001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.01 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.01 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa --lr 0.01 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa --lr 0.001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.0001 --optim sgd --passes 17 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa15 --lr 0.0001 --optim sgd --passes 129 --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt spsa --lr 0.0001 --optim sgd --passes 16 --seed 0 --budget 1800 --eval-every 60 --out results_15
+# I. 1.5-ANP under its own recipe (plain SGD, lr decoupled from eps, alpha 0.5, lambda 1e-3) and ANP-SGD control; 30 min screening
+--task mlp_mnist --opt anp15 --lr 0.05 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp15 --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp15 --lr 0.01 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp15 --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp15 --lr 0.002 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp15 --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task mlp_mnist --opt anp --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.05 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.01 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.002 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp15 --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task conv_cifar10 --opt anp --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.05 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.01 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.002 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp15 --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task lstm_ptb --opt anp --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.05 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp --lr 0.05 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.01 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp --lr 0.01 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.002 --sigma 0.01 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp15 --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
+--task transformer_ptb --opt anp --lr 0.002 --sigma 0.001 --optim sgd --seed 0 --budget 1800 --eval-every 60 --out results_15
