@@ -109,22 +109,34 @@ def _job_argv(args, line: str) -> List[str]:
 
 
 def read_jobs(args, path: str):
-    """Returns [(line_no, argv, result_path, run_name)] for the non-empty, non-comment lines."""
-    from .train import name_from_args, parse_args as train_parse_args
-    jobs = []
+    """Returns [(line_no, argv, result_path, run_name)] for the non-empty, non-comment lines.
+    The lines are parsed by a fresh interpreter running the CURRENT zoo.train, so that options
+    added to the code (and pulled) after this sweep started are accepted without a restart."""
+    import json as _json
+    lines = []
     with open(path) as f:
         for i, raw in enumerate(f, 1):
             line = raw.split("#", 1)[0].strip()
-            if not line:
-                continue
-            argv = _job_argv(args, line)
-            try:
-                targs = train_parse_args(argv)
-            except SystemExit as e:       # argparse exits on an unknown option / choice: report, never die
-                raise ValueError(f"line {i} of {path} does not parse ({line!r}): {e}") from None
-            name = name_from_args(targs)
-            jobs.append((i, argv, os.path.join(targs.out, name + ".json"), name))
-    return jobs
+            if line:
+                lines.append((i, _job_argv(args, line), line))
+    if not lines:
+        return []
+    prog = ("import sys, json, os\n"
+            "from zoo.train import name_from_args, parse_args\n"
+            "out = []\n"
+            "for i, argv, line in json.load(sys.stdin):\n"
+            "    try:\n"
+            "        a = parse_args(argv)\n"
+            "    except SystemExit as e:\n"
+            "        raise ValueError(f'line {i} does not parse ({line!r}): {e}')\n"
+            "    n = name_from_args(a)\n"
+            "    out.append([i, argv, os.path.join(a.out, n + '.json'), n])\n"
+            "print(json.dumps(out))\n")
+    r = subprocess.run([args.python, "-c", prog], input=_json.dumps(lines), capture_output=True, text=True,
+                       cwd=REPO_ROOT, timeout=120)
+    if r.returncode != 0:
+        raise ValueError(f"{path}: {r.stderr.strip().splitlines()[-1] if r.stderr.strip() else 'parse failed'}")
+    return [tuple(j) for j in _json.loads(r.stdout)]
 
 
 def _now() -> str:
