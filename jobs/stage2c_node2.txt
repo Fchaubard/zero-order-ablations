@@ -1,0 +1,48 @@
+# node 2 after group F (2026-11-03 ~06:15 UTC): LM seed replications moved here from node 1 so they finish by ~11:00 UTC, then the protocol controls
+# A-LSTM. seeds 1, 2 at the selected eps (eps 1e-3 beat 1e-4 on the LSTM: BP 1.27 vs 1.49, SPSA 2.07 vs 2.99)
+--task lstm_ptb --opt bp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rs --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt np --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt bp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rs --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt np --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+# A-Transformer. seeds 1, 2 at the stage-1 eps; replaced through the skip / extra files if the eps 1e-4 screening wins (results ~05:30 UTC)
+--task transformer_ptb --opt bp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt bp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+# G. controls for the 1.5-order rules under the protocol (Adam, eps = lr = 1e-3; LSTM anp15 at 1e-2)
+--task mlp_mnist --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
