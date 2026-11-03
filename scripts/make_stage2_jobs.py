@@ -46,7 +46,8 @@ def main():
     ap.add_argument("--v2", default="results_v2")
     ap.add_argument("--node2", default=None,
                     help="write the review-driven extra sweeps (second node) to this file: eps 1e-4 for every pair, "
-                         "alpha = 0 / non-inert controls, and the 1.5-order rules under their own SGD recipe")
+                         "alpha = 0 / fp64 / non-inert controls, and the 1.5-order rules under their own SGD recipe "
+                         "(grids recommended by the code audit)")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
@@ -60,20 +61,23 @@ def main():
         lines.append("# G. controls for the 1.5-order rules under the protocol (Adam, eps = lr = 1e-3; LSTM anp15 at 1e-2)")
         for t in TASKS:
             e = "0.01" if t == "lstm_ptb" else "0.001"
-            lines.append(f"--task {t} --opt anp15 --lr {e} --alpha 0 {A} --out results_v2")          # token-local central-difference ANP
+            lines.append(f"--task {t} --opt anp15 --lr {e} --alpha 0 {A} --out results_v2")             # token-local central-difference ANP
+            lines.append(f"--task {t} --opt anp15 --lr {e} --loss64 {A} --out results_v2")             # fp64 second differences
             lines.append(f"--task {t} --opt spsa15 --lr 0.001 --alpha 0.5 --lam 0.001 {A} --out results_v2")  # non-inert curvature factor
-        lines.append("# H. 1.5-SPSA under its own recipe (plain SGD, lambda = eps tied, alpha 0.1, lambda_reg 1; 8 or 64 pairs) and 1SPSA-SGD control; 30 min screening")
+        lines.append("# H. 1.5-SPSA under its own recipe (plain SGD, lambda = eps tied, alpha 0.1, lambda_reg 1, fp64 losses; 8 or 64 pairs) and the alpha = 0 (1SPSA-SGD) control; 30 min screening")
         for t in TASKS:
-            for e in ("0.01", "0.001", "0.0001"):
+            for e in ("0.01", "0.003", "0.001", "0.0003", "0.0001"):
                 for K in (17, 129):
-                    lines.append(f"--task {t} --opt spsa15 --lr {e} --optim sgd --passes {K} {H} --out results_15")
-                lines.append(f"--task {t} --opt spsa --lr {e} --optim sgd --passes 16 {H} --out results_15")
-        lines.append("# I. 1.5-ANP under its own recipe (plain SGD, lr decoupled from eps, alpha 0.5, lambda 1e-3) and ANP-SGD control; 30 min screening")
+                    lines.append(f"--task {t} --opt spsa15 --lr {e} --optim sgd --passes {K} --loss64 {H} --out results_15")
+                    lines.append(f"--task {t} --opt spsa15 --lr {e} --optim sgd --passes {K} --loss64 --alpha 0 {H} --out results_15")
+        lines.append("# I. 1.5-ANP under its own recipe (plain SGD, lr decoupled from sigma, alpha 0.5, lambda 1e-3 / 1e-4 on the LSTM, 8 pairs, fp64 losses), the alpha = 0 control and a lambda = 1e-2 floor; 30 min screening")
         for t in TASKS:
-            for lr in ("0.05", "0.01", "0.002"):
+            lam = "0.0001" if t == "lstm_ptb" else "0.001"
+            for lr in ("0.05", "0.02", "0.01", "0.005"):
                 for sig in ("0.01", "0.001"):
-                    lines.append(f"--task {t} --opt anp15 --lr {lr} --sigma {sig} --optim sgd {H} --out results_15")
-                lines.append(f"--task {t} --opt anp --lr {lr} --sigma 0.001 --optim sgd {H} --out results_15")
+                    lines.append(f"--task {t} --opt anp15 --lr {lr} --sigma {sig} --optim sgd --lam {lam} --loss64 {H} --out results_15")
+                    lines.append(f"--task {t} --opt anp15 --lr {lr} --sigma {sig} --optim sgd --lam {lam} --loss64 --alpha 0 {H} --out results_15")
+                lines.append(f"--task {t} --opt anp15 --lr {lr} --sigma 0.001 --optim sgd --lam 0.01 --loss64 {H} --out results_15")
         os.makedirs(os.path.dirname(a.node2) or ".", exist_ok=True)
         with open(a.node2, "w") as f:
             f.write("\n".join(lines) + "\n")

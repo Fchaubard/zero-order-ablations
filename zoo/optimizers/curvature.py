@@ -58,16 +58,27 @@ from .spsa import SPSA
 
 
 # ----------------------------------------------------------------------------- 1.5-SPSA
+def loss64_fn(model: torch.nn.Module, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """Batch-mean loss with the logits cast to fp64 before the cross-entropy: the three-point
+    second differences of the curvature rules at sigma = 1e-3 are otherwise at the fp32 rounding
+    floor (the forward pass itself stays in fp32)."""
+    return per_sample_loss(model(x).double(), y).mean()
+
+
 @register("spsa15")
 class CurvatureSPSA(SPSA):
     forward_passes_per_step = 17          # 1 clean + 8 antithetic pairs
     saturating_alpha = 0.1                # repo default --saturating_alpha
     lambda_reg = 1.0                      # repo default --lambda_reg
+    loss64 = False                        # evaluate the losses in fp64 (set by zoo.train --loss64)
 
-    def __init__(self, model, lr, task_kind, n_classes, **kw):
+    def __init__(self, model, lr, task_kind, n_classes, loss64: bool = False, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
         self.n_pairs = max(1, (self.forward_passes_per_step - 1) // 2)
         self._last_curv: Optional[torch.Tensor] = None
+        self.loss64 = bool(loss64)
+        if self.loss64:
+            self.loss_fn = loss64_fn
 
     @torch.no_grad()
     def _estimate(self, x, y, n_pairs: int):
@@ -129,11 +140,15 @@ class CurvatureANP(_NodePerturbation):
     alpha = 0.5                           # sub-linear curvature exponent (spec: alpha_c)
     eps_mach = 1e-12
 
-    def __init__(self, model, lr, task_kind, n_classes, **kw):
+    def __init__(self, model, lr, task_kind, n_classes, loss64: bool = False, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
         self.n_pairs = max(1, (self.forward_passes_per_step - 1) // 2)
         self._layout: Optional[List[str]] = None      # per layer: "ex" | "tok" | "call" | "shared"
         self._last_curv: Optional[torch.Tensor] = None
+        self.loss64 = bool(loss64)                    # per-unit losses in fp64 (zoo.train --loss64)
+
+    def _unit_loss(self, logits: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return per_unit_loss(logits.double() if self.loss64 else logits, y)
 
     # ------------------------------------------------------------------ layouts
     def _layouts(self, N: int, T: Optional[int]) -> List[str]:
@@ -161,7 +176,7 @@ class CurvatureANP(_NodePerturbation):
         for layer in self.layers:
             layer.xi, layer.a_noisy = [], []
         with torch.no_grad():
-            loss = per_unit_loss(self.model(x), y)
+            loss = self._unit_loss(self.model(x), y)
         return loss, [list(layer.a_noisy) for layer in self.layers]
 
     # ------------------------------------------------------------------ estimator
@@ -179,7 +194,7 @@ class CurvatureANP(_NodePerturbation):
         ctx.mode, ctx.noise_layer, ctx.sign, ctx.xi_bank = "clean", None, 1.0, None
         ctx.reset()
         logits = self.model(x)
-        l0 = per_unit_loss(logits.detach(), y)                  # (N,) or (N, T)
+        l0 = self._unit_loss(logits.detach(), y)                # (N,) or (N, T)
         T = l0.shape[1] if l0.dim() == 2 else None
         if self._layout is None:
             self._layout = self._layouts(N, T)

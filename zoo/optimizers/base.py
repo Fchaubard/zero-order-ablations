@@ -30,7 +30,7 @@ class BaseOptimizer:
 
     def __init__(self, model: torch.nn.Module, lr: float, task_kind: str, n_classes: int,
                  sigma: float | None = None, n_passes: int | None = None, weight_decay: float = 0.0,
-                 optim: str = "adam", **kw):
+                 optim: str = "adam", loss64: bool = False, **kw):
         self.model = model
         self.lr = lr
         # PROTOCOL.md ties the probe scale to the learning rate (sigma = None -> eps = lr); the
