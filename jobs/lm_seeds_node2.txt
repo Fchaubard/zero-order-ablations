@@ -1,9 +1,9 @@
-# LM and grid-edge seed replications (2026-11-03 10:55 UTC), round 1 on nodes 2 and 3, the rest as extras on nodes 2-5
---task mlp_mnist --opt bp --lr 1e-05 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task mlp_mnist --opt anp --lr 1e-05 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task conv_cifar10 --opt anp15 --lr 1e-05 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task conv_cifar10 --opt inp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task transformer_ptb --opt np --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task transformer_ptb --opt anp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task transformer_ptb --opt anp15 --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
---task transformer_ptb --opt ff --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+# LM and grid-edge seed replications (2026-11-03 10:55 UTC): round 1 on nodes 2 and 3, the rest as extras on nodes 2-5
+--task lstm_ptb --opt anp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt bp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
