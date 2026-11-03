@@ -376,8 +376,11 @@ added later under the stage-2 settings. Each pair selects the $\varepsilon$ with
 lowest validation loss at any evaluation (\FF{} on the image tasks: the highest
 label-accumulation validation accuracy). Because 26 of the 32
 original pairs selected this grid's lower edge, $\varepsilon=10^{-4}$ was added for
-every pair under the stage-2 settings: 4 tasks $\times$ 10 methods $\times$ 4 values,
-160 runs (Appendix~\ref{app:grid}).
+every pair under the stage-2 settings, and because that value won for eight methods on
+both image tasks, $\varepsilon=10^{-5}$ for those sixteen pairs: a selected value must
+have a worse neighbour on each side (176 screening runs, Appendix~\ref{app:grid}). On
+the sequence tasks $10^{-4}$ loses to $10^{-3}$ \TODO{LSTM: BP 1.27 vs 1.49, SPSA 2.07
+vs 2.99; Transformer pending}, so their selections stay at the stage-1 values.
 
 \paragraph{Stage 2: replication.}
 The selected configuration of every pair is run with three seeds (initialisation, data
@@ -404,12 +407,15 @@ never used for selection (Appendix~\ref{app:protocol}).
 
 \paragraph{Ablations.}
 (i)~\emph{Untied probe scale and step size}: the $3\times3$ grid
-$\eta,\sigma\in\{10^{-2},10^{-3},10^{-4}\}$ per probe method and task, screened for 30
-minutes, with the best untied setting replicated for an hour with three seeds where it
-differs from the tied one. (ii)~\emph{The 1.5-order rules under their own recipe}:
+$\eta,\sigma\in\{10^{-2},10^{-3},10^{-4}\}$ plus $\sigma=0.1$ at $\eta=10^{-4}$ per
+probe method and task, screened for 30 minutes, with the best untied setting
+replicated for an hour with three seeds where it beats the best tied value by at least
+3\,\% at the 30-minute checkpoint. (ii)~\emph{The 1.5-order rules under their own recipe}:
 plain SGD, fp64 losses, their own $(\eta,\sigma)$ grids, $\alpha=0$ controls and the
 LSTM state damping (Section~\ref{sec:own}). (iii)~\emph{Controls under the protocol}:
-\ANPb{} with $\alpha=0$ and with fp64 losses, \SPSAb{} with a non-inert factor.
+\ANPb{} at the selected step size ($\eta=10^{-4}$, Adam) with $\sigma\in\{10^{-2},10^{-3}\}$
+decoupled, fp64 losses and $\alpha\in\{0,0.25,0.5,1\}$ (Table~\ref{tab:x}), \SPSAb{}
+with a non-inert factor.
 (iv)~\emph{Estimator alignment}: the cosine between every estimator and the true
 gradient of a fixed batch against the number of forward passes
 (Section~\ref{sec:align}). (v)~\emph{Resources}: isolated throughput and peak GPU memory
@@ -1040,11 +1046,13 @@ old rule did not stop is identical under the new one.
 
 \paragraph{Ablations.}
 (i)~\emph{Untied probe scale and step size}: for every probe method and task the full
-grid $\eta\in\{10^{-2},10^{-3},10^{-4}\}\times\sigma\in\{10^{-2},10^{-3},10^{-4}\}$,
-screened for 30 minutes at 1-minute granularity (the tied diagonal is taken from the
-one-hour runs at minute 30); the best untied setting of every pair is then replicated for
-one hour with three seeds wherever it differs from the tied one, so that every rule is
-also compared at its own best $(\eta,\sigma)$ at equal compute and without any schedule.
+grid $\eta\in\{10^{-2},10^{-3},10^{-4}\}\times\sigma\in\{10^{-2},10^{-3},10^{-4}\}$ plus
+$\sigma=0.1$ at $\eta=10^{-4}$, screened for 30 minutes at 1-minute granularity (the
+tied diagonal is taken from the one-hour runs at minute 30); the best untied setting of
+a pair is then replicated for one hour with three seeds where it beats the best tied
+diagonal cell by at least 3\,\% (at most twelve pairs, largest gains first), so that
+every rule is also compared at its own best $(\eta,\sigma)$ at equal compute and
+without any schedule.
 (ii)~\emph{The 1.5-order rules under their own recipe}: plain SGD instead of Adam, fp64
 loss evaluation, \SPSAb{} with $\eta=\sigma\in\{10^{-2},3\cdot10^{-3},10^{-3},3\cdot10^{-4},10^{-4}\}$
 and 8 or 64 pairs with the $\alpha=0$ (1SPSA) control, \ANPb{} with
@@ -1052,11 +1060,14 @@ $\eta\in\{0.05,0.02,0.01,0.005\}$ decoupled from $\sigma\in\{10^{-2},10^{-3}\}$ 
 $\alpha=0$ control, a $\lambda=10^{-2}$ floor and the recurrent-state damping on the
 LSTM; 30-minute screening, then three seeds for an hour at the selected setting
 (Section~\ref{sec:own}). (iii)~\emph{Controls under the protocol}: \ANPb{} with
-$\alpha=0$ and with fp64 losses, \SPSAb{} with a non-inert factor ($\alpha=0.5$,
-$\lambda=10^{-3}$). (iv)~\emph{Estimator alignment}: the cosine between every estimator
+Adam at the step size the screening selected on the image tasks ($\eta=10^{-4}$), the
+probe scale decoupled ($\sigma\in\{10^{-2},10^{-3}\}$), fp64 losses, the curvature
+exponent $\alpha\in\{0,0.25,0.5,1\}$ and, on the LSTM, the recurrent-state damping
+(Table~\ref{tab:x}); \ANPb{} with $\alpha=0$ and with fp64 losses at $\varepsilon=10^{-3}$;
+\SPSAb{} with a non-inert factor ($\alpha=0.5$, $\lambda=10^{-3}$). (iv)~\emph{Estimator alignment}: the cosine between every estimator
 and the true gradient of a fixed batch as a function of the number of forward passes,
 per layer, at initialisation and after a 2000-step backpropagation warm-up, in fp32,
-TF32 and fp64. (v)~\emph{Resources}: every selected configuration is rerun alone on one
+TF32 and fp64, for $\sigma$ from $10^{-1}$ to $10^{-5}$. (v)~\emph{Resources}: every selected configuration is rerun alone on one
 GPU for 150 seconds to measure isolated throughput and peak GPU memory
 (Appendix~\ref{app:resources}). (vi)~Direct-jump random search (Appendix~\ref{app:rsj}).
 
