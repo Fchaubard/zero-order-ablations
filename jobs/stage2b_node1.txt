@@ -1,0 +1,239 @@
+# node 1 queue, rebuilt 2026-11-03 03:50 UTC after the eps 1e-4 screening (group F, node 2): image-task pairs select eps 1e-4
+# E'. remaining 1.5-order decoupling lines and the BP CIFAR-10 1e-3 rerun under the 10x rule (from the previous extra queue)
+--task mlp_mnist --opt spsa15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt spsa15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt anp15 --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt bp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+# G. eps grid extension: eps = lr = 1e-05, seed 0, 1 h, 1-minute evaluations
+--task mlp_mnist --opt bp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rs --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt np --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt bp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rs --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt np --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+# S. missing seeds at the selected eps (results_v2/summary_v2.json), 1 h, 1-minute evaluations: mlp_mnist conv_cifar10
+--task mlp_mnist --opt bp --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt bp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt spsa15 --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rs --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rs --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt np --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt np --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt bp --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt bp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt spsa15 --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rs --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rs --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt np --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt np --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+# A. replication (image-task pairs superseded by eps 1e-4 removed): selected eps x seeds, 1 h, 1-minute evaluations
+--task mlp_mnist --opt danp --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt bp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rs --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt np --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt bp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ff --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt ff --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt ff --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt bp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt spsa --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rs --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt np --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt bp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt spsa --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rs --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt np --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ff --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+# B. backprop reference: lower lr and decoupled weight decay, 1 h
+--task mlp_mnist --opt bp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task mlp_mnist --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task conv_cifar10 --opt bp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task conv_cifar10 --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task lstm_ptb --opt bp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task lstm_ptb --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task transformer_ptb --opt bp --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+--task transformer_ptb --opt bp --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_bp --weight-decay 0.01
+# D. random search with direct jumps (no Adam) at the selected RS eps (1e-4 on the image tasks; LM lines added once their eps 1e-4 runs are in), 1 h
+--task mlp_mnist --opt rsj --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rsj --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+# C. decoupling: lr 1e-3 with sigma {1e-2, 1e-4}; lr 1e-2 with sigma 1e-3; 30 min
+--task mlp_mnist --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task mlp_mnist --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task conv_cifar10 --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task conv_cifar10 --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task lstm_ptb --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task lstm_ptb --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt spsa --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt rs --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt np --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt anp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt inp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task transformer_ptb --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.01
+--task transformer_ptb --opt danp --lr 0.001 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.0001
+--task mlp_mnist --opt spsa --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task mlp_mnist --opt np --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task mlp_mnist --opt anp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task mlp_mnist --opt inp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task conv_cifar10 --opt spsa --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task conv_cifar10 --opt np --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task conv_cifar10 --opt anp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task conv_cifar10 --opt inp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task lstm_ptb --opt spsa --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task lstm_ptb --opt np --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task lstm_ptb --opt anp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task lstm_ptb --opt inp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task transformer_ptb --opt spsa --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task transformer_ptb --opt np --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task transformer_ptb --opt anp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001
+--task transformer_ptb --opt inp --lr 0.01 --seed 0 --budget 1800 --eval-every 60 --out results_decouple --sigma 0.001

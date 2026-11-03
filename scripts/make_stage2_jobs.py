@@ -57,12 +57,47 @@ def main():
     ap.add_argument("--untied-seeds", default=None,
                     help="from results_v2/summary_v2.json 'untied_best': 1 h x seeds 0-2 at the best untied (lr, sigma) of every probe "
                          "method / task whose best differs from the tied diagonal -> results_v2 (with -sig tags)")
+    ap.add_argument("--eps-seeds", default=None,
+                    help="from results_v2/summary_v2.json 'selected': the missing seeds (1, 2) at the selected eps of every "
+                         "(task, method) of --tasks / --opts, 1 h -> results_v2")
+    ap.add_argument("--eps-grid", default=None,
+                    help="tied eps = lr = --lr (seed 0, 1 h) for every method of --opts on every task of --tasks -> results_v2 "
+                         "(extends the eps grid when the selected eps sits on its boundary)")
+    ap.add_argument("--tasks", default=",".join(TASKS))
+    ap.add_argument("--opts", default=",".join(OPTS + ["spsa15", "anp15"]))
+    ap.add_argument("--lr", type=float, default=1e-5)
     ap.add_argument("--own-seeds", default=None,
                     help="from results_v2/summary_v2.json 'own': 1 h x seeds 0-2 at the best own-recipe (SGD) configuration of "
                          "spsa15 / anp15 on every task -> results_15")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.eps_seeds or a.eps_grid:
+        tasks = [t for t in a.tasks.split(",") if t]
+        opts = [o for o in a.opts.split(",") if o]
+        if a.eps_seeds:
+            v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
+            lines.append(f"# S. missing seeds at the selected eps (results_v2/summary_v2.json), 1 h, 1-minute evaluations: {' '.join(tasks)}")
+            for k, v in v2["selected"].items():
+                t, o = k.split("/")
+                if t not in tasks or o not in opts:
+                    continue
+                for seed in (1, 2):
+                    if seed in v["seeds"]:
+                        continue
+                    lines.append(f"--task {t} --opt {o} --lr {float(v['eps']):g} --seed {seed} --budget 3600 --eval-every 60 --out results_v2")
+            path = a.eps_seeds
+        else:
+            lines.append(f"# G. eps grid extension: eps = lr = {a.lr:g}, seed 0, 1 h, 1-minute evaluations")
+            for t in tasks:
+                for o in opts:
+                    lines.append(f"--task {t} --opt {o} --lr {a.lr:g} --seed 0 --budget 3600 --eval-every 60 --out results_v2")
+            path = a.eps_grid
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        print(f"{len(lines) - 1} jobs -> {path}")
+        return
     if a.untied_seeds or a.own_seeds:
         v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
         if a.untied_seeds:

@@ -51,8 +51,9 @@ SEEDS = [0, 1, 2]
 
 
 # ----------------------------------------------------------------------------- loading
-def load_dir(d):
-    """{(task, opt, eps_str, seed, tag): result}"""
+def load_dir(d, partial=False):
+    """{(task, opt, eps_str, seed, tag): result}; runs still in progress (status 'running' / 'starting')
+    or that crashed ('error') are left out unless ``partial`` is set."""
     runs = {}
     for f in glob.glob(os.path.join(d, "*.json")):
         if os.path.basename(f).startswith("summary"):
@@ -63,6 +64,8 @@ def load_dir(d):
             continue
         c = r.get("config", {})
         if not r.get("history") or c.get("task") is None:
+            continue
+        if not partial and r.get("status") in ("running", "starting", "error"):
             continue
         key = (c["task"], c["opt"], f"{float(c['lr']):g}", int(c.get("seed", 0)), c.get("tag", "") or "")
         runs[key] = r
@@ -161,8 +164,9 @@ def main():
     ap.add_argument("--align", default="results_align")
     ap.add_argument("--own", default="results_15", help="1.5-order rules under their own recipe (SGD)")
     ap.add_argument("--paper", default="paper")
+    ap.add_argument("--partial", action="store_true", help="also use runs that are still in progress (interim tables)")
     a = ap.parse_args()
-    s1, v2, bp, dc, own = load_dir(a.stage1), load_dir(a.v2), load_dir(a.bp), load_dir(a.decouple), load_dir(a.own)
+    s1, v2, bp, dc, own = (load_dir(d, a.partial) for d in (a.stage1, a.v2, a.bp, a.decouple, a.own))
     data_dir, tab_dir = os.path.join(a.paper, "data"), os.path.join(a.paper, "tables")
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(tab_dir, exist_ok=True)

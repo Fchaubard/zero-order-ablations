@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import os
 import queue
 import signal
@@ -77,6 +78,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--extra-jobs", default=None,
                    help="job-list mode only: a second file that is re-read whenever a worker needs a job; its "
                         "not-yet-started lines take precedence over the main queue (lets jobs be added to a running sweep)")
+    p.add_argument("--skip-jobs", default=None,
+                   help="file of run names or glob patterns (one per line, '#' comments), re-read before every job: a queued "
+                        "job whose name matches is skipped (lets a running sweep be pruned without restarting it)")
     p.add_argument("--jobs", default=None,
                    help="file with one zoo.train argument line per run (e.g. '--task mlp_mnist --opt np --lr 0.001 "
                         "--seed 1 --sigma 0.01 --out results_decouple'); replaces the tasks x opts x lrs grid. "
@@ -213,6 +217,21 @@ class Sweep:
             self.rows.append({"idx": idx, "name": name, "gpu": gpu, "exit": rc, "elapsed": elapsed,
                               "summary": summary, **{k: rec.get(k) for k in ("step", "val_loss", "test_loss", "test_acc", "test_bpc")}})
 
+    def _skip_patterns(self):
+        """Patterns of --skip-jobs (re-read on every call; never raises)."""
+        path = getattr(self.args, "skip_jobs", None)
+        if not path or not os.path.exists(path):
+            return []
+        try:
+            with open(path) as f:
+                return [ln.strip() for ln in f if ln.strip() and not ln.lstrip().startswith("#")]
+        except OSError:
+            return []
+
+    def _skipped(self, name: str, patterns=None) -> bool:
+        patterns = self._skip_patterns() if patterns is None else patterns
+        return any(fnmatch.fnmatchcase(name, pat) for pat in patterns)
+
     def _extra_job(self):
         """Next not-yet-started job of --extra-jobs (re-read on every call), or None."""
         path = getattr(self.args, "extra_jobs", None)
@@ -223,9 +242,10 @@ class Sweep:
         except BaseException as e:  # noqa: BLE001  (a worker must survive any problem with the extra file)
             self.say(f"could not read {path}: {e!r}")      # outside the lock: say() takes it
             return None
+        skip = self._skip_patterns()
         with self.lock:
             for i, argv, rpath, name in jobs:
-                if name in self.started or is_complete(load_json(rpath)):
+                if name in self.started or self._skipped(name, skip) or is_complete(load_json(rpath)):
                     continue
                 self.started.add(name)
                 self.total += 1
@@ -242,6 +262,9 @@ class Sweep:
                     return
             try:
                 if len(item) == 4 and isinstance(item[1], list):      # job-list mode: (idx, argv, path, name)
+                    if self._skipped(item[3]):
+                        self.say(f"SKIP   gpu{gpu:<3} {item[3]:34s} (matches --skip-jobs)")
+                        continue
                     self.run_job(gpu, *item)
                 else:
                     idx, task, opt, lr, seed = item
