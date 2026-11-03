@@ -404,8 +404,11 @@ def main():
         summary.setdefault("steps", {})[f"{task}/{o}"] = {"steps_k_mean": mean(steps), "steps_k_sd": sd(steps), "ms_per_step_mean": mean(msps), "ms_per_step_sd": sd(msps), "n": len(steps)}
         return [f"{mean(steps):.0f}" + (f"({sd(steps):.0f})" if len(steps) > 1 else ""), f"{mean(msps):.2f}"]
 
+    res = load_dir("results_resources") if os.path.isdir("results_resources") else {}
+
     def _mem_cells(task, o):
-        runs = [r for r in chosen[(task, o)][0].values() if r.get("max_memory_allocated")]
+        iso = [r for (t_, o_, e_, s_, tg), r in res.items() if t_ == task and o_ == o and r.get("max_memory_allocated")]
+        runs = iso or [r for r in chosen[(task, o)][0].values() if r.get("max_memory_allocated")]
         if not runs:
             return ["--", "--"]
         alloc = [r["max_memory_allocated"] / 2 ** 20 for r in runs]
@@ -416,7 +419,18 @@ def main():
     _res_table("steps_table.tex", "steps (k) & ms/step", _steps_cells,
                "optimizer steps completed in the hour (thousands) and milliseconds of training time per step, mean over seeds of the selected runs")
     _res_table("memory_table.tex", "alloc.\\ & reserved", _mem_cells,
-               "peak GPU memory of the training process (MB): tensors allocated / reserved by the caching allocator, mean over the seeds that recorded it")
+               "peak GPU memory of the training process (MB): tensors allocated / reserved by the caching allocator (isolated 150-s measurement when available, else the seeds that recorded it)")
+
+    def _iso_cells(task, o):
+        iso = [r for (t_, o_, e_, s_, tg), r in res.items() if t_ == task and o_ == o and r.get("steps")]
+        if not iso:
+            return ["--", "--"]
+        sps = [r["steps"] / max(r["train_time"], 1e-9) for r in iso]
+        msps = [1000 * r["train_time"] / max(r["steps"], 1) for r in iso]
+        summary.setdefault("isolated", {})[f"{task}/{o}"] = {"steps_per_sec": mean(sps), "ms_per_step": mean(msps)}
+        return [f"{mean(sps):.0f}", f"{mean(msps):.2f}"]
+    _res_table("isolated_table.tex", "steps/s & ms/step", _iso_cells,
+               "isolated throughput: each selected configuration run alone on one RTX 5090 for 150 s (no co-scheduled runs)")
 
     # ---- curves: mean / min / max over seeds vs minute; equal-pass view ----
     for task in TASKS:

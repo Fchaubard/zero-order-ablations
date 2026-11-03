@@ -51,9 +51,23 @@ def main():
     ap.add_argument("--node3", default=None,
                     help="write the untied (lr, sigma) grid for every probe method (third node): the combinations of "
                          "lr, sigma in {1e-2, 1e-3, 1e-4}^2 not covered by the tied runs or the node-1 decoupling group")
+    ap.add_argument("--resources", default=None,
+                    help="write a job list that re-runs every selected (task, method, eps) of results_v2/summary_v2.json ALONE on one GPU "
+                         "for 150 s (no wandb) into results_resources/, to measure isolated throughput and peak GPU memory")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.resources:
+        v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
+        lines.append("# R. isolated throughput / peak memory: each selected configuration alone on a GPU for 150 s (run the sweep with --gpus 0)")
+        for k, v in v2["selected"].items():
+            t, o = k.split("/")
+            lines.append(f"--task {t} --opt {o} --lr {float(v['eps']):g} --seed 0 --budget 150 --eval-every 600 --no-wandb --no-save-ckpt --out results_resources")
+        os.makedirs(os.path.dirname(a.resources) or ".", exist_ok=True)
+        with open(a.resources, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        print(f"{len(lines) - 1} jobs -> {a.resources}")
+        return
     if a.node3:
         H = "--seed 0 --budget 1800 --eval-every 60 --out results_decouple"
         probe = ["spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "danp"]
