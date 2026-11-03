@@ -119,7 +119,7 @@ MLP on MNIST, a ConvNet on CIFAR-10, a character-level LSTM and Transformer on P
 Treebank), with the same forward passes per step, one GPU-hour, the same Adam update
 and a probe scale tied to the learning rate. A screening sweep over five scales selects
 each method's scale per task; the selected configurations are replicated with three
-seeds (two for three pairs), evaluated every minute and reported at their best validation checkpoint and at
+seeds (two for two pairs), evaluated every minute and reported at their best validation checkpoint and at
 the end of the hour, with a backpropagation reference at the same granularity, a grid
 that decouples the probe scale from the step size, the two curvature-preconditioned
 rules under their own recipes, and an estimator-alignment measurement. The screening's
@@ -181,7 +181,7 @@ with the true gradient.
 (i)~A fully specified two-stage protocol under which ten training
 rules---backpropagation, SPSA, 1.5-SPSA, random search, four node-perturbation
 variants, 1.5-ANP and forward-forward---are compared on four architectures with
-identical forward-pass, wall-clock and optimizer budgets, three seeds (two for three
+identical forward-pass, wall-clock and optimizer budgets, three seeds (two for two
 pairs, Table~\ref{tab:selected}), and selection on validation data only. (ii)~One implementation of every rule on a shared
 \emph{perturbable layer} abstraction (Appendix~\ref{app:impl}), so that every method
 drives the same models, including an LSTM and a pre-LN Transformer; the two
@@ -437,8 +437,8 @@ and 56--58\,\% on CIFAR-10, \RS{} 94.9 and 53.7\,\%. On the sequence tasks \INP{
 character) and within 0.03 of \SPSAb{} on the Transformer (3.14 against 3.11), \SPSAb{}
 and \NP{} follow on the LSTM (2.96 and 3.02) and \SPSA{} on the Transformer (3.17), and
 \ANP{} is last on both (4.16 and 3.95). Across the four tasks \INP{} has the best
-mean rank among the eight probe methods at the best checkpoint (1.75, bootstrap interval 1.25--2.5), ahead of \NP{} (2.5), \SPSAb{} (3.25), \SPSA{}
-(4.25), \ANP{} (5.5), \RS{} (6.0), \ANPb{} (6.25) and \DANP{} (6.5). Against backpropagation at its own best learning rate (97.0 and 69.2\,\%,
+mean rank among the eight probe methods at the best checkpoint (1.5, bootstrap interval 1.25--2.5), ahead of \NP{} (2.75), \SPSAb{} (3.25), \SPSA{}
+(4.25), \ANP{} (5.5), \RS{} (6), \ANPb{} (6.25) and \DANP{} (6.5). Against backpropagation at its own best learning rate (97.0 and 69.2\,\%,
 Section~\ref{sec:bpref}) the best probe rule is 0.1 points behind on MNIST and 4
 points behind on CIFAR-10, and on the LSTM and the Transformer the gap is 1.1 and 1.3
 bits per character, a factor 1.6--1.7 in test loss. The end-of-hour view (Table~\ref{tab:final}) promotes \NP{} and \SPSAb{}, which drift least, and on the
