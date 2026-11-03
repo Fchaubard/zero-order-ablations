@@ -1,0 +1,29 @@
+% Figure: test loss summed over the four tasks against model size (log x), one line per method.
+% Data: data/scale.csv with columns params,bp,spsa,spsa15,rs,np,anp,anp15,inp,danp,ff (nan = not run).
+\begin{tikzpicture}
+  \begin{axis}[
+      width=0.72\linewidth, height=6.2cm,
+      xmode=log, log basis x=10,
+      xtick={40000, 400000, 4000000}, xticklabels={40k, 400k, 4M},
+      xlabel={parameters}, ylabel={test loss summed over the four tasks},
+      cycle list name=zoocycleX,
+      every axis plot/.append style={line width=0.8pt, mark size=2pt, mark options={solid}},
+      unbounded coords=jump,
+      tick label style={font=\scriptsize}, label style={font=\scriptsize},
+      legend style={font=\scriptsize, draw=none, at={(1.02,0.5)}, anchor=west},
+      legend cell align=left,
+      grid=major, grid style={gray!25},
+    ]
+    \addplot table [x=params, y=bp,     col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=spsa,   col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=spsa15, col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=rs,     col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=np,     col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=anp,    col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=anp15,  col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=inp,    col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=danp,   col sep=comma] {data/scale.csv};
+    \addplot table [x=params, y=ff,     col sep=comma] {data/scale.csv};
+    \legend{BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, FF}
+  \end{axis}
+\end{tikzpicture}
