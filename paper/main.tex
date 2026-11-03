@@ -124,16 +124,16 @@ the end of the hour, with a backpropagation reference at the same granularity, a
 that decouples the probe scale from the step size, the two curvature-preconditioned
 rules under their own recipes, and an estimator-alignment measurement. The screening's
 first lesson is that the step size, not the probe scale, decides: at $\varepsilon=10^{-4}$
-every probe rule improves and the weight-space rules close most of their gap on the
-image tasks. Iterative node perturbation (INP) is the most consistent zero-order rule:
+eight of the ten rules improve on both image tasks and the weight-space rules close
+about half of their gap. Iterative node perturbation (INP) is the most consistent zero-order rule:
 best mean rank, best probe method on both character-level models (2.82 and 3.10 bits
-per character against 1.78 and 1.82 for backpropagation) and tied for best on the
-image tasks with classic and activity-based node perturbation (96.9\,\% on MNIST and
-63\,\% on CIFAR-10, against 97.1 and 69.2\,\% for backpropagation). Curvature
-preconditioning leaves SPSA unchanged under Adam and under SGD; 1.5-ANP is usable on
-the sequence models where ANP is not, but its $\alpha=0$ control shows that the
-credit is due to its normalisation and token-local attribution, not to the curvature
-weighting. Code and run logs: \url{https://github.com/Fchaubard/zero-order-ablations}.
+per character against 1.78 and 1.82 for backpropagation) and within seed noise of the
+best on the image tasks together with classic and activity-based node perturbation
+(96.9\,\% on MNIST and 62--63\,\% on CIFAR-10, against 97.1 and 69.2\,\% for
+backpropagation). Curvature preconditioning leaves SPSA unchanged under Adam and does
+not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
+its $\alpha=0$ control shows that the curvature weighting is not the ingredient
+responsible. Code and run logs: \url{https://github.com/Fchaubard/zero-order-ablations}.
 \end{abstract}
 
 % ====================================================================================
@@ -185,11 +185,9 @@ identical forward-pass, wall-clock and optimizer budgets, three seeds, and selec
 validation data only. (ii)~One implementation of every rule on a shared
 \emph{perturbable layer} abstraction (Appendix~\ref{app:impl}), so that every method
 drives the same models, including an LSTM and a pre-LN Transformer; the two
-curvature-preconditioned rules are implemented from their published code and
+curvature-preconditioned rules are implemented from their code repository and
 specification. (iii)~The resulting comparison, backpropagation reference, probe-scale /
-step-size decoupling and estimator-alignment diagnostic (Tables~\ref{tab:main},
-\ref{tab:final}, \ref{tab:bp} and~\ref{tab:decouple}; Figures~\ref{fig:curves},
-\ref{fig:passes} and~\ref{fig:align}), with code, configurations and every run log
+step-size decoupling and estimator-alignment diagnostic (Tables~\ref{tab:main}--\ref{tab:x} and Figures~\ref{fig:curves}--\ref{fig:align}), with code, configurations and every run log
 released.
 
 % ====================================================================================
@@ -209,8 +207,8 @@ to supervised learning \citep{lenc2019non}, adaptive-moment updates
 MeZO \citep{malladi2023} fine-tunes billion-parameter language models with two-point
 SPSA in place; 1.5-SPSA \citep{chaubard2025spsa15} adds a per-direction three-point
 curvature estimate to damp the step in sharp regions. DeepZero
-\citep{chen2024deepzero} and \citet{zhang2024revisiting} benchmark estimators on one
-large model; we vary the estimator \emph{and} the architecture at a scale where every
+\citep{chen2024deepzero} and \citet{zhang2024revisiting} benchmark estimators on
+large pretrained models; we vary the estimator \emph{and} the architecture at a scale where every
 method runs to its one-hour limit, and our \SPSA{}, \SPSAb{} and \RS{} are the
 two-point, curvature-preconditioned and best-of-$K$ instances of this family.
 
@@ -286,7 +284,7 @@ perturbed in place as in MeZO \citep{malladi2023}; 16 passes, no clean pass.
 1.5-SPSA \citep{chaubard2025spsa15} adds a clean pass (17 passes) and divides each
 central difference by $c_k=\max(\hat\kappa_k^{\,\alpha},\lambda)$, $\hat\kappa_k$ the
 three-point second difference along $\bz_k$ ($\alpha=0.1$, $\lambda=1$;
-Eq.~\eqref{eq:spsa15}). Under Adam $c_k$ is inert (Section~\ref{sec:align}), so
+Eq.~\eqref{eq:spsa15}). Under Adam $c_k$ is inert (Section~\ref{sec:own}), so
 Section~\ref{sec:own} also runs the published recipe (Rademacher directions, plain
 SGD, $\eta=\sigma$); we use Gaussian directions throughout.
 
@@ -371,14 +369,14 @@ RTX~5090, with validation and test metrics at initialisation, every 5 minutes of
 training and at the end (evaluation time excluded); the two 1.5-order rules were
 added later under the stage-2 settings. Each pair selects the $\varepsilon$ with the
 lowest validation loss at any evaluation (\FF{} on the image tasks: the highest
-label-accumulation validation accuracy). Because 26 of the 32
+label-accumulation validation accuracy). Because 25 of the 32
 original pairs selected this grid's lower edge, $\varepsilon=10^{-4}$ was added for
 every pair under the stage-2 settings, and because that value won for eight methods on
-both image tasks, $\varepsilon=10^{-5}$ for those sixteen pairs: a selected value must
-have a worse neighbour on each side (176 screening runs, Appendix~\ref{app:grid}). On
-the sequence tasks $10^{-4}$ loses to $10^{-3}$ for every rule on the LSTM and for
-five of the ten on the Transformer, so most of their selections stay at the stage-1
-values (Table~\ref{tab:eps}).
+both image tasks, $\varepsilon=10^{-5}$ for those sixteen pairs, so that a selected value has a worse
+neighbour on each side wherever the grid allows (Table~\ref{tab:eps}; seven
+selections sit at a grid edge). On the sequence tasks $10^{-4}$ loses to $10^{-3}$ for
+every rule on the LSTM and for six of the ten on the Transformer, where \NP{}, \ANP{},
+\ANPb{} and \FF{} select $10^{-4}$, the edge of the sequence grid.
 
 \paragraph{Stage 2: replication.}
 The selected configuration of every pair is run with three seeds (initialisation, data
@@ -386,18 +384,19 @@ order and probes), evaluated every \textbf{minute} of training time, in full fp3
 arithmetic (TF32 disabled; Section~\ref{sec:align} measures its effect), with
 checkpoints at the best validation loss. A run is stopped and marked diverged when a
 loss is non-finite or when its clean validation loss exceeds ten times its initial
-value at two consecutive evaluations, which stops collapsed networks and not
-over-confident but accurate ones (Appendix~\ref{app:protocol}: the replaced stage-1
-rule and pairs whose stage-1 criteria disagree). For \BP{}, which has no probe, the
+value at two consecutive evaluations, which stops collapsed networks; it also stops
+over-confident backpropagation runs at $\eta\ge10^{-3}$ on the image tasks
+(Table~\ref{tab:bp}), none of which is the selected reference
+(Appendix~\ref{app:protocol}: the replaced stage-1 rule). For \BP{}, which has no probe, the
 reference on each task is the learning rate and weight decay with the lowest
-validation loss among $\eta\in\{10^{-2},10^{-3},10^{-4}\}$ with and without decoupled
-weight decay $10^{-2}$ \citep{loshchilov2019}, replicated with three seeds.
+validation loss among $\eta\in\{10^{-2},\dots,10^{-5}\}$ with and without decoupled
+weight decay $10^{-2}$ \citep{loshchilov2019}, selected by the same rule as the probe
+methods and replicated with three seeds.
 
 \paragraph{Reporting.}
 The primary metric is the \emph{best validation checkpoint}: per pair and seed, the
-evaluation with the lowest validation loss over the hour, whose test loss and
-accuracy (classification) or bits per character ($\text{loss}/\ln 2$) are reported as
-the seed mean with the sample standard deviation in units of the last digit. The
+evaluation with the lowest validation loss over the hour, whose test loss and accuracy or bits per character ($\text{loss}/\ln 2$) are
+reported as the seed mean with the standard deviation in units of the last digit. The
 end-of-hour value measures stability; \FF{} on the image tasks is selected and
 reported by label-accumulation accuracy (readout accuracy in brackets); mean ranks are
 over the eight probe methods (95\,\% bootstrap interval over seeds); test data are
@@ -429,22 +428,21 @@ hardware, software, code commits and logging.
 
 Table~\ref{tab:main} reports the best-validation-checkpoint test loss and accuracy or
 bits per character of every method on every task, Table~\ref{tab:final} the same runs
-at the end of the hour and Table~\ref{tab:eps} the screening behind every selection
-(Appendix~\ref{app:selected}: minute of the best checkpoint and seeds). On the image tasks the node-perturbation family leads and
-three of its members tie: \INP{} and \NP{} share the lowest loss on MNIST (0.107,
-96.9\,\%) with \ANP{} 0.003 behind, and \ANP{}, \INP{} and \NP{} are within 0.02 of
-each other on CIFAR-10 (1.060--1.081, 62--63\,\%), where \DANP{} has the highest
-accuracy (64.1\,\%) at a slightly higher loss. The weight-space rules follow at a
+at the end of the hour and Table~\ref{tab:eps} the screening behind every selection. On the image tasks the node-perturbation family leads and
+three of its members tie within seed noise: \INP{} and \NP{} share the lowest loss
+on MNIST (0.107, 96.9\,\%) with \ANP{} 0.003 behind, and \ANP{}, \INP{} and \NP{} are
+within 0.03 of each other on CIFAR-10 (1.060--1.081, 62--63\,\%), where \DANP{} has
+the highest accuracy (64.1\,\%) at a slightly higher loss; the seed standard
+deviations on CIFAR-10 (0.05 in loss, two points) do not resolve this order. The weight-space rules follow at a
 distance that grows with the task: \SPSA{} and \SPSAb{} reach 95.8--95.9\,\% on MNIST
-and 57--58\,\% on CIFAR-10, \RS{} 94.9 and 53.7\,\%. On the sequence tasks \INP{} is
+and 56--58\,\% on CIFAR-10, \RS{} 94.9 and 53.7\,\%. On the sequence tasks \INP{} is
 the best probe method (2.82 and 3.10 bits per character), \SPSAb{} and \SPSA{} are
 second on the Transformer (3.11 and 3.15) and \NP{} second on the LSTM (2.91), and
 \ANP{} is last on both (4.28 and 3.92). Across the four tasks \INP{} has the best
 mean rank among the eight probe methods at the best checkpoint (1.25, bootstrap
 interval 1.25--2.0), ahead of \NP{} (3.0), \SPSA{} and \SPSAb{} (4.0), \ANP{} (5.0),
-\RS{} (5.75), \DANP{} (6.25) and \ANPb{} (6.75). Against backpropagation on the same
-one-minute grid (97.1\,\% on MNIST and 69.2\,\% on CIFAR-10 at its own best learning
-rate, Section~\ref{sec:bpref}) the best probe rule is 0.2 points behind on MNIST and
+\RS{} (5.75), \DANP{} (6.25) and \ANPb{} (6.75). Against backpropagation at its own best learning rate (97.1 and 69.2\,\%,
+Section~\ref{sec:bpref}) the best probe rule is 0.2 points behind on MNIST and
 5--6 points behind on CIFAR-10, and on the LSTM and the Transformer the gap is 1.0 and
 1.3 bits per character, a factor 1.6--1.7 in test loss. The end-of-hour view (Table~\ref{tab:final}) promotes the weight-space rules, which
 drift least, and leaves the sequence tasks almost unchanged.
@@ -452,10 +450,10 @@ drift least, and leaves the sequence tasks almost unchanged.
 \begin{table}[t]
   \caption{Main result: test loss and test accuracy (\%) or bits per character at the
   \emph{best validation checkpoint} of the selected $\varepsilon$, mean over three
-  seeds with the standard deviation in units of the last digit in parentheses
-  (s1: single stage-1 run). Best probe method per task (by mean loss) in bold; \BP{} is
-  the reference and \FF{} a local (non-probe) rule reported by label-accumulation
-  accuracy [readout accuracy in brackets].}
+  seeds with the standard deviation in units of the last digit in parentheses (none:
+  one seed; s1: the seed-0 run of a sequence-task pair is its stage-1 run). Bold: best
+  probe method per task by mean loss (accuracy bolded with it); \BP{} is the reference
+  and \FF{} a local rule reported by label-accumulation accuracy [readout in brackets].}
   \label{tab:main}
   \centering
   \scriptsize
@@ -469,16 +467,15 @@ drift least, and leaves the sequence tasks almost unchanged.
 Figure~\ref{fig:curves} shows test loss against training time for the selected runs
 (seed mean and range); Figure~\ref{fig:passes} (Appendix~\ref{app:extra}) shows the
 same runs against the number of forward passes, which removes implementation- and
-host-dependent throughput from the comparison. The curves have two shapes. On the
-image tasks \BP{} reaches its best validation loss within the first two minutes and
-then grows over-confident for the rest of the hour (97.1\,\% throughout on MNIST; 0.91
-to 11 in test loss on CIFAR-10 at 66--69\,\%), whereas at $\varepsilon=10^{-4}$ every
-probe rule is still improving or flat at minute 60: the weight-space rules and
-\SPSAb{} have their best checkpoint in the last five minutes on both tasks, \ANP{} and
-\INP{} on CIFAR-10 as well, and only \NP{} and \ANPb{} on MNIST and \DANP{} peak early
-and drift (Appendix~\ref{app:selected}). On both sequence tasks every curve descends
-monotonically and is still descending at minute 60, roughly one bit per character
-above \BP{}. Per forward pass the node rules lead on the image tasks and trail on the LSTM
+host-dependent throughput from the comparison. On the image tasks \BP{} reaches its best validation loss within the first two minutes and
+then grows over-confident for the rest of the hour (96.6--97.1\,\% on MNIST; 0.91 to 14
+in test loss on CIFAR-10 at 66--69\,\%), whereas at $\varepsilon\le10^{-4}$ the
+weight-space rules and \SPSAb{} have their best checkpoint in the last fifteen minutes
+on both tasks and \ANP{} and \INP{} on CIFAR-10 as well, while \NP{}, \INP{} and
+\ANPb{} on MNIST and \DANP{} on both tasks peak within the first half hour and then
+drift (Appendix~\ref{app:selected}, Table~\ref{tab:final}). On both sequence tasks \BP{}, the weight-space rules, \NP{} and \INP{} are still
+descending at minute 60, the probe rules roughly one bit per character above \BP{},
+whereas \ANP{}, \ANPb{} and \DANP{} reach their best earlier and drift or spike. Per forward pass the node rules lead on the image tasks and trail on the LSTM
 (Appendix~\ref{app:extra}).
 
 \begin{figure}[t]
@@ -499,32 +496,30 @@ With Adam and no schedule, backpropagation completes 4.3M steps on MNIST and 2.0
 CIFAR-10 in the hour and overfits within minutes: at $\eta=10^{-3}$ its CIFAR-10
 validation loss never returns below its initial value, and at the selected
 reference ($\eta=10^{-5}$ on MNIST, $10^{-4}$ on CIFAR-10) the best checkpoint sits at
-minute 1--3 (97.1 and 69.2\,\%) and the hour ends at 97.1 and 65.6\,\% (Table~\ref{tab:bp}). On the sequence tasks $\eta=10^{-3}$
-is best, \BP{} is still improving at minute 60 (1.78 and 1.82 bits per character) and
-the reference is unproblematic. \TODO{AdamW rows of Table~\ref{tab:bp} land at 12:30
-UTC.}
+minute 1--3 (97.1 and 69.2\,\%) and the hour ends at 96.6 and 65.6\,\% (Table~\ref{tab:bp}). On the sequence tasks $\eta=10^{-3}$ is best and \BP{} is still improving at minute
+60 (1.78 and 1.82 bits per character). \TODO{AdamW rows of Table~\ref{tab:bp} land at 12:30 UTC.}
 
 \subsection{Probe scale and step size}
 \label{sec:decouple}
 
 The tied screening (Table~\ref{tab:eps}, Figure~\ref{fig:eps}) was decisive but for
 the wrong knob: $\varepsilon=0.1$ collapses most probe runs and \BP{} itself on both
-image tasks, $\varepsilon=0.01$ still loses eight probe runs, $10^{-3}$ loses none,
+image tasks, $\varepsilon=0.01$ still loses seven probe runs, $10^{-3}$ loses none,
 and the lower values added after the review improve eight of the ten methods on both
-image tasks once more---\SPSA{} from 0.293 to 0.132 in validation loss on MNIST and
-from 1.62 to 1.27 on CIFAR-10 at $10^{-4}$---while $10^{-5}$ is worse for all but
+image tasks once more---\SPSA{} from 0.293 to 0.121 in validation loss on MNIST and
+from 1.62 to 1.19 on CIFAR-10 at $10^{-4}$---while $10^{-5}$ is worse for all but
 three pairs (\BP{} and \ANP{} on MNIST, \ANPb{} on CIFAR-10, where it ties or wins by
-a margin within seed noise). The untied grid (Table~\ref{tab:decouple},
-Appendix~\ref{app:extra}) attributes this to the step size alone: at fixed
-$\eta=10^{-4}$ the probe scale changes the 30-minute loss by at most 0.03 on MNIST and
-0.2 on CIFAR-10 for every rule except \ANPb{}, whereas on the image tasks
-$\eta=10^{-2}$ is catastrophic for every rule at every $\sigma$. Adam makes each step about $\eta$ per coordinate whatever the estimate's scale, so
-a noisy estimate wants a small step and many of them \citep{dalm2023,malladi2023}. On the sequence tasks $\eta=10^{-4}$ loses to $10^{-3}$ for every
-rule on the LSTM (the recurrent model completes only 20--35k steps per hour) and for
+a margin within seed noise). The untied grid (Table~\ref{tab:decouple}, Appendix~\ref{app:extra}) attributes most
+of this to the step size: at fixed $\eta=10^{-4}$ the probe scale changes the
+30-minute loss of \SPSA{}, \SPSAb{}, \RS{}, \NP{} and \INP{} by at most 0.03 on
+MNIST and 0.09 on CIFAR-10, while \ANP{} and \DANP{} are $\sigma$-sensitive on
+CIFAR-10 (0.16 and 0.21) and \ANPb{} everywhere; on the image tasks $\eta=10^{-2}$
+loses to $10^{-4}$ for every rule but \DANP{}. A noisy estimate wants a small Adam step and many of them
+\citep{dalm2023,malladi2023}. On the sequence tasks $\eta=10^{-4}$ loses to $10^{-3}$ for every
+rule on the LSTM (the recurrent model completes only 17--35k steps per hour) and for
 five of ten on the Transformer. The best untied cell beats the best tied one by more than 3\,\% only for \ANPb{}
 on both image tasks (24 and 17\,\%, at $\sigma\ge10^{-3}$), \DANP{} on the Transformer
-(6\,\%) and \ANP{} on MNIST (4\,\%); the tied protocol is
-therefore not what holds the other rules back.
+(6\,\%) and \ANP{} on MNIST (4\,\%).
 
 \subsection{The 1.5-order rules under their own recipe}
 \label{sec:own}
@@ -534,31 +529,36 @@ SGD, fp64 losses, their own $(\eta,\sigma)$ and probe-count grids---and
 Table~\ref{tab:x} runs \ANPb{} under the protocol's optimizer at the step size the
 screening selected, with its probe scale freed. Neither recipe beats the protocol: \SPSAb{} with SGD and 64 antithetic pairs
 per step reaches 0.176 on MNIST and 1.336 on CIFAR-10 where its own Adam run stands at
-0.160 and 1.313 after the same 30 minutes, and its $\alpha=0$ control (plain SPSA with SGD) is within 0.01 or better on every
-task (0.162, 1.344, 2.845 versus 2.955, 2.259 versus 2.258). The curvature factor of \SPSAb{} is inert under both optimizers: with
-$\alpha=0.1$ and $\lambda=1$ it varies by 5\,\% across directions and steps. For
+0.160 and 1.313 after the same 30 minutes, and its $\alpha=0$ control (plain SPSA with SGD) is better by 0.01 on MNIST and
+0.11 on the LSTM and equal within 0.01 elsewhere (0.162 versus 0.176, 1.344 versus
+1.336, 2.845 versus 2.955, 2.259 versus 2.258). The curvature factor of \SPSAb{} is
+thus inert under Adam, whose per-coordinate normalisation removes a nearly common
+scale, and slightly harmful under SGD. For
 \ANPb{} the picture is the same but more informative. Under Adam at $\eta=10^{-4}$
 with fp64 losses it improves from 0.159 to 0.132 on MNIST and from 1.49 to 1.28 on
 CIFAR-10 (56.9\,\%) at $\sigma=10^{-2}$, i.e.\ its tied selection was limited by a
-probe scale too small for a second difference in fp32, but its $\alpha=0$ control is
-better still (0.112 and 1.120, 97.0 and 60.4\,\%) and comes within 0.002 and 0.06 of
-\ANP{} (0.110, 1.060);
-$\alpha=0.25$ lies in between and $\alpha=1$ is harmful (0.204 and 1.98). Under its own
-SGD recipe the $\alpha=0$ control again equals or beats the curvature-weighted rule on
-every task. The ingredient that makes \ANPb{} usable on the sequence models, where it
-beats \ANP{} by 1.15 and 0.18 bits per character under the protocol, is thus not the
-curvature exponent but the rest of its estimator: the per-unit normalisation by the
-measured activity difference and the token-local credit assignment. \TODO{LSTM and
+probe scale too small for a second difference in fp32, but at $\sigma=10^{-3}$ its $\alpha=0$ control is better still (0.112 and 1.120,
+97.0 and 60.4\,\%, against 0.133 and 1.307 with $\alpha=0.5$) and comes within 0.002
+and 0.06 of \ANP{} (0.110, 1.060); $\alpha=0.25$ lies in between and $\alpha=1$ is
+harmful (0.204 and 1.98). The same holds at the tied $\varepsilon=10^{-3}$ (Table~\ref{tab:controls}) and,
+under its own SGD recipe, on three of the four tasks (Table~\ref{tab:own}). What makes \ANPb{} usable on the sequence models, where it beats \ANP{} by 1.15 and
+0.18 bits per character under the protocol, is therefore not the curvature exponent;
+the remaining differences to \ANP{}---antithetic central differences, the per-unit
+normalisation by the measured activity difference and the token-local credit
+assignment---are not separated by any run here, and which of them carries the gain is
+left as a hypothesis. \TODO{LSTM and
 Transformer rows of Table~\ref{tab:x} (with and without damping) land at 12:30 UTC.}
 
 \begin{table}[t]
   \caption{1.5-ANP under the protocol's optimizer at the step size the
   $\varepsilon$ screening selected on the image tasks (Adam, $\eta=10^{-4}$), with the
   probe scale decoupled from the step size and the losses evaluated in fp64: test loss
-  (accuracy or bits per character) at the best validation checkpoint, seed 0. The
-  $\alpha=0$ columns remove the curvature weighting; the ``damped'' row is the LSTM with the
-  recurrent-state damping (0.5) of its specification. The last two columns are the tied-protocol selections of
-  1.5-ANP and ANP (mean over seeds).}
+  (accuracy or bits per character) at the best validation checkpoint, seed 0, for
+  $\sigma\in\{10^{-2},10^{-3}\}$ and curvature exponent $\alpha\in\{0.5, 0, 0.25, 1\}$
+  ($\alpha=0$ removes the curvature weighting); the ``damped'' row is the LSTM with the
+  recurrent-state damping (0.5) of its specification. The last two columns are the
+  tied-protocol selections of 1.5-ANP and ANP (mean over seeds; the CIFAR-10 selection
+  of 1.5-ANP is $\varepsilon=10^{-5}$, its $10^{-4}$ run is within 0.05 of it).}
   \label{tab:x}
   \centering
   \scriptsize
@@ -571,8 +571,7 @@ Transformer rows of Table~\ref{tab:x} (with and without damping) land at 12:30 U
 
 Figure~\ref{fig:align} measures, on one fixed batch per task, the cosine between each
 estimator and the true gradient against the number of forward passes spent on it,
-after a 2000-step backpropagation warm-up, in fp32 on the GPU (Appendices~\ref{app:extra}
-and~\ref{app:align}). On the MLP the node-perturbation rules obtain from the
+after a 2000-step backpropagation warm-up, in fp32 on the GPU (Appendix~\ref{app:align}). On the MLP the node-perturbation rules obtain from the
 protocol's 16 passes a direction with cosine 0.4--0.6 to the gradient, rising to
 0.95--0.96 for \NP{} and \INP{} and 0.81--0.83 for \ANP{} and \DANP{} with 1024 passes, whereas
 the weight-space rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the
@@ -587,9 +586,8 @@ per-unit factor lowers the alignment of \ANP{} from 0.81 to 0.69 on the MLP and 
 0.52 to 0.27 on the ConvNet at $\sigma=10^{-3}$ while raising it on the sequence
 models (0.26 versus 0.04 on the LSTM). Down to $\sigma=10^{-5}$ the first-difference estimators keep their alignment in
 fp32, whereas \ANPb{}'s second difference reaches the rounding floor (0.74 at
-$10^{-2}$ to 0.46 at $10^{-5}$ on the MLP), which is why it needs $\sigma\ge10^{-3}$
-(Section~\ref{sec:own}); TF32 convolutions lower the ConvNet cosines of \NP{} and
-\INP{} at $\sigma=10^{-3}$ (Table~\ref{tab:precision}), so stage 2 ran in fp32.
+$10^{-2}$ to 0.46 at $10^{-5}$ on the MLP, Table~\ref{tab:alignsigma}), which is why it needs $\sigma\ge10^{-3}$
+(Section~\ref{sec:own}); TF32 lowers the ConvNet cosines (Table~\ref{tab:precision}), so stage 2 ran in fp32.
 
 \begin{figure}[t]
   \centering
@@ -607,13 +605,12 @@ $10^{-2}$ to 0.46 at $10^{-5}$ on the MLP), which is why it needs $\sigma\ge10^{
 
 \paragraph{Which zero-order method wins?}
 \INP{}, if a single rule must be chosen: the best probe method on both sequence
-models, tied for best on MNIST and within 0.01 of the best on CIFAR-10, and the best
-mean rank at the best checkpoint and at the end of the hour. \ANP{}, \NP{} and
-\INP{} are interchangeable on the image tasks and \DANP{} is the fastest there; on the
-sequence tasks the order is \INP{}, then the weight-space rules and \NP{}, then the
-curvature-weighted and decorrelated rules, with \ANP{} last. The gap to
-backpropagation is 0.2 points on MNIST, 5--6 points on CIFAR-10 and 1.0--1.3 bits per
-character on the sequence tasks, where every probe curve is still descending.
+models, tied for best on MNIST and within 0.02 of the best on CIFAR-10, and the best
+mean rank at the best checkpoint and at the end of the hour. \ANP{}, \NP{} and \INP{} are indistinguishable at the best checkpoint on the image
+tasks (at the end of the hour \ANP{} drifts least) and \DANP{} is the fastest there;
+on the sequence tasks \INP{} leads, the weight-space rules and \NP{} follow, \ANPb{}
+and \DANP{} trail, and \ANP{} is last. The gap to backpropagation is 0.2 points on MNIST, 5--6 points on CIFAR-10 and
+1.0--1.3 bits per character on the sequence tasks.
 
 \paragraph{Weight probes versus node probes.}
 \SPSA{} and \RS{} perturb all $P\approx40$k weights and obtain one scalar loss
@@ -623,12 +620,10 @@ difference per example and assign credit per unit (cosine 0.4--0.6); at the righ
 step size the gap is 1 point on MNIST and 5 points on CIFAR-10 at the best checkpoint,
 and it closes on the sequence models, where \SPSA{} ends within 0.14 and 0.05 bits per
 character of \INP{} and ahead of \NP{} on the Transformer, as \citet{zuge2023weight}
-found for temporally extended tasks. The effective-dimension argument---node probes
-win where the number of perturbed units is small relative to $P$ (90 on the MLP) and
-lose their advantage where it is comparable (26,682 on the ConvNet, 25,728 and 48,256
-on the sequence models)---fits the sequence-task convergence but not the order within
-the node family, where \ANP{} beats \NP{} by one point on CIFAR-10 with the same unit
-count and loses to it by 1.4 bits per character on the LSTM.
+found for temporally extended tasks. The effective-dimension argument (node probes win where the number of perturbed
+units, 90 on the MLP, is small relative to $P$, and lose that advantage at 26--48k
+unit-positions) fits the sequence-task convergence but not the order within the node
+family.
 
 \paragraph{Curvature preconditioning.}
 \SPSAb{} reproduces \SPSA{} on every task to within 0.03 in loss (0.140 versus 0.142
@@ -640,7 +635,7 @@ removes the remaining common scalar, and Section~\ref{sec:own} shows the same un
 plain SGD. \ANPb{} is one point behind \ANP{} on MNIST and 16 points behind on CIFAR-10 under
 the tied protocol, because a second difference at $\sigma\le10^{-4}$ sits at the fp32
 rounding floor; with $\sigma=10^{-2}$ and fp64
-losses it recovers to within 0.02 of \ANP{} on MNIST, and its $\alpha=0$ control
+losses it recovers to within 0.03 of \ANP{} on MNIST, and its $\alpha=0$ control
 matches \ANP{} on both tasks. On the sequence models its token-local attribution
 repairs \ANP{}'s failure (3.13 versus 4.28 bits per character on the LSTM, 3.74 versus
 3.92 on the Transformer) without reaching \INP{} or \SPSA{}; per step it is 7\,\% slower than \ANP{} on the MLP and 15--50\,\% faster on the
@@ -652,25 +647,21 @@ and nothing on MNIST at the right step size, less than the 12 points the stage-1
 suggested, but on the recurrent and attention models its normalisation by a squared
 activity difference summed over 25k--48k unit-positions, whose perturbations propagate
 through shared weights, produces updates of erratic size (the spikes in
-Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s
-one-layer-at-a-time attribution has only $\lfloor 15/L\rfloor$ draws per layer, yet
-removes all cross-layer noise from each estimate (the highest 1024-pass cosine of any
-rule on the MLP) and is never worse than third on any task. Decorrelation helps only
-where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best
-checkpoint at minute 8, the highest accuracy of any probe rule, 64.1\,\%) but drifts
-to 1.38 by minute 60, is behind on MNIST (94.0\,\%), remains far behind on the
-sequence tasks (3.76 and 3.63 bits per character) and was the screening's most fragile
-rule (NaN within 21 steps at $\varepsilon=0.1$ on both image models).
+Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution has only $\lfloor 15/L\rfloor$ draws per
+layer, yet removes all cross-layer noise (a 1024-pass cosine on the MLP second only to
+\NP{}) and is never worse than third on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest
+rule on CIFAR-10 (best checkpoint at minute 8, 64.1\,\%) but drifts to 1.38 by minute
+60, is behind on MNIST (94.0\,\%) and on the sequence tasks (3.76 and 3.63 bits per
+character), and was the screening's most fragile rule.
 
 \paragraph{Sequence models and forward-forward.}
 Against count models on the training text (unigram 4.32 bits/char, bigram 3.31,
 trigram 2.61; Appendix~\ref{app:impl}) the zero-order rules learn roughly bigram
-statistics in an hour---the best four sit between the bigram and the trigram on the
-LSTM and barely past the bigram on the Transformer---and \BP{} (1.78 and 1.82) a real
+statistics in an hour---six rules beat the bigram on the LSTM (2.82--3.13) and four on
+the Transformer (3.10--3.29), none the trigram---and \BP{} (1.78 and 1.82) a real
 character model; every probe curve is still descending at minute 60, so part of the gap is
 budget rather than estimator, but at 17--35k steps per hour on the LSTM closing it
-would take days. \FF{}, not a probe method, trains fast (1.7M steps per hour on the
-MLP) but its two inference rules disagree: on MNIST the linear readout peaks early and
+would take days. \FF{}, not a probe method, trains fast but its two inference rules disagree: on MNIST the linear readout peaks early and
 collapses to 14\,\%, whereas label accumulation on the same blocks gives 93.1\,\%; on
 CIFAR-10 both numbers are 26--34\,\%, and on the sequence tasks \FF{} is second-worst on the LSTM and worst on the
 Transformer (3.84 and 4.21 bits per character; Appendix~\ref{app:extra}).
@@ -680,20 +671,18 @@ Transformer (3.84 and 4.21 bits per character; Appendix~\ref{app:extra}).
 \label{sec:discussion}
 
 \paragraph{What the final-loss protocol measures.}
-Under a fixed Adam step with no schedule every image-task run peaks within minutes
-and then drifts: Adam normalises each coordinate, so once the estimate's signal is
-exhausted the parameters perform a random walk of step $\eta$ and the network becomes
-over-confident while its accuracy barely moves. The loss after a fixed hour therefore ranks methods by where their random walk
+Under a fixed Adam step with no schedule every image-task run at $\varepsilon\ge10^{-3}$
+peaks within minutes and then drifts: once the estimate's signal is exhausted the parameters perform a random walk of
+step $\eta$ and the network becomes over-confident while its accuracy barely moves. The loss after a fixed hour therefore ranks methods by where their random walk
 settles, and selecting $\varepsilon$ by it produced degenerate choices in stage 1; hence
 stage 2 reports the best validation checkpoint as primary and the final value for
 stability. A learning-rate schedule, not in the protocol, would be the other remedy.
 
 \paragraph{Screening, budget and scale.}
 The selection rests on one seed per $\varepsilon$, so the error bars are conditional
-on $\varepsilon^{\ast}$ and exclude selection noise. The budget is small and identical for all methods, which favours
-methods that make progress quickly; the models are small by modern standards, and
-because the variance of weight-space estimators grows with $P$, the standing of
-\SPSA{} and \RS{} against the node-perturbation family may change at larger scale.
+on $\varepsilon^{\ast}$ and exclude selection noise. The budget is small and identical for all methods, the models are small by modern
+standards, and because the variance of weight-space estimators grows with $P$ the
+standing of \SPSA{} and \RS{} may change at larger scale.
 Wall-clock comparisons reward implementations that batch probes well: the probe
 passes of this code are a Python loop and all runs executed eight at a time on one
 host, so steps per hour (Appendix~\ref{app:throughput}) depend on the host and the
@@ -704,7 +693,6 @@ equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comp
 expressed through Adam, \ANPb{} applies the recurrent-state damping of its specification only in the
 controls of Table~\ref{tab:x}, \FF{} follows the reference re-implementation at the parameter budget, and \DANP{}'s
 decorrelation rate is fixed and un-normalised (Appendix~\ref{app:extra}).
-Character-level results are not comparable to word-level perplexities.
 
 % ====================================================================================
 \section{Conclusion}
@@ -713,20 +701,19 @@ Character-level results are not comparable to word-level perplexities.
 We compared nine backprop-free training rules and backpropagation on four
 $\approx$40k-parameter architectures under one equal-budget protocol. The screening
 sweep's first result is methodological: with Adam the step size, not the probe scale,
-decides how far a noisy estimator gets in an hour, and at $\eta=10^{-4}$ every probe
-rule improves and the weight-space rules close most of their gap on the image tasks.
+decides how far a noisy estimator gets in an hour, and at $\eta=10^{-4}$ eight of the
+ten rules improve and the weight-space rules close about half of their gap on the image
+tasks.
 If one zero-order rule must be chosen it is iterative node perturbation, best on both
 character-level models and tied for best on the image tasks; classic and
 activity-based node perturbation match it on images and the activity-based rule fails
 on sequences; weight-space perturbation competes where the number of perturbed units
 approaches the number of weights; curvature preconditioning adds nothing to SPSA under
 Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting its
-curvature exponent to zero. Per forward pass the node rules keep up with
-backpropagation on the image tasks; per unit of time the best probe rule is 0.2 and
-6 points behind, and on the language models every zero-order rule is still about one
-bit per character behind after an hour, every curve still descending. The protocol,
-code, job lists and all run logs are public; adding a rule to the grid costs about 25
-GPU-hours.
+curvature exponent to zero. Per forward pass the node rules reach
+backpropagation's best MNIST loss with about ten times more passes and never reach its
+CIFAR-10 loss; per unit of time the best probe rule is 0.2 and 6 points behind, and on the language models every zero-order rule is still about one
+bit per character behind after an hour, every curve still descending. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
 
 % ====================================================================================
 \bibliographystyle{plainnat}
@@ -1045,8 +1032,8 @@ exponent $\alpha\in\{0,0.25,0.5,1\}$ and, on the LSTM, the recurrent-state dampi
 (Table~\ref{tab:x}); \ANPb{} with $\alpha=0$ and with fp64 losses at $\varepsilon=10^{-3}$;
 \SPSAb{} with a non-inert factor ($\alpha=0.5$, $\lambda=10^{-3}$). (iv)~\emph{Estimator alignment}: the cosine between every estimator
 and the true gradient of a fixed batch as a function of the number of forward passes,
-per layer, at initialisation and after a 2000-step backpropagation warm-up, in fp32,
-TF32 and fp64, for $\sigma$ from $10^{-1}$ to $10^{-5}$. (v)~\emph{Resources}: every run records its steps, seconds of training time per step
+per layer after a 2000-step backpropagation warm-up, in fp32, TF32 and fp64, for
+$\sigma$ from $10^{-1}$ to $10^{-5}$ (Appendix~\ref{app:align}). (v)~\emph{Resources}: every run records its steps, seconds of training time per step
 and peak GPU memory (Appendix~\ref{app:resources}); throughput is measured with eight
 runs sharing one host.
 
@@ -1075,15 +1062,16 @@ configuration, evaluation history and final metrics.
 
 \paragraph{Equal-pass view.}
 Figure~\ref{fig:passes} shows the selected runs of Figure~\ref{fig:curves} against the
-number of forward passes, which removes the implementation- and host-dependent
-throughput of each method from the comparison. Per forward pass (Figure~\ref{fig:passes}) the picture favours the node rules on
-the image tasks: after $10^{5}$ passes \DANP{} is at 0.365 on MNIST and 1.149 on
-CIFAR-10 against 0.480 and 1.315 for \BP{}, and after $10^{6}$ passes \ANP{}, \INP{} and
-\NP{} sit at 0.13--0.16 on MNIST while \BP{}, which has by then overfitted, is at 2.46;
-on CIFAR-10 at $10^{6}$ passes \DANP{} and \ANP{} (1.19, 1.21) are ahead of \BP{}
-(1.48). On the LSTM the order is reversed: after $10^{5}$ passes \BP{} is at 1.24
-against 2.20--2.27 for \INP{}, \ANPb{} and \NP{}, because a backward pass through 64
-time steps buys far more than a perturbed forward pass does.
+number of forward passes (best validation checkpoint within the pass budget, mean over
+seeds), which removes the implementation- and host-dependent throughput of each method
+from the comparison. Backpropagation reaches 0.139 on MNIST and 0.907 on CIFAR-10
+within $10^{5}$ passes, where every probe rule is still near its initial loss except
+\DANP{} (1.17 on CIFAR-10); at $10^{6}$ passes \NP{} and \INP{} are at 0.107--0.108 on
+MNIST, within 0.006 of \BP{}'s best, and \DANP{} and \ANP{} at 1.09 and 1.16 on
+CIFAR-10 against 0.907; at $10^{7}$ passes the image-task ordering is that of
+Table~\ref{tab:main}. On the LSTM the gap is larger at every budget: after $10^{5}$
+passes \BP{} is at 1.24 against 2.17--2.28 for \ANPb{}, \INP{} and \NP{}, because a
+backward pass through 64 time steps buys far more than a perturbed forward pass does.
 
 \begin{figure}[t]
   \centering
@@ -1097,27 +1085,30 @@ time steps buys far more than a perturbed forward pass does.
 \end{figure}
 
 \paragraph{Backpropagation reference.}
-With Adam at $\eta=10^{-3}$ and no schedule, backpropagation completes 4.2M steps on
-MNIST and 2.4M on CIFAR-10 in the hour and overfits the 40k-parameter models within the
-first minute: on MNIST its validation loss is lowest at the first evaluation (97.2 and
-97.0\,\% test accuracy for two seeds, test loss 0.37--0.40) and ends at 97.4\,\% with
-test loss 2.4--2.6; on CIFAR-10 the $\eta=10^{-3}$ run has already passed its best
-validation loss by minute 1 (67.7\,\% accuracy with a validation loss above its initial
-value) and is stopped by the divergence rule, so the selected run is $\eta=10^{-2}$,
-62.7\,\% at minute 1 and 59.3\,\% at the end; four stage-1 runs with 30-second
-evaluations saw 69.7\,\% on CIFAR-10 and 97.5\,\% on MNIST after 30 seconds, i.e.\ the
-best point of \BP{} on these models lies between the first two evaluations of the
-protocol.
-On the sequence tasks \BP{} is still improving at minute 60 (1.78 and 1.82 bits per
-character) and the reference is unproblematic.
+With Adam and no schedule, backpropagation completes 4.3M steps on MNIST and 2.0M on
+CIFAR-10 in the hour (Table~\ref{tab:steps}) and overfits the 40k-parameter models
+within minutes. At $\eta=10^{-3}$ the MNIST validation loss is lowest at the first
+evaluation (97.2\,\% test accuracy, three seeds) and the run ends at 97.4\,\% with a
+test loss of 2.4--2.6; the CIFAR-10 run has a validation loss above its initial value
+from the first evaluation on (its ``best checkpoint'' is step 0) and is stopped by the
+divergence rule at 66.9\,\%. At $\eta=10^{-4}$ the CIFAR-10 run peaks at 69.2(6)\,\%
+at minute 1 and ends at 65.6\,\% with a test loss of 14, and on MNIST
+$\eta=10^{-5}$ gives the lowest validation loss (0.100 at minute 3, 97.1\,\%), which
+the selection rule therefore picks; the three-seed $\eta=10^{-4}$ run is equivalent in
+accuracy (97.2(1)\,\%). The best point of \BP{} on these models thus lies within the
+first few minutes at any learning rate, and the reference reported in
+Table~\ref{tab:main} is the one the protocol's own rule selects. On the sequence tasks
+$\eta=10^{-3}$ is best, \BP{} is still improving at minute 60 (1.78 and 1.82 bits
+per character) and the reference is unproblematic.
 
 \begin{table}[t]
   \caption{Backpropagation reference under the stage-2 protocol: test accuracy (\%) or
   bits per character at the best validation checkpoint (with its minute) and at the end
   of the hour, for learning rates $\eta$ and decoupled weight decay (AdamW). The
-  $\eta=0.001$ row without decay is the three-seed reference of Table~\ref{tab:main};
-  the $\eta=0.01$ row is the stage-1 run. A dagger marks a run stopped by the
-  divergence rule.}
+  reference of Table~\ref{tab:main} is the row with the lowest validation loss on each
+  task ($10^{-5}$ on MNIST, $10^{-4}$ on CIFAR-10, $10^{-3}$ on both sequence tasks);
+  the $\eta=0.01$ image rows are stage-1 runs. A dagger marks a run stopped by the
+  divergence rule (over-confident, not collapsed, in every daggered case).}
   \label{tab:bp}
   \centering
   \footnotesize
@@ -1136,19 +1127,28 @@ $\varepsilon=0.001$ no probe run diverges and 25 of the 32 original pairs select
 value. The screening of the two 1.5-order rules under the stage-2 settings follows the
 same pattern: six of their sixteen runs at $\varepsilon\ge 0.01$ diverge (\SPSAb{} on
 both image tasks at $0.1$ and $0.01$, \ANPb{} on CIFAR-10 and the LSTM at $0.1$), and
-every pair selects $\varepsilon=0.001$ except \ANPb{} on the LSTM ($0.01$).
-Because $\varepsilon$ is both the Adam step
+under the stage-2 settings every pair of the two 1.5-order rules then selected $\varepsilon=0.001$
+except \ANPb{} on the LSTM ($0.01$), before the lower values were added
+(Table~\ref{tab:eps}). Because $\varepsilon$ is both the Adam step
 and the probe scale, these counts do not say whether a method diverged from noise or
 from step size, and the published rules do not obey the tie (\citet{dalm2023} fix
 $\sigma=10^{-3}$ with learning rates down to $10^{-5}$; MeZO uses
 $\sigma=10^{-3}$ with learning rates of $10^{-6}$--$10^{-7}$). Table~\ref{tab:decouple}
-separates the two.
+separates the two, and Table~\ref{tab:controls} lists the controls under the protocol
+at $\varepsilon=10^{-3}$: \SPSAb{} with a non-inert factor ($\alpha=0.5$,
+$\lambda=10^{-3}$) is within 0.01 of \SPSA{} on the image tasks and 0.04--0.2 worse on
+the sequence tasks, and \ANPb{} with $\alpha=0$ beats \ANPb{} by 0.08 on MNIST and
+0.58 on CIFAR-10 already at this $\varepsilon$, with fp64 losses alone recovering
+about half of that.
 
 \begin{table}[t]
   \caption{Probe scale decoupled from the step size: test loss of the best validation
-  checkpoint within 30 minutes for every probe method and task (one seed; the tied
-  $\eta=\sigma=10^{-3}$ column is the three-seed mean of the stage-2 runs at minute 30
-  and the tied $10^{-2}$ column the stage-1 run). A dagger marks a diverged run.}
+  checkpoint within 30 minutes for every probe method and task. Off-diagonal cells are
+  single 30-minute runs; the tied diagonal cells are the stage-2 one-hour runs at
+  minute 30 (mean over their seeds) and the tied $10^{-2}$ cells stage-1 runs. The
+  $\eta=10^{-3}$ off-diagonal cells and the ($\eta=10^{-2}$, $\sigma=10^{-3}$) cell were
+  run only for the three rules that show them; the last column is the $\sigma=0.1$ row
+  added at $\eta=10^{-4}$. A dagger marks a diverged run.}
   \label{tab:decouple}
   \centering
   \scriptsize
@@ -1156,66 +1156,86 @@ separates the two.
   \input{tables/decouple_table}
 \end{table}
 
+\begin{table}[ht]
+  \caption{Controls under the protocol at $\varepsilon=10^{-3}$ (Adam, tied scale):
+  test loss (accuracy or bits per character) at the best validation checkpoint of the
+  tied runs of \SPSA{}, \SPSAb{} and \ANPb{} (mean over seeds) next to single-seed
+  controls: \SPSAb{} with a non-inert curvature factor ($\alpha=0.5$,
+  $\lambda=10^{-3}$), \ANPb{} without curvature weighting ($\alpha=0$) and \ANPb{}
+  with fp64 losses. The LSTM selection of \ANPb{} is $\varepsilon=10^{-2}$, so its
+  $10^{-3}$ run is listed; its two LSTM controls were not run.}
+  \label{tab:controls}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \input{tables/controls_table}
+\end{table}
+
 \paragraph{Estimator alignment.}
 Figure~\ref{fig:align} measures, on one fixed batch per task, the cosine between each
 estimator and the true gradient as a function of the number of forward passes spent on
-it, after a 2000-step backpropagation warm-up (Appendix~\ref{app:align} gives the
-per-layer values and the same measurement at initialisation). On the MLP the
-node-perturbation rules obtain, from the protocol's 16 passes, a direction with cosine
-0.40--0.60 to the gradient (\ANP{} 0.60, \INP{} 0.47, \DANP{} 0.41, \NP{} 0.40,
-\ANPb{} 0.29), rising to 0.96--0.97 for \NP{} and \INP{} and 0.83 for \ANP{} and
-\DANP{} with 1024 passes, whereas the weight-space rules get 0.01 from 16 passes and
-0.07--0.12 from 1024, the $\sqrt{K/P}$ scaling of a 40k-dimensional random search.
-On the ConvNet at initialisation every estimator is below 0.1 at 16 passes, and with
-1024 passes \ANP{} reaches 0.58, \INP{} 0.40, \NP{} and \DANP{} 0.32--0.33, \SPSA{} 0.12
-and \ANPb{} 0.09: the convolutional layers, whose 26,682 perturbed unit-positions
-approach the number of weights, need thousands of probes before the node estimate
-carries signal, which is why \NP{} and \INP{} train the ConvNet slowly and the
-weight-space rules hardly at all. The curvature preconditioners behave as their results
-suggest: \SPSAb{} is indistinguishable from \SPSA{} at every probe count, because with
-$\alpha=0.1$ and $\lambda=1$ its per-direction factor lies between 1 and 1.3, i.e.\ a
-nearly constant per-step scalar (0.53--0.62 on the MLP, varying by 5\,\% across steps)
-that Adam's normalisation removes, while \ANPb{}'s per-example factor with $\alpha=0.5$ lowers the
-alignment of central-difference \ANP{} from 0.83 to 0.62 on the MLP at $\sigma=10^{-3}$
-(and to 0.09 on the ConvNet), where the fp32 second differences that define it are at
-the rounding floor.
-Numerical precision matters at the protocol's smallest probe scale: with TF32
-convolutions, which PyTorch enables by default, the ConvNet cosine of \NP{} at
-$\sigma=10^{-3}$ and 1024 passes drops from 0.445 to 0.420 and that of \INP{} from
-0.425 to 0.358 (fp64: 0.475 and 0.484), while \SPSA{} and \ANP{} are unaffected and
-nothing changes at $\sigma=10^{-2}$ (Table~\ref{tab:precision}). Stage 1 ran with
-TF32 on; stage 2 runs in full fp32.
+it, after a 2000-step backpropagation warm-up, in fp32 on the GPU with TF32 disabled
+(Appendix~\ref{app:align} gives the per-layer values and the dependence on the probe
+scale). On the MLP the node-perturbation rules obtain, from the protocol's 16 passes,
+a direction with cosine 0.4--0.6 to the gradient, rising to 0.96 (\NP{}), 0.95
+(\INP{}), 0.83 (\DANP{}) and 0.81 (\ANP{}) with 1024 passes, whereas the weight-space
+rules get 0.01 from 16 passes and 0.07--0.11 from 1024, the $\sqrt{K/P}$ scaling of
+a 40k-dimensional random search. On the ConvNet every estimator is below 0.1 at 16
+passes and the node rules reach 0.51--0.53 with 1024: the convolutional layers, whose
+26,682 perturbed unit-positions approach the number of weights, need thousands of
+probes before the node estimate carries signal (Table~\ref{tab:align}: 0.4--0.6 in
+the three convolutional layers against 0.8--1.0 in the two dense layers), which is why
+the node rules train the ConvNet slowly and the weight-space rules hardly at all. On
+the LSTM and the Transformer the whole-model cosine stays below 0.26 and 0.17 at 1024
+passes (\INP{} reaches 0.40 and 0.33 at 4096): perturbations propagate through shared
+weights over 64 positions and decorrelate the loss difference from any single unit. The
+curvature preconditioners behave as their results suggest: \SPSAb{} is
+indistinguishable from \SPSA{} at every probe count and every $\sigma$, because with
+$\alpha=0.1$ and $\lambda=1$ its per-direction weights span a narrow range whose
+common scale Adam removes, while \ANPb{}'s per-unit factor ($\alpha=0.5$) lowers the
+alignment of \ANP{} from 0.81 to 0.69 on the MLP and from 0.52 to 0.27 on the ConvNet
+at $\sigma=10^{-3}$ and raises it on the LSTM (0.26 against 0.04); its second
+difference is the only quantity that degrades with the probe scale in fp32
+(Table~\ref{tab:alignsigma}: 0.74 at $\sigma=10^{-2}$ to 0.46 at $10^{-5}$ on the
+MLP), the first-difference estimators being unchanged down to $10^{-5}$.
+Numerical precision also matters for the convolutions: with TF32, which PyTorch
+enables by default, the ConvNet cosine of \NP{} at $\sigma=10^{-3}$ and 1024 passes
+drops from 0.445 to 0.420 and that of \INP{} from 0.425 to 0.358 (fp64: 0.475 and
+0.484), while \SPSA{} and \ANP{} are unaffected and nothing changes at
+$\sigma=10^{-2}$ (Table~\ref{tab:precision}, measured on a different batch and
+warm-up seed from Table~\ref{tab:align}). Stage 1 ran with TF32 on; stage 2 runs in
+full fp32.
 
 \paragraph{Sequence models.}
 On the test split a uniform model scores 5.64 bits/char, a unigram 4.32, a bigram 3.31
 and an add-0.1 trigram 2.61 (count models estimated on the training text;
-Appendix~\ref{app:impl}). On the LSTM, \INP{}, \NP{}, \SPSA{}, \SPSAb{} and \RS{}
-(2.82--3.06) sit between the bigram and the trigram and \ANPb{} (3.09) just below the
-bigram; \DANP{} (3.76) and \FF{} (3.83) are worse than the bigram and \ANP{} (4.28) is
-near the unigram. On the Transformer only \INP{}, \SPSAb{}, \SPSA{} and \RS{}
+Appendix~\ref{app:impl}). On the LSTM, \INP{}, \NP{}, \SPSA{}, \SPSAb{}, \RS{} and \ANPb{}
+(2.82--3.13) sit between the bigram and the trigram; \DANP{} (3.76) and \FF{} (3.84)
+are worse than the bigram and \ANP{} (4.28) is near the unigram. On the Transformer only \INP{}, \SPSAb{}, \SPSA{} and \RS{}
 (3.10--3.29) edge past the bigram. \BP{} reaches 1.78 and 1.82 bits per character, well
 beyond the trigram: after one hour the zero-order rules have learned roughly bigram
-statistics and backpropagation a real character model. Every probe curve is still
-descending at minute 60, so part of the gap is budget rather than estimator, but at
-17k--35k steps per hour on the LSTM closing it would take days.
+statistics and backpropagation a real character model. The curves of the leading
+probe rules are still descending at minute 60, so part of the gap is budget rather
+than estimator, but at 17k--35k steps per hour on the LSTM closing it would take days.
 
 \paragraph{Forward-forward.}
 \FF{} is not a probe method and trains fast (1.7M steps per hour on the MLP), but its
 two inference rules disagree. The linear readout on the neutral-label features of the
 32-unit top block peaks within the first minute on MNIST (87.5\,\% at $\varepsilon=0.001$)
 and then collapses to 14--20\,\% as its training cross-entropy rises towards $\ln 10$;
-Hinton's label accumulation on the same trained blocks gives 93.4\,\% when summed over
-all blocks but the first (the protocol's rule, which on this two-block MLP means the
-second block alone) and 96.0\,\% when summed over both blocks, at every $\varepsilon$.
-On CIFAR-10 all three numbers are 26--34\,\%, and on the sequence tasks \FF{} with
-corrupted-sequence negatives is the second-worst rule (3.83 and 4.22 bits per
-character): its goodness separates real from corrupted text, but the normalised
+Hinton's label accumulation on the same trained blocks, summed over all blocks but the
+first (the protocol's rule, which on this two-block MLP means the second block alone),
+gives 93.1(3)\,\% at the selected $\varepsilon=0.1$ and 91.8--94.8\,\% at the other
+values (Table~\ref{tab:eps}). On CIFAR-10 both numbers are 26--34\,\%, and on the
+sequence tasks \FF{} with corrupted-sequence negatives is second-worst on the LSTM and
+worst on the Transformer (3.84 and 4.21 bits per character): its goodness separates real from corrupted text, but the normalised
 features support only a weak next-character readout.
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions and \RS{} is
 expressed through Adam (the direct-jump variant is implemented but was not run); \ANPb{}
-omits the recurrent-state damping of its specification; \FF{}'s goodness, threshold
+applies the recurrent-state damping of its specification only in the controls of
+Table~\ref{tab:x}; \FF{}'s goodness, threshold
 and readout follow the reference re-implementation and the parameter budget rather
 than Hinton's 2,000-unit layers; \DANP{}'s decorrelation rate is fixed and
 un-normalised, which is why it reaches NaN within 21 steps at $\varepsilon=0.1$ on both
@@ -1247,7 +1267,7 @@ from directional derivatives along random directions. MeZO \citep{malladi2023} f
 billion-parameter language models with two-point SPSA and in-place perturbation;
 1.5-SPSA \citep{chaubard2025spsa15} adds a three-point curvature estimate along each
 direction to damp the step in sharp regions. DeepZero \citep{chen2024deepzero} and
-\citet{zhang2024revisiting} benchmark zero-order estimators on one large model; we vary
+\citet{zhang2024revisiting} benchmark zero-order estimators on large pretrained models; we vary
 the estimator \emph{and} the architecture at a scale where every method can be run to
 its one-hour limit. Our \SPSA{}, \SPSAb{} and \RS{} baselines are the two-point,
 curvature-preconditioned and best-of-$K$ instances of this family.
@@ -1290,13 +1310,9 @@ the eight original methods, Figure~\ref{fig:eps} the final test loss against
 $\varepsilon$, and Figure~\ref{fig:curves-all} every run's test-loss curve. The
 validation and test values of a collapsed run can differ by orders of magnitude at the
 same evaluation because the loss of a collapsed network is dominated by a few examples
-with huge logits. The screening of \SPSAb{} and \ANPb{} under the stage-2 settings
-(1-minute evaluations, fp32, 1 h) selected $\varepsilon=0.001$ for every pair except
-\ANPb{} on the LSTM ($0.01$); best-checkpoint test losses at $\varepsilon=0.1 / 0.01 /
-0.001$ were 29.18 / 2.23 / 0.36 (\SPSAb{}) and 2.31 / 1.57 / 0.20 (\ANPb{}) on MNIST,
-2.41 / 2.37 / 1.60 and 2.41 / 2.30 / 1.78 on CIFAR-10, 3.66 / 2.09 / 2.05 and 2.47 /
-2.14 / 2.27 on the LSTM, and 4.50 / 2.55 / 2.17 and 3.34 / 2.70 / 2.61 on the
-Transformer.
+with huge logits. The two 1.5-order rules and the values $\varepsilon\le10^{-4}$ of every method were
+screened under the stage-2 settings (1-minute evaluations, fp32, 1 h); Table~\ref{tab:eps}
+gives the validation loss of every value and the resulting selections.
 
 \begin{table}[ht]
   \caption{Tied $\varepsilon$ screening of every (task, method) pair: the lowest
@@ -1374,7 +1390,7 @@ precision check.
   evaluation is used).}
   \label{tab:final}
   \centering
-  \footnotesize
+  \scriptsize
   \setlength{\tabcolsep}{3.5pt}
   \input{tables/final_table}
 \end{table}
@@ -1423,6 +1439,16 @@ precision check.
 \end{table}
 
 \label{app:align}
+\begin{table}[ht]
+  \caption{Whole-model cosine between each estimator and the true gradient at 1024
+  forward passes (trained state) as a function of the probe scale, fp32 on the GPU.
+  Only \ANPb{}, whose weights use a second difference, degrades as $\sigma$ shrinks.}
+  \label{tab:alignsigma}
+  \centering
+  \scriptsize
+  \input{tables/align_sigma_table}
+\end{table}
+
 \begin{table}[ht]
   \caption{Per-layer cosine between each estimator and the true gradient at 1024
   forward passes, $\sigma=10^{-3}$, after the 2000-step backpropagation warm-up
@@ -1578,7 +1604,7 @@ logs, superseded by Table~\ref{tab:bp}).
 \item {\bf Limitations}
     \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Section~\ref{sec:discussion} discusses what the fixed-step final-loss protocol measures, the single-seed screening, the budget and scale, the host dependence of wall-clock results, the deviations of each implementation from its source, and the character-level PTB choice.
+    \item[] Justification: Section~\ref{sec:discussion} discusses what the fixed-step final-loss protocol measures, the single-seed screening, the budget and scale, the host dependence of wall-clock results, the deviations of each implementation from its source, and the character-level PTB choice; Section~\ref{sec:own} states which ingredient of 1.5-ANP the controls do not separate, and Appendix~\ref{app:protocol} lists the ablations that were planned but not run.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer NA means that the paper has no limitation while the answer No means that the paper has limitations, but those are not discussed in the paper.
@@ -1656,7 +1682,7 @@ logs, superseded by Table~\ref{tab:bp}).
 \item {\bf Experiment statistical significance}
     \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The main tables report the mean over three seeds (initialisation, data order and probes) with the standard deviation across seeds, and the training-curve figure shades the seed range; Section~\ref{sec:discussion} states that the $\varepsilon$ selection itself is single-seed and that the ablations are single-seed.
+    \item[] Justification: The main tables report the mean over three seeds with the sample standard deviation ($n=3$, one sigma) in units of the last digit; cells without a parenthesis are single runs (the few pairs whose selected $\varepsilon$ lies at the grid edge until their seeds complete), which the captions mark, and the mean ranks carry a bootstrap interval over seeds. On CIFAR-10 the seed standard deviations (0.05 in loss, two points in accuracy) do not resolve the order within the node-perturbation family, which the text states.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer NA means that the paper does not include experiments.
