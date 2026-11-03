@@ -859,8 +859,10 @@ per LSTM time step, 754 per Transformer token). With $\alpha=0$ the rule is
 central-difference ANP, the control that separates attribution from preconditioning.
 The step costs 17 passes. The specification uses plain SGD with a learning rate 20--50
 times $\sigma$ and damps the deviation of the perturbed recurrent state by one half at
-every time step; the protocol runs ties $\eta=\sigma$ under Adam without damping, and
-Section~\ref{sec:own} runs the rule under its own recipe with both. The three-point
+every time step; the protocol runs tie $\eta=\sigma$ under Adam without damping, and
+Section~\ref{sec:own} runs the rule under its own recipe with both (the settings its
+own grid selects have $\eta/\sigma$ between 0.5 and 5, Table~\ref{tab:own}, not the
+specification's 20--50). The three-point
 second differences that define $\hat c_u$ are, at $\sigma=10^{-3}$, of the order of the
 fp32 rounding of the loss, so the own-recipe runs evaluate the losses in fp64
 (Section~\ref{sec:align}).
@@ -1016,9 +1018,10 @@ grid $\eta\in\{10^{-2},10^{-3},10^{-4}\}\times\sigma\in\{10^{-2},10^{-3},10^{-4}
 $\sigma=0.1$ at $\eta=10^{-4}$, screened for 30 minutes at 1-minute granularity (the
 tied diagonal is taken from the one-hour runs at minute 30); the best untied setting of
 a pair is then replicated for one hour with three seeds where it beats the best tied
-diagonal cell by at least 3\,\% (at most twelve pairs, largest gains first), so that
-every rule is also compared at its own best $(\eta,\sigma)$ at equal compute and
-without any schedule.
+diagonal cell by at least 3\,\% (at most twelve pairs, largest gains first;
+Table~\ref{tab:untiedrep} reports the replications that completed before the
+deadline), so that a rule is also compared at its own best $(\eta,\sigma)$ at equal
+compute and without any schedule.
 (ii)~\emph{The 1.5-order rules under their own recipe}: plain SGD instead of Adam, fp64
 loss evaluation, \SPSAb{} with $\eta=\sigma\in\{10^{-2},3\cdot10^{-3},10^{-3},3\cdot10^{-4},10^{-4}\}$
 and 8 or 64 pairs with the $\alpha=0$ (1SPSA) control, \ANPb{} with
@@ -1036,6 +1039,13 @@ per layer after a 2000-step backpropagation warm-up, in fp32, TF32 and fp64, for
 $\sigma$ from $10^{-1}$ to $10^{-5}$ (Appendix~\ref{app:align}). (v)~\emph{Resources}: every run records its steps, seconds of training time per step
 and peak GPU memory (Appendix~\ref{app:resources}); throughput is measured with eight
 runs sharing one host.
+
+\paragraph{Not run.}
+Three planned ablations did not run before the deadline and are reported nowhere:
+the isolated 150-second reruns of every selected configuration (throughput and peak
+memory are instead taken from the stage-2 runs, eight per host), the direct-jump
+random search, and the $\eta=10^{-3}$ off-diagonal cells of the untied grid for the
+six original probe methods; their job lists are in the repository.
 
 \paragraph{Hardware and software.}
 All runs use one RTX~5090 per run on an 8-GPU vast.ai node (8 runs at a time; PyTorch
@@ -1169,6 +1179,18 @@ about half of that.
   \scriptsize
   \setlength{\tabcolsep}{3pt}
   \input{tables/controls_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Untied settings replicated for an hour: for the pairs whose best untied
+  $(\eta,\sigma)$ beat the best tied cell of Table~\ref{tab:decouple} by at least
+  3\,\%, the one-hour best-checkpoint test loss at that setting (mean over the seeds
+  that completed before the deadline) next to the tied selection of
+  Table~\ref{tab:main}.}
+  \label{tab:untiedrep}
+  \centering
+  \scriptsize
+  \input{tables/untied_rep_table}
 \end{table}
 
 \paragraph{Estimator alignment.}
