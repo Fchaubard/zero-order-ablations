@@ -116,8 +116,9 @@ classic, activity-based, iterative and decorrelated node perturbation,
 curvature-preconditioned activity perturbation (1.5-ANP), and the forward-forward
 algorithm---against backpropagation on four $\approx$40k-parameter architectures (an
 MLP on MNIST, a ConvNet on CIFAR-10, a character-level LSTM and Transformer on Penn
-Treebank), with the same forward passes per step, one GPU-hour, the same Adam update
-and a probe scale tied to the learning rate. A screening sweep over five scales selects
+Treebank), with the same forward passes per step (backpropagation, the reference, takes one
+forward and one backward pass per step), one GPU-hour, the same Adam update and a
+probe scale tied to the learning rate. A screening sweep over five scales selects
 each method's scale per task; the selected configurations are replicated with three
 seeds (two for two pairs), evaluated every minute and reported at their best validation checkpoint and at
 the end of the hour, with a backpropagation reference at the same granularity, a grid
@@ -387,7 +388,8 @@ loss is non-finite or when its clean validation loss exceeds ten times its initi
 value at two consecutive evaluations, which stops collapsed networks; it also stops
 over-confident backpropagation runs at $\eta=10^{-3}$ on CIFAR-10 and $10^{-2}$ on MNIST
 (Table~\ref{tab:bp}), none of which is the selected reference
-(Appendix~\ref{app:protocol}: the replaced stage-1 rule). For \BP{}, which has no probe, the
+(Appendix~\ref{app:protocol}: the replaced stage-1 rule). For \BP{}, which has no probe and takes one forward and one backward pass per step
+(so six to ten times more steps per hour than the probe rules), the
 reference on each task is the learning rate with the lowest validation loss among
 $\eta\in\{10^{-2},\dots,10^{-5}\}$ ($10^{-5}$ on the image tasks), selected by the same rule as the probe methods and
 replicated with three seeds; decoupled weight decay $10^{-2}$ \citep{loshchilov2019} is
@@ -427,7 +429,8 @@ hardware, software, code commits and logging.
 \label{sec:main}
 
 Table~\ref{tab:main} reports the best-validation-checkpoint test loss and accuracy or
-bits per character of every method on every task, Table~\ref{tab:final} the same runs
+bits per character of every method on every task, sorted by an overall score (the
+sum over tasks of the loss relative to \BP{}'s, charted in Figure~\ref{fig:overall}), Table~\ref{tab:final} the same runs
 at the end of the hour and Table~\ref{tab:eps} the screening behind every selection. On the image tasks the node-perturbation family leads and
 three of its members tie within seed noise: \NP{}, \INP{} and \ANP{} are within 0.006
 of each other on MNIST (0.106--0.112, 96.6--96.9\,\%) and within 0.05 on CIFAR-10
@@ -445,24 +448,38 @@ bits per character, a factor 1.6--1.7 in test loss. The end-of-hour view (Table~
 sequence tasks changes only \ANP{}, \ANPb{} and \DANP{}, which drift.
 
 \begin{table}[t]
-  \caption{Main result: test loss and test accuracy (\%) or bits per character at the
-  \emph{best validation checkpoint} of the selected $\varepsilon$, mean over three
-  seeds with the standard deviation in units of the last digit in parentheses (none:
-  one seed; the \DANP{} and \FF{} Transformer cells have two). Bold: best
-  probe method per task by mean loss (accuracy bolded with it); \BP{} is the reference
-  and \FF{} a local rule reported by label-accumulation accuracy [readout in brackets].}
+  \caption{Main result, rows sorted by the overall score. Per task: test loss and test
+  accuracy (\%) or bits per character at the \emph{best validation checkpoint} of the
+  selected $\varepsilon$, as mean $\pm$ sample standard deviation over the three seeds
+  (the \DANP{} and \FF{} Transformer cells have two seeds). Overall score $=$ the sum
+  over the four tasks of the method's loss divided by \BP{}'s loss on that task (\BP{}
+  $=4$; lower is better); rank $=$ mean rank over the four tasks by loss, among all ten
+  methods. Bold: best probe method per task (accuracy bolded with it). \BP{} is the
+  reference (one forward and one backward pass per step); \FF{} is a local rule
+  reported by label-accumulation accuracy [readout in brackets], and its readout loss
+  is not comparable, so it has no score.}
   \label{tab:main}
   \centering
   \scriptsize
-  \setlength{\tabcolsep}{3.5pt}
-  \input{tables/main_table}
+  \setlength{\tabcolsep}{2.5pt}
+  \resizebox{\linewidth}{!}{\input{tables/main_table}}
 \end{table}
+
+\begin{figure}[t]
+  \centering
+  \input{figures/fig_overall}
+  \caption{The overall score of Table~\ref{tab:main} as a chart: best-checkpoint test
+  loss relative to backpropagation, summed over the four tasks (dotted line: \BP{}
+  $=4$), with the per-task contributions stacked; methods ordered from best to worst.
+  \FF{} is omitted (its readout loss is not comparable).}
+  \label{fig:overall}
+\end{figure}
 
 \subsection{Training curves and equal-compute view}
 \label{sec:curves}
 
-Figure~\ref{fig:curves} shows test loss against training time for the selected runs
-(seed mean and range); Figure~\ref{fig:passes} (Appendix~\ref{app:extra}) shows the
+Figure~\ref{fig:curves} (Appendix~\ref{app:extra}) shows test loss against training
+time for the selected runs (seed mean and range); Figure~\ref{fig:passes} (Appendix~\ref{app:extra}) shows the
 same runs against the number of forward passes, which removes implementation- and
 host-dependent throughput from the comparison. On the image tasks \BP{} reaches its best validation loss within the first five minutes and
 then grows over-confident for the rest of the hour (96.7--97.0\,\% on MNIST; 0.91 to 14 in test
@@ -474,16 +491,6 @@ descending at minute 60, the probe rules roughly one bit per character above \BP
 whereas \ANP{}, \ANPb{} and \DANP{} reach their best earlier and drift or spike. Per forward pass the node rules lead on the image tasks and trail on the LSTM
 (Appendix~\ref{app:extra}).
 
-\begin{figure}[t]
-  \centering
-  \input{figures/fig_curves2}
-  \\[0.5ex]
-  \ref{zoolegendX}
-  \caption{Test loss versus training time (minutes; evaluation excluded) of the selected
-  runs: seed mean (line) and seed range (shaded). Log $y$-axis. The 1.5-order rules are
-  dashed in their parent's colour.}
-  \label{fig:curves}
-\end{figure}
 
 \subsection{The backpropagation reference}
 \label{sec:bpref}
@@ -543,7 +550,11 @@ bits per character under the protocol, is therefore not the curvature exponent;
 the remaining differences to \ANP{}---antithetic central differences, the per-unit
 normalisation by the measured activity difference and the token-local credit
 assignment---are not separated by any run here, and which of them carries the gain is
-left as a hypothesis. On the sequence models $\alpha=0$ is never worse than $0.5$ and the specification's
+left as a hypothesis. A curvature term can only help where its estimate is less noisy
+than the gradient estimate it rescales, which at 8 pairs per step and fp32 it is not;
+smoothing $\hat c_u$ across steps, estimating it with more pairs or a larger
+$\sigma$ than the gradient, or combining the token-local attribution with \INP{}'s
+one-layer-at-a-time probing are the untested routes. On the sequence models $\alpha=0$ is never worse than $0.5$ and the specification's
 damping gains 0.1 on the LSTM (Table~\ref{tab:x}).
 
 \begin{table}[t]
@@ -560,7 +571,7 @@ damping gains 0.1 on the LSTM (Table~\ref{tab:x}).
   \centering
   \scriptsize
   \setlength{\tabcolsep}{3pt}
-  \input{tables/x_table}
+  \resizebox{\linewidth}{!}{\input{tables/x_table}}
 \end{table}
 
 \subsection{Estimator quality}
@@ -615,10 +626,7 @@ gradient on the MLP (Figure~\ref{fig:align}), whereas the node rules obtain a lo
 difference per example and assign credit per unit (cosine 0.4--0.6); at the right step size the gap is 1 point on MNIST and 7 points on CIFAR-10 at the
 best checkpoint, and it closes on the sequence models, where \SPSA{} ends within 0.18
 and 0.03 bits per character of \INP{} and ahead of \NP{} on the Transformer, as \citet{zuge2023weight}
-found for temporally extended tasks. The effective-dimension argument (node probes win where the number of perturbed
-units, 90 on the MLP, is small relative to $P$, and lose that advantage at 26--48k
-unit-positions) fits the sequence-task convergence but not the order within the node
-family.
+found for temporally extended tasks.
 
 \paragraph{Curvature preconditioning.}
 \SPSAb{} reproduces \SPSA{} to within 0.05 in loss on three tasks and is 0.09 better
@@ -1063,6 +1071,17 @@ configuration, evaluation history and final metrics.
   \resizebox{\linewidth}{!}{\input{tables/own_table}}
 \end{table}
 
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_curves2}
+  \\[0.5ex]
+  \ref{zoolegendX}
+  \caption{Test loss versus training time (minutes; evaluation excluded) of the selected
+  runs: seed mean (line) and seed range (shaded). Log $y$-axis. The 1.5-order rules are
+  dashed in their parent's colour.}
+  \label{fig:curves}
+\end{figure}
+
 \paragraph{Equal-pass view.}
 Figure~\ref{fig:passes} shows the selected runs of Figure~\ref{fig:curves} against the
 number of forward passes (best validation checkpoint within the pass budget, mean over
@@ -1116,7 +1135,7 @@ per character) and the reference is unproblematic.
   \centering
   \footnotesize
   \setlength{\tabcolsep}{3pt}
-  \input{tables/bp_table}
+  \resizebox{\linewidth}{!}{\input{tables/bp_table}}
 \end{table}
 
 \paragraph{Probe scale and step size.}
@@ -1172,7 +1191,7 @@ about three quarters of that.
   \centering
   \scriptsize
   \setlength{\tabcolsep}{3pt}
-  \input{tables/controls_table}
+  \resizebox{\linewidth}{!}{\input{tables/controls_table}}
 \end{table}
 
 \begin{table}[ht]
@@ -1184,7 +1203,7 @@ about three quarters of that.
   \label{tab:untiedrep}
   \centering
   \scriptsize
-  \input{tables/untied_rep_table}
+  \resizebox{\linewidth}{!}{\input{tables/untied_rep_table}}
 \end{table}
 
 \paragraph{Estimator alignment.}
@@ -1410,7 +1429,7 @@ scale, the per-layer alignment and the precision check.
   \centering
   \scriptsize
   \setlength{\tabcolsep}{3.5pt}
-  \input{tables/final_table}
+  \resizebox{\linewidth}{!}{\input{tables/final_table}}
 \end{table}
 
 \begin{table}[ht]
@@ -1420,7 +1439,7 @@ scale, the per-layer alignment and the precision check.
   \label{tab:bestacc}
   \centering
   \footnotesize
-  \input{tables/bestacc_table}
+  \resizebox{\linewidth}{!}{\input{tables/bestacc_table}}
 \end{table}
 
 \label{app:throughput}
@@ -1432,7 +1451,7 @@ scale, the per-layer alignment and the precision check.
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \input{tables/throughput_table}
+  \resizebox{\linewidth}{!}{\input{tables/throughput_table}}
 \end{table}
 
 \label{app:resources}
@@ -1443,7 +1462,7 @@ scale, the per-layer alignment and the precision check.
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \input{tables/steps_table}
+  \resizebox{\linewidth}{!}{\input{tables/steps_table}}
 \end{table}
 
 \begin{table}[ht]
@@ -1453,7 +1472,7 @@ scale, the per-layer alignment and the precision check.
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \input{tables/memory_table}
+  \resizebox{\linewidth}{!}{\input{tables/memory_table}}
 \end{table}
 
 \label{app:align}

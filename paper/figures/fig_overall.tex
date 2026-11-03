@@ -1,0 +1,34 @@
+% Figure: overall score = best-checkpoint test loss relative to backpropagation, summed over the four
+% tasks (BP = 4); stacked bars show the per-task contributions.  Data: data/overall_main.csv
+% (rows sorted by score, FF excluded because its readout loss is not comparable).
+\definecolor{ovA}{RGB}{31,119,180}
+\definecolor{ovB}{RGB}{255,127,14}
+\definecolor{ovC}{RGB}{44,160,44}
+\definecolor{ovD}{RGB}{148,103,189}
+\pgfplotstableread[col sep=comma]{data/overall_main.csv}\overalltable
+\begin{tikzpicture}
+  \begin{axis}[
+      xbar stacked,
+      width=0.9\linewidth, height=5.4cm,
+      bar width=5.5pt,
+      xmin=0, xmax=8,
+      xlabel={$\sum_{\text{tasks}}$ test loss / \BP{} test loss (lower is better; \BP{} $=4$)},
+      ytick=data, yticklabels from table={\overalltable}{label},
+      y dir=reverse,
+      ytick style={draw=none},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      legend style={font=\scriptsize, draw=none, at={(0.98,0.04)}, anchor=south east, legend columns=1},
+      legend cell align=left,
+      xmajorgrids, grid style={gray!25},
+      enlarge y limits=0.07,
+      axis on top,
+    ]
+    \addplot[fill=ovA, draw=none] table [x=mnist,       y expr=\coordindex, col sep=comma] {data/overall_main.csv};
+    \addplot[fill=ovB, draw=none] table [x=cifar,       y expr=\coordindex, col sep=comma] {data/overall_main.csv};
+    \addplot[fill=ovC, draw=none] table [x=lstm,        y expr=\coordindex, col sep=comma] {data/overall_main.csv};
+    \addplot[fill=ovD, draw=none] table [x=transformer, y expr=\coordindex, col sep=comma] {data/overall_main.csv};
+    \legend{MNIST / MLP, CIFAR-10 / ConvNet, PTB / char-LSTM, PTB / char-Transformer}
+    \draw[dotted, gray] (axis cs:4,-0.6) -- (axis cs:4,8.6);
+  \end{axis}
+\end{tikzpicture}

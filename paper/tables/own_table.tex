@@ -3,16 +3,16 @@
 \toprule
 Task & Rule & best config & test loss (acc / bpc) & $\alpha=0$ control & protocol (Adam) @30 min \\
 \midrule
-MNIST / MLP & \SPSAb{} & lr0.003 K129 l64 sgd & 0.176 (94.8) & 0.162 (94.9) & 0.160(16) \\
- & \ANPb{} & lr0.01 sig0.01 lam0.001 l64 sgd & 0.137 (96.0) & 0.121 (96.6) & 0.167(15) \\
+MNIST / MLP & \SPSAb{} & lr0.003 K129 l64 sgd & 0.176 (94.8) & 0.162 (94.9) & 0.160$\pm$0.016 \\
+ & \ANPb{} & lr0.01 sig0.01 lam0.001 l64 sgd & 0.137 (96.0) & 0.121 (96.6) & 0.167$\pm$0.015 \\
 \midrule
-CIFAR-10 / ConvNet & \SPSAb{} & lr0.003 K129 l64 sgd & 1.336 (51.7) & 1.344 (51.6) & 1.313(50) \\
- & \ANPb{} & lr0.005 sig0.001 lam0.001 l64 sgd & 2.356 (20.5) & 2.406 (9.4) & 1.634(67) \\
+CIFAR-10 / ConvNet & \SPSAb{} & lr0.003 K129 l64 sgd & 1.336 (51.7) & 1.344 (51.6) & 1.313$\pm$0.050 \\
+ & \ANPb{} & lr0.005 sig0.001 lam0.001 l64 sgd & 2.356 (20.5) & 2.406 (9.4) & 1.634$\pm$0.067 \\
 \midrule
-PTB / char-LSTM & \SPSAb{} & lr0.01 K17 l64 sgd & 2.955 (4.26) & 2.845 (4.10) & 2.234(1) \\
- & \ANPb{} & lr0.05 sig0.01 lam0.0001 l64 sgd & 2.463 (3.55) & 2.424 (3.50) & 2.167(21) \\
+PTB / char-LSTM & \SPSAb{} & lr0.01 K17 l64 sgd & 2.955 (4.26) & 2.845 (4.10) & 2.234$\pm$0.001 \\
+ & \ANPb{} & lr0.05 sig0.01 lam0.0001 l64 sgd & 2.463 (3.55) & 2.424 (3.50) & 2.167$\pm$0.021 \\
 \midrule
-PTB / char-Transformer & \SPSAb{} & lr0.01 K17 l64 sgd & 2.258 (3.26) & 2.259 (3.26) & 2.230(4) \\
- & \ANPb{} & lr0.005 sig0.01 lam0.001 l64 sgd & 2.763 (3.99) & 2.763 (3.99) & 2.585(76) \\
+PTB / char-Transformer & \SPSAb{} & lr0.01 K17 l64 sgd & 2.258 (3.26) & 2.259 (3.26) & 2.230$\pm$0.004 \\
+ & \ANPb{} & lr0.005 sig0.01 lam0.001 l64 sgd & 2.763 (3.99) & 2.763 (3.99) & 2.585$\pm$0.076 \\
 \bottomrule
 \end{tabular}
