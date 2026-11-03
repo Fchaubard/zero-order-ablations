@@ -24,6 +24,18 @@ from .perturb import PConv2d, PEmbedding, PLinear, count_params, ctx
 
 PTB_VOCAB = 50   # overwritten by data loader at construction time (see build_model)
 
+# Model sizes: "s" = the protocol's ~40k parameters, "m" ~ 400k, "l" ~ 4M (widths tuned so that every
+# model lands within a few percent of the target; depth and everything else unchanged).
+SIZES = {
+    "s": {"mlp": dict(hidden=(48, 32)), "conv": dict(chans=(16, 32, 32), fc=48), "lstm": dict(d_emb=32, hidden=80),
+          "transformer": dict(d=48, d_ff=64)},
+    "m": {"mlp": dict(hidden=(400, 240)), "conv": dict(chans=(48, 96, 96), fc=176), "lstm": dict(d_emb=96, hidden=265),
+          "transformer": dict(d=152, d_ff=304)},
+    "l": {"mlp": dict(hidden=(1600, 1700)), "conv": dict(chans=(128, 256, 256), fc=760), "lstm": dict(d_emb=256, hidden=870),
+          "transformer": dict(d=496, d_ff=992)},
+}
+SIZE_TAG = {"s": "", "m": "-sz400k", "l": "-sz4m"}
+
 
 class Seq(nn.Module):
     """A block = perturbable layer followed by fixed ops (ReLU, pool, flatten)."""
@@ -196,14 +208,17 @@ TASKS = {
 }
 
 
-def build_model(task: str, vocab: int | None = None) -> nn.Module:
+def build_model(task: str, vocab: int | None = None, size: str = "s") -> nn.Module:
     ctor, kind = TASKS[task]
+    key = {"mlp_mnist": "mlp", "conv_cifar10": "conv", "lstm_ptb": "lstm", "transformer_ptb": "transformer"}[task]
+    kw = dict(SIZES[size][key])
     if kind == "lm":
-        return ctor(vocab=vocab or PTB_VOCAB)
-    return ctor()
+        return ctor(vocab=vocab or PTB_VOCAB, **kw)
+    return ctor(**kw)
 
 
 if __name__ == "__main__":
-    for t in TASKS:
-        m = build_model(t)
-        print(f"{t:18s} {count_params(m):7d} params")
+    for sz in SIZES:
+        for t in TASKS:
+            m = build_model(t, size=sz)
+            print(f"{sz} {t:18s} {count_params(m):9d} params")

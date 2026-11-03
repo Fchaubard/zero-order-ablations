@@ -42,7 +42,7 @@ import torch
 
 from .common import atomic_write_json, fmt_lr, run_name
 from .data import Data
-from .models import TASKS, build_model
+from .models import SIZE_TAG, TASKS, build_model
 from .optimizers import ALL_OPTIMIZERS, EXTRA_OPTIMIZERS, get_optimizer, per_sample_loss
 from .optimizers.base import ADAM_BETAS
 from .perturb import count_params, ctx, players
@@ -58,6 +58,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def parse_args(argv=None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--task", required=True, choices=list(TASKS))
+    p.add_argument("--size", default="s", choices=("s", "m", "l"), help="model size: s ~40k (protocol), m ~400k, l ~4M parameters")
     p.add_argument("--opt", required=True, choices=ALL_OPTIMIZERS + EXTRA_OPTIMIZERS)
     p.add_argument("--lr", type=float, required=True, help="learning rate == epsilon (probe scale)")
     p.add_argument("--budget", type=float, default=3600.0, help="seconds of train time (opt.step only)")
@@ -113,6 +114,7 @@ def run_tag(args) -> str:
         tag += f"-d{fmt_lr(args.damp)}"
     if getattr(args, "optim", "adam") != "adam":
         tag += f"-{args.optim}"
+    tag += SIZE_TAG.get(getattr(args, "size", "s"), "")
     return tag
 
 
@@ -422,7 +424,7 @@ def main(argv=None) -> int:
     logger: Optional[WandbLogger] = None
     try:
         data = Data(args.task, device, root=args.data_root, _synthetic=args.synthetic)
-        model = build_model(args.task, vocab=data.n_classes).to(device)
+        model = build_model(args.task, vocab=data.n_classes, size=args.size).to(device)
         ctx.set_layers(players(model))
         opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes,
                             sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay, optim=args.optim,
