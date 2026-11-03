@@ -295,7 +295,7 @@ Random search \citep{rastrigin1963,matyas1965,schumer1968} evaluates the clean l
 and $K=15$ candidates $\btheta+\sigma\bz_k$ and keeps the best, expressed for the
 shared update rule as a pseudo-gradient along the improving direction and zero when
 none improves (Eq.~\eqref{eq:rs}); through Adam this only approximates the direct
-jump (Appendix~\ref{app:rsj}).
+jump (Appendix~\ref{app:optimizers}).
 
 \paragraph{Node perturbation (NP).}
 Classic NP \citep{widrow1990,werfel2003,fiete2006,hiratani2022} injects Gaussian noise
@@ -416,9 +416,8 @@ decoupled, fp64 losses and $\alpha\in\{0,0.25,0.5,1\}$ (Table~\ref{tab:x}), \SPS
 with a non-inert factor.
 (iv)~\emph{Estimator alignment}: the cosine between every estimator and the true
 gradient of a fixed batch against the number of forward passes
-(Section~\ref{sec:align}). (v)~\emph{Resources}: isolated throughput and peak GPU memory
-(Appendix~\ref{app:resources}). (vi)~Direct-jump random search
-(Appendix~\ref{app:rsj}). Appendix~\ref{app:protocol} specifies each in full and lists
+(Section~\ref{sec:align}). (v)~\emph{Resources}: steps per hour, seconds per step and peak GPU memory of every
+run (Appendix~\ref{app:resources}). Appendix~\ref{app:protocol} specifies each in full and lists
 hardware, software, code commits and logging.
 
 % ====================================================================================
@@ -700,7 +699,7 @@ equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comp
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions, \RS{} is
-expressed through Adam (Appendix~\ref{app:rsj}: the direct-jump variant), \ANPb{} applies the recurrent-state damping of its specification only in the
+expressed through Adam, \ANPb{} applies the recurrent-state damping of its specification only in the
 controls of Table~\ref{tab:x}, \FF{} follows the reference re-implementation at the parameter budget, and \DANP{}'s
 decorrelation rate is fixed and un-normalised (Appendix~\ref{app:extra}).
 Character-level results are not comparable to word-level perplexities.
@@ -809,8 +808,8 @@ which points along the improving direction and is zero when no candidate improve
 Through Adam this is only an approximation of the jump $\btheta\leftarrow\btheta+\sigma\bz_{k^{*}}$:
 the first step moves by $\approx\eta\,\mathrm{sign}(\bz_{k^{*}})$ per coordinate, later
 steps are bent by momentum, and rejected steps still move the parameters along the
-decaying momentum. Appendix~\ref{app:rsj} reports the direct-jump variant
-(``jumping'' random search without Adam) as an ablation.
+decaying momentum; the direct-jump variant (``jumping'' random search without Adam)
+is implemented in the released code but was not run within the budget.
 
 \paragraph{Node perturbation (NP).}
 Classic node perturbation \citep{widrow1990,werfel2003,fiete2006,hiratani2022} perturbs
@@ -1045,9 +1044,9 @@ exponent $\alpha\in\{0,0.25,0.5,1\}$ and, on the LSTM, the recurrent-state dampi
 \SPSAb{} with a non-inert factor ($\alpha=0.5$, $\lambda=10^{-3}$). (iv)~\emph{Estimator alignment}: the cosine between every estimator
 and the true gradient of a fixed batch as a function of the number of forward passes,
 per layer, at initialisation and after a 2000-step backpropagation warm-up, in fp32,
-TF32 and fp64, for $\sigma$ from $10^{-1}$ to $10^{-5}$. (v)~\emph{Resources}: every selected configuration is rerun alone on one
-GPU for 150 seconds to measure isolated throughput and peak GPU memory
-(Appendix~\ref{app:resources}). (vi)~Direct-jump random search (Appendix~\ref{app:rsj}).
+TF32 and fp64, for $\sigma$ from $10^{-1}$ to $10^{-5}$. (v)~\emph{Resources}: every run records its steps, seconds of training time per step
+and peak GPU memory (Appendix~\ref{app:resources}); throughput is measured with eight
+runs sharing one host.
 
 \paragraph{Hardware and software.}
 All runs use one RTX~5090 per run on an 8-GPU vast.ai node (8 runs at a time; PyTorch
@@ -1213,7 +1212,7 @@ features support only a weak next-character readout.
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions and \RS{} is
-expressed through Adam (Appendix~\ref{app:rsj} shows the direct-jump variant); \ANPb{}
+expressed through Adam (the direct-jump variant is implemented but was not run); \ANPb{}
 omits the recurrent-state damping of its specification; \FF{}'s goodness, threshold
 and readout follow the reference re-implementation and the parameter budget rather
 than Hinton's 2,000-unit layers; \DANP{}'s decorrelation rate is fixed and
@@ -1351,8 +1350,8 @@ Transformer.
 Table~\ref{tab:selected} lists the selected $\varepsilon$ and the minute of the best
 checkpoint of every pair, Table~\ref{tab:bestacc} the best-validation-\emph{accuracy}
 checkpoints of the two classification tasks, Table~\ref{tab:final} the end-of-hour
-values, Tables~\ref{tab:throughput}--\ref{tab:memory} the throughput, step counts,
-isolated throughput and peak memory, Table~\ref{tab:rsj} the direct-jump random search,
+values, Tables~\ref{tab:throughput}--\ref{tab:memory} the throughput, step counts and
+peak memory,
 and Tables~\ref{tab:align}--\ref{tab:precision} the per-layer alignment and the
 precision check.
 
@@ -1412,34 +1411,13 @@ precision check.
 \end{table}
 
 \begin{table}[ht]
-  \caption{Isolated throughput: every selected configuration run alone on one
-  RTX~5090 for 150 seconds.}
-  \label{tab:isolated}
-  \centering
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \input{tables/isolated_table}
-\end{table}
-
-\begin{table}[ht]
   \caption{Peak GPU memory of the training process (MB): tensors allocated, and
-  reserved by the caching allocator, from the isolated runs.}
+  reserved by the caching allocator, recorded during the stage-2 runs.}
   \label{tab:memory}
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \input{tables/memory_table}
-\end{table}
-
-\label{app:rsj}
-\begin{table}[ht]
-  \caption{Random search through Adam (protocol) versus direct jumps
-  $\btheta\leftarrow\btheta+\sigma\bz_{k^{*}}$ without Adam, at the selected
-  $\varepsilon$: best-checkpoint test loss (accuracy or bits per char) and final loss.}
-  \label{tab:rsj}
-  \centering
-  \footnotesize
-  \input{tables/rsj_table}
 \end{table}
 
 \label{app:align}

@@ -127,3 +127,7 @@ at initialisation and on trained checkpoints, in fp32 / TF32 / fp64 (`results_al
   best tied diagonal cell by at least 3 % (both at the 30-minute checkpoint), at most 12 pairs.
 * Gradient alignment is measured on a GPU in fp32 (TF32 off) for sigma in {1e-1 ... 1e-5}
   (`results_align_gpu/`); the CPU run (`results_align/`) covers {1e-1, 1e-2, 1e-3}.
+* Not run before the paper deadline (2026-11-03 15:00 UTC): the isolated 150-second reruns
+  (`results_resources/`; throughput and memory are reported from the stage-2 runs, eight per
+  host), the direct-jump random search (`rsj`), the lr = 1e-3 rows of the decoupling grid
+  (group C) and the lr = 1e-3 / 1e-4 AdamW rows that did not finish; the job lists remain in `jobs/`.
