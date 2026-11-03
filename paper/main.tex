@@ -558,6 +558,21 @@ they compare with the protocol runs and with the best untied Adam settings.}
   \input{tables/own_table}
 \end{table}
 
+\begin{table}[t]
+  \caption{1.5-ANP under the protocol's optimizer at the step size the
+  $\varepsilon$ screening selected on the image tasks (Adam, $\eta=10^{-4}$), with the
+  probe scale decoupled from the step size and the losses evaluated in fp64: test loss
+  (accuracy or bits per character) at the best validation checkpoint, seed 0.  The
+  $\alpha=0$ columns remove the curvature weighting; ``damped'' is the recurrent-state
+  damping of the LSTM (0.5).  The last two columns are the tied-protocol selections of
+  1.5-ANP and ANP (mean over seeds).}
+  \label{tab:x}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \input{tables/x_table}
+\end{table}
+
 \subsection{Estimator quality}
 \label{sec:align}
 
