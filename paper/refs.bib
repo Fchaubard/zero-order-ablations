@@ -4,7 +4,7 @@
 % re-check and additions on 2026-11-02) unless an "UNVERIFIED" comment says otherwise.
 % Checked 2026-11-02 and still arXiv-only (no journal/conference DOI found via Crossref or
 % the arXiv journal-ref field): salimans2017, hansen2016, dalm2024, ahmad2024, baydin2022,
-% hinton2022, ba2016.
+% hinton2022, ba2016, sanfiz2021benchmarking, lenc2019non, zhang2017relationship.
 % ------------------------------------------------------------------------------------
 
 % ----------------------------------------------------------- SPSA / smoothing / ES
@@ -53,6 +53,22 @@
   booktitle = {Advances in Neural Information Processing Systems},
   volume    = {31},
   year      = {2018}
+}
+
+% Checked 2026-11-02 against arXiv + Crossref: arXiv-only (no journal-ref, no non-arXiv DOI).
+@article{zhang2017relationship,
+  author  = {Zhang, Xingwen and Clune, Jeff and Stanley, Kenneth O.},
+  title   = {On the relationship between the {OpenAI} evolution strategy and stochastic gradient descent},
+  journal = {arXiv preprint arXiv:1712.06564},
+  year    = {2017}
+}
+
+% Checked 2026-11-02 against arXiv + Crossref: arXiv-only (no journal-ref, no non-arXiv DOI).
+@article{lenc2019non,
+  author  = {Lenc, Karel and Elsen, Erich and Schaul, Tom and Simonyan, Karen},
+  title   = {Non-differentiable supervised learning with evolution strategies and hybrid methods},
+  journal = {arXiv preprint arXiv:1906.03139},
+  year    = {2019}
 }
 
 @article{wierstra2014,
@@ -127,6 +143,45 @@
   pages   = {270--276},
   year    = {1968},
   doi     = {10.1109/TAC.1968.1098903}
+}
+
+% ----------------------------------------------------------- weight perturbation (classic)
+% Verified 2026-11-02 against Crossref (DOI 10.1109/72.105429): IEEE Trans. Neural Networks
+% 3(1):154--157, 1992.
+@article{jabri1992weight,
+  author  = {Jabri, Marwan and Flower, Barry},
+  title   = {Weight perturbation: An optimal architecture and learning technique for analog {VLSI} feedforward and recurrent multilayer networks},
+  journal = {IEEE Transactions on Neural Networks},
+  volume  = {3},
+  number  = {1},
+  pages   = {154--157},
+  year    = {1992},
+  doi     = {10.1109/72.105429}
+}
+
+% Verified 2026-11-02 against proceedings.neurips.cc (NIPS 5, pp. 244--251).  The official
+% proceedings BibTeX gives year 1992 (conference year, matching this file's convention); the
+% Morgan Kaufmann print volume (ISBN 1-55860-274-7) appeared in 1993.
+@inproceedings{cauwenberghs1993fast,
+  author    = {Cauwenberghs, Gert},
+  title     = {A fast stochastic error-descent algorithm for supervised learning and optimization},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {5},
+  pages     = {244--251},
+  publisher = {Morgan Kaufmann},
+  year      = {1992}
+}
+
+% Verified 2026-11-02 against proceedings.neurips.cc (NIPS 5, pp. 212--219); same year note
+% as cauwenberghs1993fast.
+@inproceedings{flower1993summed,
+  author    = {Flower, Barry and Jabri, Marwan},
+  title     = {Summed weight neuron perturbation: An {O(N)} improvement over weight perturbation},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {5},
+  pages     = {212--219},
+  publisher = {Morgan Kaufmann},
+  year      = {1992}
 }
 
 % ----------------------------------------------------------- ZO theory / surveys
@@ -292,6 +347,15 @@
   year    = {2022}
 }
 
+% Verified 2026-11-02 against iclr.cc (ICLR 2022 poster; OpenReview forum id 5i7lJLuhTm).
+% Key kept as requested (silver2021learning) although the venue year is 2022.
+@inproceedings{silver2021learning,
+  author    = {Silver, David and Goyal, Anirudh and Danihelka, Ivo and Hessel, Matteo and van Hasselt, Hado},
+  title     = {Learning by directional gradient descent},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2022}
+}
+
 @inproceedings{ren2023,
   author    = {Ren, Mengye and Kornblith, Simon and Liao, Renjie and Hinton, Geoffrey},
   title     = {Scaling forward gradient with local losses},
@@ -322,6 +386,35 @@
   booktitle = {Advances in Neural Information Processing Systems},
   volume    = {29},
   year      = {2016}
+}
+
+% Verified 2026-11-02 against the NeurIPS proceedings BibTeX + metadata (NeurIPS 2018, vol. 31,
+% pp. 9368--9378).
+@inproceedings{bartunov2018assessing,
+  author    = {Bartunov, Sergey and Santoro, Adam and Richards, Blake A. and Marris, Luke and Hinton, Geoffrey E. and Lillicrap, Timothy P.},
+  title     = {Assessing the scalability of biologically-motivated deep learning algorithms and architectures},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {31},
+  pages     = {9368--9378},
+  year      = {2018}
+}
+
+% Verified 2026-11-02 against the NeurIPS proceedings BibTeX (NeurIPS 2020, vol. 33, pp. 9346--9360).
+@inproceedings{launay2020direct,
+  author    = {Launay, Julien and Poli, Iacopo and Boniface, Fran{\c{c}}ois and Krzakala, Florent},
+  title     = {Direct feedback alignment scales to modern deep learning tasks and architectures},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {33},
+  pages     = {9346--9360},
+  year      = {2020}
+}
+
+% Checked 2026-11-02 against arXiv + Crossref: arXiv-only (no journal-ref, no non-arXiv DOI).
+@article{sanfiz2021benchmarking,
+  author  = {Sanfiz, Albert Jim{\'e}nez and Akrout, Mohamed},
+  title   = {Benchmarking the accuracy and robustness of feedback alignment algorithms},
+  journal = {arXiv preprint arXiv:2108.13446},
+  year    = {2021}
 }
 
 % Verified 2026-11-02 against the NeurIPS proceedings BibTeX (NeurIPS 2021, vol. 34, pp. 10053--10066).

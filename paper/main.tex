@@ -223,11 +223,16 @@ estimates a gradient from two loss evaluations at $\btheta\pm\sigma\bz$ with a r
 direction $\bz$; with Gaussian $\bz$ the estimator is the gradient of the
 Gaussian-smoothed loss \citep{nesterov2017}, with complexity understood in the convex
 \citep{duchi2015} and bandit \citep{flaxman2005} settings (see \citet{liu2020primer}
-for a survey). Evolution strategies use the same estimator with many directions,
-fitness shaping and natural-gradient corrections \citep{wierstra2014,hansen2003,
-hansen2016}; \citet{salimans2017} and \citet{mania2018} showed them competitive with
-policy-gradient reinforcement learning. Adaptive-moment updates on top of zero-order
-estimates were studied by \citet{chen2019zoadamm}. MeZO \citep{malladi2023} fine-tunes
+for a survey). Weight perturbation was proposed for analog VLSI training by \citet{jabri1992weight},
+with stochastic error descent \citep{cauwenberghs1993fast} and summed-weight
+perturbation \citep{flower1993summed} as early variance reductions. Evolution strategies
+use the same estimator with many directions, fitness shaping and natural-gradient
+corrections \citep{wierstra2014,hansen2003,hansen2016}; \citet{salimans2017} and
+\citet{mania2018} showed them competitive with policy-gradient reinforcement learning,
+\citet{zhang2017relationship} related them to SGD, and \citet{lenc2019non} applied them
+to supervised learning. Adaptive-moment updates on top of zero-order estimates were
+studied by \citet{chen2019zoadamm}, and \citet{silver2021learning} analysed learning
+from directional derivatives along random directions. MeZO \citep{malladi2023} fine-tunes
 billion-parameter language models with two-point SPSA and in-place perturbation;
 1.5-SPSA \citep{chaubard2025spsa15} adds a three-point curvature estimate along each
 direction to damp the step in sharp regions. DeepZero \citep{chen2024deepzero} and
@@ -251,7 +256,7 @@ backpropagation \citep{dalm2024,ahmad2024}. 1.5-ANP \citep{chaubard2025anp15} ap
 three-point curvature preconditioner to central-difference activity perturbation. We
 implement all six variants.
 
-\paragraph{Local rules.}
+\paragraph{Local rules and benchmarks.}
 The forward-forward algorithm \citep{hinton2022} replaces the backward pass by two
 forward passes with positive and negative data and trains each layer to separate them
 with a local ``goodness'' objective. Rules that broadcast a global error vector
@@ -259,7 +264,11 @@ with a local ``goodness'' objective. Rules that broadcast a global error vector
 synthetic gradients \citep{jaderberg2017} still require a learned or random backward
 signal, and forward gradients \citep{baydin2022,ren2023} require a Jacobian-vector
 product through the network; they are outside the zero-order scope of this benchmark,
-which includes forward-forward as the representative local rule.
+which includes forward-forward as the representative local rule. Controlled comparisons
+of biologically motivated rules exist for the feedback-alignment family
+\citep{bartunov2018assessing,launay2020direct,sanfiz2021benchmarking}; we are not aware
+of one that puts weight perturbation, the node-perturbation family and forward-forward
+on the same models under one budget.
 
 % ====================================================================================
 \section{Methods}
