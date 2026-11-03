@@ -451,10 +451,9 @@ sequence tasks changes only \ANP{}, \ANPb{} and \DANP{}, which drift.
   \caption{Main result, rows sorted by the overall score. Per task: test loss and test
   accuracy (\%) or bits per character at the \emph{best validation checkpoint} of the
   selected $\varepsilon$, as mean $\pm$ sample standard deviation over the three seeds
-  (the \DANP{} and \FF{} Transformer cells have two seeds). Overall score $=$ the sum
-  over the four tasks of the method's loss divided by \BP{}'s loss on that task (\BP{}
-  $=4$; lower is better); rank $=$ mean rank over the four tasks by loss, among all ten
-  methods. Bold: best probe method per task (accuracy bolded with it). \BP{} is the
+  (the \DANP{} and \FF{} Transformer cells have two seeds). Score $=$ the sum over the
+  four tasks of the method's loss divided by \BP{}'s loss on that task (\BP{} $=4$;
+  lower is better). Bold: best probe method per task (accuracy bolded with it). \BP{} is the
   reference (one forward and one backward pass per step); \FF{} is a local rule
   reported by label-accumulation accuracy [readout in brackets], and its readout loss
   is not comparable, so it has no score.}
