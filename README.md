@@ -66,7 +66,8 @@ The sweep is resumable: configs whose JSON already has a `final` block and no `e
 skipped (`--force` reruns them).  Each run's stdout/stderr goes to `runs/{name}.log`.
 Stage 2 uses the job-list mode: `python -m zoo.sweep --jobs jobs/stage2.txt --extra-jobs jobs/extra.txt
 --gpus 0,...,7 --logdir runs_v2` runs one `zoo.train` argument line per job over the GPU pool;
-lines appended to the `--extra-jobs` file while the sweep runs are picked up with priority.
+lines appended to the `--extra-jobs` file while the sweep runs are picked up with priority.  A `--skip-jobs FILE` (run names or glob patterns, one per line, re-read before every job)
+prunes queued jobs from a running sweep without restarting it.
 
 ## Inspecting results
 

@@ -109,3 +109,21 @@ at initialisation and on trained checkpoints, in fp32 / TF32 / fp64 (`results_al
 * Reporting additions: best-validation-accuracy checkpoints for the classification tasks,
   bootstrap intervals (over seeds) for the mean ranks, equal-pass curves as the best checkpoint
   within a forward-pass budget.
+
+### Stage-2 additions after the eps 1e-4 screening (2026-11-03, 03:30 UTC)
+
+* The eps = 1e-4 screening selected 1e-4 for 8 of the 10 methods on both image tasks (DANP keeps
+  1e-3, FF 1e-2), so the tied grid is extended once more: eps = lr = 1e-5 for those 8 methods on
+  MNIST and CIFAR-10 (1 h, seed 0).  The selected eps must have a worse neighbour on each side;
+  seeds 1, 2 are run at the selected value (`make_stage2_jobs.py --eps-seeds`).  On the LM tasks
+  the step size is decided between 1e-3 and 1e-4 from the same screening (at 1e-5 the LSTM would
+  travel < 1 unit per coordinate in an hour).
+* Seed replications queued at a superseded eps are pruned from a running sweep through its
+  `--skip-jobs` file (re-read before every job) instead of restarting it.
+* 1.5-ANP at the selected step size (group X, `results_v2/`, `-sig ... -l64` tags): Adam lr 1e-4,
+  sigma in {1e-2, 1e-3} decoupled from lr, fp64 losses, alpha in {0.5, 0, 0.25, 1}, and the LSTM
+  with the spec's 0.5 damping.  The untied grid gains a sigma = 0.1 row at lr 1e-4 (group Y).
+* The untied-best seed replications (group K) are run only where the best untied cell beats the
+  best tied diagonal cell by at least 3 % (both at the 30-minute checkpoint), at most 12 pairs.
+* Gradient alignment is measured on a GPU in fp32 (TF32 off) for sigma in {1e-1 ... 1e-5}
+  (`results_align_gpu/`); the CPU run (`results_align/`) covers {1e-1, 1e-2, 1e-3}.
