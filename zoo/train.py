@@ -84,6 +84,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--alpha", type=float, default=None, help="curvature exponent of spsa15 / anp15 (default: 0.1 / 0.5)")
     p.add_argument("--lam", type=float, default=None, help="curvature floor / damping of spsa15 / anp15 (default: 1.0 / 1e-3)")
     p.add_argument("--loss64", action="store_true", help="spsa15 / anp15: evaluate the losses in fp64 (forward stays fp32)")
+    p.add_argument("--damp", type=float, default=None, help="anp15 on the LSTM: damping of the perturbed recurrent state (spec: 0.5)")
     p.add_argument("--optim", choices=["adam", "sgd"], default="adam",
                    help="update applied to the estimate: adam (protocol) or plain SGD without momentum (1.5-order sources)")
     p.add_argument("--save-ckpt", action=argparse.BooleanOptionalAction, default=True,
@@ -108,6 +109,8 @@ def run_tag(args) -> str:
         tag += f"-lam{fmt_lr(args.lam)}"
     if getattr(args, "loss64", False):
         tag += "-l64"
+    if getattr(args, "damp", None) is not None:
+        tag += f"-d{fmt_lr(args.damp)}"
     if getattr(args, "optim", "adam") != "adam":
         tag += f"-{args.optim}"
     return tag
@@ -423,7 +426,7 @@ def main(argv=None) -> int:
         ctx.set_layers(players(model))
         opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes,
                             sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay, optim=args.optim,
-                            loss64=args.loss64)
+                            loss64=args.loss64, damp=args.damp)
         if args.alpha is not None:                 # curvature exponent (spsa15: saturating_alpha, anp15: alpha)
             opt.saturating_alpha = opt.alpha = float(args.alpha)
         if args.lam is not None:                   # curvature floor (spsa15: lambda_reg) / damping (anp15: lam)

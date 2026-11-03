@@ -48,9 +48,30 @@ def main():
                     help="write the review-driven extra sweeps (second node) to this file: eps 1e-4 for every pair, "
                          "alpha = 0 / fp64 / non-inert controls, and the 1.5-order rules under their own SGD recipe "
                          "(grids recommended by the code audit)")
+    ap.add_argument("--node3", default=None,
+                    help="write the untied (lr, sigma) grid for every probe method (third node): the combinations of "
+                         "lr, sigma in {1e-2, 1e-3, 1e-4}^2 not covered by the tied runs or the node-1 decoupling group")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.node3:
+        H = "--seed 0 --budget 1800 --eval-every 60 --out results_decouple"
+        probe = ["spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "danp"]
+        lines.append("# J. untied (lr, sigma) grid, 30-minute screening at 1-minute granularity; the tied diagonal is in results_v2 (1 h) and "
+                     "lr 1e-3 x sigma {1e-2, 1e-4} and lr 1e-2 x sigma 1e-3 (spsa, np, anp, inp) ran on node 1")
+        for t in TASKS:
+            for o in probe:
+                for sig in ("0.01", "0.001"):
+                    lines.append(f"--task {t} --opt {o} --lr 0.0001 --sigma {sig} {H}")
+                lines.append(f"--task {t} --opt {o} --lr 0.01 --sigma 0.0001 {H}")
+                if o in ("rs", "danp", "spsa15", "anp15"):
+                    lines.append(f"--task {t} --opt {o} --lr 0.01 --sigma 0.001 {H}")
+        os.makedirs(os.path.dirname(a.node3) or ".", exist_ok=True)
+        with open(a.node3, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        n = sum(1 for l in lines if not l.startswith("#"))
+        print(f"{n} jobs, {n * 0.5:.0f} GPU-hours -> {a.node3}")
+        return
     if a.node2:
         A = "--seed 0 --budget 3600 --eval-every 60"
         H = "--seed 0 --budget 1800 --eval-every 60"

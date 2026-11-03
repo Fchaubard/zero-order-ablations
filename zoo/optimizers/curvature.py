@@ -140,12 +140,13 @@ class CurvatureANP(_NodePerturbation):
     alpha = 0.5                           # sub-linear curvature exponent (spec: alpha_c)
     eps_mach = 1e-12
 
-    def __init__(self, model, lr, task_kind, n_classes, loss64: bool = False, **kw):
+    def __init__(self, model, lr, task_kind, n_classes, loss64: bool = False, damp: Optional[float] = None, **kw):
         super().__init__(model, lr, task_kind, n_classes, **kw)
         self.n_pairs = max(1, (self.forward_passes_per_step - 1) // 2)
         self._layout: Optional[List[str]] = None      # per layer: "ex" | "tok" | "call" | "shared"
         self._last_curv: Optional[torch.Tensor] = None
         self.loss64 = bool(loss64)                    # per-unit losses in fp64 (zoo.train --loss64)
+        self.damp = damp                              # recurrent-state damping of the spec (0.5); None = off
 
     def _unit_loss(self, logits: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return per_unit_loss(logits.double() if self.loss64 else logits, y)
@@ -173,6 +174,7 @@ class CurvatureANP(_NodePerturbation):
 
     def _noisy_pass15(self, x, y, sign: float, bank):
         ctx.mode, ctx.sigma, ctx.noise_layer, ctx.sign, ctx.xi_bank = "noisy", self.eps, None, sign, bank
+        ctx.damp = self.damp
         for layer in self.layers:
             layer.xi, layer.a_noisy = [], []
         with torch.no_grad():
@@ -264,7 +266,7 @@ class CurvatureANP(_NodePerturbation):
                 abs_dloss = abs_dloss + (lp - lm).abs().mean()
                 curv_sum = curv_sum + c.mean()
         finally:
-            ctx.sign, ctx.xi_bank = 1.0, None
+            ctx.sign, ctx.xi_bank, ctx.damp = 1.0, None, None
         for layer, Gl in zip(self.layers, G):
             if layer.a:
                 torch.autograd.backward(layer.a, grad_tensors=Gl)

@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .perturb import PConv2d, PEmbedding, PLinear, count_params
+from .perturb import PConv2d, PEmbedding, PLinear, count_params, ctx
 
 PTB_VOCAB = 50   # overwritten by data loader at construction time (see build_model)
 
@@ -98,12 +98,25 @@ class LSTMLayer(nn.Module):
         h = x.new_zeros(N, H)
         c = x.new_zeros(N, H)
         outs = []
+        mode = ctx.mode
+        if mode == "clean":
+            ctx.clean_states = []
+        damp = ctx.damp if (mode == "noisy" and ctx.damp is not None and len(ctx.clean_states) == T) else None
         for t in range(T):
             g = self.gates(torch.cat([x[:, t], h], dim=1))
             i, f, gg, o = g.split(H, dim=1)
             c = torch.sigmoid(f) * c + torch.sigmoid(i) * torch.tanh(gg)
             h = torch.sigmoid(o) * torch.tanh(c)
             outs.append(h)
+            if mode == "clean":
+                ctx.clean_states.append((h.detach(), c.detach()))
+            elif damp is not None:
+                # 1.5-ANP spec: truncate the perturbation cascade softly (0.5) so that multi-step eligibility
+                # flows without variance explosion over long T -- the state that enters step t+1 is damped,
+                # the recorded output of step t is not.
+                hc, cc = ctx.clean_states[t]
+                h = hc + damp * (h - hc)
+                c = cc + damp * (c - cc)
         return torch.stack(outs, dim=1)
 
 

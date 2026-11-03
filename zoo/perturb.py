@@ -51,6 +51,9 @@ class _Ctx:
         self.noise_layer: Optional[int] = None  # None = perturb all layers (NP/ANP/DANP); int = only that layer (INP)
         self.sign: float = 1.0         # +1 / -1: antithetic pairs (1.5-ANP) reuse the probes of the + pass
         self.xi_bank: Optional[List[List[torch.Tensor]]] = None   # per layer, per call: probes to reuse (None = draw)
+        self.damp: Optional[float] = None   # 1.5-ANP spec: on a noisy pass pull the recurrent state back toward the
+                                            # clean state after every time step, h <- h_clean + damp * (h_noisy - h_clean)
+        self.clean_states: List[tuple] = [] # (h, c) per time step recorded by the recurrent layer on the clean pass
         self.layers: List["PLayer"] = []
 
     def set_layers(self, layers: List["PLayer"]):
