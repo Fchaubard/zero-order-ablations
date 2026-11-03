@@ -430,7 +430,7 @@ hardware, software, code commits and logging.
 
 Table~\ref{tab:main} reports the best-validation-checkpoint test loss and accuracy or
 bits per character of every method on every task, sorted by an overall score (the
-sum over tasks of the loss relative to \BP{}'s, charted in Figure~\ref{fig:overall}), Table~\ref{tab:final} the same runs
+sum of its four test losses, charted in Figure~\ref{fig:overall}), Table~\ref{tab:final} the same runs
 at the end of the hour and Table~\ref{tab:eps} the screening behind every selection. On the image tasks the node-perturbation family leads and
 three of its members tie within seed noise: \NP{}, \INP{} and \ANP{} are within 0.006
 of each other on MNIST (0.106--0.112, 96.6--96.9\,\%) and within 0.05 on CIFAR-10
@@ -451,9 +451,8 @@ sequence tasks changes only \ANP{}, \ANPb{} and \DANP{}, which drift.
   \caption{Main result, rows sorted by the overall score. Per task: test loss and test
   accuracy (\%) or bits per character at the \emph{best validation checkpoint} of the
   selected $\varepsilon$, as mean $\pm$ sample standard deviation over the three seeds
-  (the \DANP{} and \FF{} Transformer cells have two seeds). Score $=$ the sum over the
-  four tasks of the method's loss divided by \BP{}'s loss on that task (\BP{} $=4$;
-  lower is better). Bold: best probe method per task (accuracy bolded with it). \BP{} is the
+  (the \DANP{} and \FF{} Transformer cells have two seeds). Score $=$ the sum of the four
+  test losses (lower is better). Bold: best probe method per task (accuracy bolded with it). \BP{} is the
   reference (one forward and one backward pass per step); \FF{} is a local rule
   reported by label-accumulation accuracy [readout in brackets], and its readout loss
   is not comparable, so it has no score.}
@@ -467,10 +466,10 @@ sequence tasks changes only \ANP{}, \ANPb{} and \DANP{}, which drift.
 \begin{figure}[t]
   \centering
   \input{figures/fig_overall}
-  \caption{The overall score of Table~\ref{tab:main} as a chart: best-checkpoint test
-  loss relative to backpropagation, summed over the four tasks (dotted line: \BP{}
-  $=4$), with the per-task contributions stacked; methods ordered from best to worst.
-  \FF{} is omitted (its readout loss is not comparable).}
+  \caption{The score of Table~\ref{tab:main} as a chart: best-checkpoint test loss
+  summed over the four tasks, with the per-task losses stacked (dotted line: \BP{});
+  methods ordered from best to worst. \FF{} is omitted (its readout loss is not
+  comparable).}
   \label{fig:overall}
 \end{figure}
 
