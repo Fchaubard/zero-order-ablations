@@ -201,8 +201,8 @@ def main():
     except Exception:
         pass
     for (task, opt), eps in s1_sel.items():
-        if opt in OPTS and (task, opt, eps, 0, "") in s1 and not rep.get((task, opt)):
-            rep[(task, opt)].add(eps)
+        if opt in OPTS and (task, opt, eps, 0, "") in s1:
+            rep[(task, opt)].add(eps)      # the stage-1 selection stays a candidate (seed 0 falls back to its run)
     stage1_only = set()
 
     # ---- selection: lowest mean (over seeds) best validation loss; FF images: highest goodness val acc ----
