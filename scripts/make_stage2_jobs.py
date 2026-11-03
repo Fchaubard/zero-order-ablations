@@ -66,6 +66,9 @@ def main():
     ap.add_argument("--tasks", default=",".join(TASKS))
     ap.add_argument("--opts", default=",".join(OPTS + ["spsa15", "anp15"]))
     ap.add_argument("--lr", type=float, default=1e-5)
+    ap.add_argument("--min-gain", type=float, default=0.03,
+                    help="--untied-seeds: minimum relative test-loss improvement of the untied best over the tied diagonal")
+    ap.add_argument("--max-pairs", type=int, default=12, help="--untied-seeds: at most this many (task, method) pairs, largest gains first")
     ap.add_argument("--own-seeds", default=None,
                     help="from results_v2/summary_v2.json 'own': 1 h x seeds 0-2 at the best own-recipe (SGD) configuration of "
                          "spsa15 / anp15 on every task -> results_15")
@@ -101,11 +104,19 @@ def main():
     if a.untied_seeds or a.own_seeds:
         v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
         if a.untied_seeds:
-            lines.append("# K. seeds at the best untied (lr, sigma) where it differs from the tied selection, 1 h, 1-minute evaluations")
+            lines.append(f"# K. seeds at the best untied (lr, sigma) where it beats the tied selection by >= {100 * a.min_gain:g}% "
+                         f"(at most {a.max_pairs} pairs, largest gains first), 1 h, 1-minute evaluations")
+            cand = []
             for k, v in v2.get("untied_best", {}).items():
+                if v["lr"] == v["sigma"] or v.get("tied") is None or v.get("test_loss") is None:
+                    continue          # the tied diagonal already has its seeds / nothing to compare with
+                gain = (v["tied"] - v["test_loss"]) / v["tied"]
+                if gain >= a.min_gain:
+                    cand.append((gain, k, v))
+            cand.sort(key=lambda c: -c[0])
+            for gain, k, v in cand[:a.max_pairs]:
                 t, o = k.split("/")
-                if v["lr"] == v["sigma"]:
-                    continue          # the tied diagonal already has its seeds
+                lines.append(f"# {k}: untied {v['test_loss']:.3f} vs tied {v['tied']:.3f} ({100 * gain:.0f}%)")
                 for seed in (0, 1, 2):
                     lines.append(f"--task {t} --opt {o} --lr {float(v['lr']):g} --sigma {float(v['sigma']):g} --seed {seed} --budget 3600 --eval-every 60 --out results_v2")
             path = a.untied_seeds
