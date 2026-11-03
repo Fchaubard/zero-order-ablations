@@ -327,9 +327,13 @@ the loss is sharp:
   \label{eq:spsa15}
 \end{equation}
 with the saturating exponent $\alpha=0.1$ and floor $\lambda=1$ of the published code.
-With $K=8$ pairs the step costs 17 passes. The published implementation uses
-Rademacher directions and a plain SGD step; we use Gaussian directions, like \SPSA{},
-and the shared Adam update, like every other method.
+With $K=8$ pairs the step costs 17 passes. The published method uses Rademacher
+directions and a plain SGD step $\btheta\leftarrow\btheta-\eta\,\ghat$ with $\eta=\sigma$
+tied, i.e.\ $\Delta\btheta=-\frac{1}{2K}\sum_k \frac{\Delta\loss_k}{c_k}\bz_k$, many
+directions per step and few steps \citep{chaubard2025spsa15}. Under the protocol the
+estimate goes to Adam like every other method, which makes $c_k$ inert
+(Section~\ref{sec:align}); Section~\ref{sec:own} therefore also runs the rule under its
+own recipe. We use Gaussian directions, like \SPSA{}, throughout.
 
 \paragraph{Random search.}
 Random search \citep{rastrigin1963,matyas1965,schumer1968} evaluates the clean loss
@@ -403,12 +407,18 @@ losses of $u$,
   \ghat_{\ba_u}^{\ANPb}=\frac{1}{K}\sum_{k=1}^{K}\beta_u^{(k)}\bd_u^{(k)},
   \label{eq:anp15}
 \end{equation}
-with $\lambda=10^{-3}$ and $\alpha=0.5$; the weight update is the batch mean of
-$\ghat_{\ba_u}\bh_u^{\top}$ as in Eq.~\eqref{eq:anp}. With $\alpha=0$ the rule is
-central-difference ANP. The step costs 17 passes. The specification's recurrent loop
-damps the deviation of the perturbed hidden state by one half at every time step; our
-noisy passes run the perturbed state undamped, because every noisy pass is an
-independent forward of the model (Appendix~\ref{app:impl}).
+with $\lambda=10^{-3}$ ($10^{-4}$ on the LSTM in the specification) and $\alpha=0.5$;
+the weight update is the batch mean of $\ghat_{\ba_u}\bh_u^{\top}$ as in
+Eq.~\eqref{eq:anp}, and $N_u$ counts the perturbed nodes of one unit (90 on the MLP, 402
+per LSTM time step, 754 per Transformer token). With $\alpha=0$ the rule is
+central-difference ANP, the control that separates attribution from preconditioning.
+The step costs 17 passes. The specification uses plain SGD with a learning rate 20--50
+times $\sigma$ and damps the deviation of the perturbed recurrent state by one half at
+every time step; the protocol runs ties $\eta=\sigma$ under Adam without damping, and
+Section~\ref{sec:own} runs the rule under its own recipe with both. The three-point
+second differences that define $\hat c_u$ are, at $\sigma=10^{-3}$, of the order of the
+fp32 rounding of the loss, so the own-recipe runs evaluate the losses in fp64
+(Section~\ref{sec:align}).
 
 \paragraph{Iterative node perturbation (INP).}
 Iterative NP \citep{dalm2023} perturbs \emph{one} layer per noisy pass, so that the
@@ -450,7 +460,10 @@ propagates an error between blocks. With goodness $G=\operatorname{mean}_j h_{l,
 of \citet{pezeshki2023ff}; Hinton uses the sum of squares), the local loss on a
 positive/negative pair is
 $\ell_{\FF}=\log(1+e^{\theta_{\FF}-G_{\text{pos}}})+\log(1+e^{G_{\text{neg}}-\theta_{\FF}})$,
-and activities are $\ell_2$-normalised before the next block. For images, positive data
+and activities are $\ell_2$-normalised before the next block. A block is one hidden
+layer of the MLP, one convolution--ReLU--pool stage or the dense layer of the ConvNet,
+the LSTM layer, and one pre-LN block of the Transformer; for text the goodness is
+computed per position. For images, positive data
 carry the correct label overlaid on the first 10 pixels and negative data a wrong label;
 for text, negatives have 30\,\% of their characters replaced at random. The positive,
 negative and (for images) neutral-label inputs are forwarded as one batch, i.e.\ three
@@ -554,42 +567,65 @@ initialisation, every 5 minutes of training time and at the end (evaluation time
 excluded from the clock). The two 1.5-order rules were added after this sweep and were
 screened under the stage-2 settings below. For each pair the $\varepsilon$ with the
 lowest validation loss over all evaluations is selected (for \FF{} on the image tasks,
-the highest label-accumulation validation accuracy). The screening grid is 4 tasks
-$\times$ 10 methods $\times$ 3 values, 120 runs (Appendix~\ref{app:grid}).
+the highest label-accumulation validation accuracy). Because 26 of the 32 original pairs
+selected the lower edge of this grid, $\varepsilon=10^{-4}$ was added for every pair
+under the stage-2 settings below. The screening is 4 tasks $\times$ 10 methods $\times$
+4 values, 160 runs (Appendix~\ref{app:grid}).
 
 \paragraph{Stage 2: replication.}
 The selected configuration of every pair is run with three seeds (initialisation, data
 order and probes), evaluated every \textbf{minute} of training time, in full fp32
 arithmetic (TF32 disabled; Section~\ref{sec:align} measures its effect), with
 checkpoints at the best validation loss. A run is stopped and marked diverged when a
-loss is non-finite or when its clean validation loss exceeds twice its initial value at
-two consecutive evaluations (stage 1 additionally compared each method's own training
-loss with its first-step value; since \SPSA{}'s training loss is a probe mean, that
-clause was method-dependent and was dropped). Where the stage-1 selection by best and by
-final validation loss disagree in a non-degenerate way (\DANP{} on both image tasks),
-both $\varepsilon$ are replicated and the better mean validation loss decides; \BP{} is
-replicated at $\varepsilon=0.001$ on every task (and $0.01$ on CIFAR-10).
+loss is non-finite or when its clean validation loss exceeds ten times its initial
+value at two consecutive evaluations, which stops collapsed networks and not
+over-confident but accurate ones (stage 1 used a factor two and additionally compared
+each method's own training loss with its first-step value; the former stopped
+backpropagation on CIFAR-10 at 67\,\% accuracy and the latter was method-dependent
+because \SPSA{}'s training loss is a probe mean, so both were replaced; a run that the
+old rule did not stop is identical under the new one). Where the stage-1 selection by
+best and by final validation loss disagree in a non-degenerate way (\DANP{} on both
+image tasks), both $\varepsilon$ are replicated and the better mean validation loss
+decides. For \BP{}, which has no probe, the reference on each task is the learning rate
+and weight decay with the lowest validation loss among $\eta\in\{10^{-2},10^{-3},10^{-4}\}$
+with and without decoupled weight decay $10^{-2}$ \citep{loshchilov2019}, replicated
+with three seeds.
 
 \paragraph{Reporting.}
 The primary metric is the \emph{best validation checkpoint}: for each pair and seed,
 the evaluation with the lowest validation loss over the hour, whose test loss, test
 accuracy (classification) or bits per character ($\text{loss}/\ln 2$, language
 modelling) is reported as the mean over seeds with the standard deviation in units of
-the last digit (``0.140(5)'' is $0.140\pm0.005$). The value at the end of the hour is
-reported as a secondary stability metric. \FF{} on the image tasks is selected and
-reported by label-accumulation accuracy, with the readout accuracy in brackets. Mean
-ranks are over the eight probe methods. Test data are never used for selection.
+the last digit (``0.140(5)'' is $0.140\pm0.005$; the sample standard deviation over
+three seeds; cells without parentheses are single runs). The value at the end of the
+hour is reported as a secondary stability metric, and for the two classification tasks
+the checkpoint with the highest validation \emph{accuracy} is reported as well
+(Appendix~\ref{app:selected}), since loss and accuracy drift apart under a fixed step.
+\FF{} on the image tasks is selected and reported by label-accumulation accuracy, with
+the readout accuracy in brackets. Mean ranks are over the eight probe methods, with a
+95\,\% bootstrap interval over seeds. Test data are never used for selection.
 
 \paragraph{Ablations.}
-(i)~\emph{Backpropagation reference}: \BP{} with $\eta\in\{10^{-3},10^{-4}\}$, with and
-without decoupled weight decay $10^{-2}$ \citep{loshchilov2019}, one hour, 1-minute
-evaluations. (ii)~\emph{Decoupling}: for every probe method and task, $\eta=10^{-3}$
-with $\sigma\in\{10^{-2},10^{-4}\}$, and $\eta=10^{-2}$ with $\sigma=10^{-3}$ for
-\SPSA{}, \NP{}, \ANP{} and \INP{}, 30 minutes each, compared with the tied runs at the
-same time. (iii)~\emph{Estimator alignment}: the cosine between every estimator and the
-true gradient of a fixed batch as a function of the number of forward passes, per layer,
-at initialisation and after a 2000-step backpropagation warm-up, in fp32, TF32 and fp64.
-(iv)~Direct-jump random search (Appendix~\ref{app:rsj}).
+(i)~\emph{Untied probe scale and step size}: for every probe method and task the full
+grid $\eta\in\{10^{-2},10^{-3},10^{-4}\}\times\sigma\in\{10^{-2},10^{-3},10^{-4}\}$,
+screened for 30 minutes at 1-minute granularity (the tied diagonal is taken from the
+one-hour runs at minute 30); the best untied setting of every pair is then replicated for
+one hour with three seeds wherever it differs from the tied one, so that every rule is
+also compared at its own best $(\eta,\sigma)$ at equal compute and without any schedule.
+(ii)~\emph{The 1.5-order rules under their own recipe}: plain SGD instead of Adam, fp64
+loss evaluation, \SPSAb{} with $\eta=\sigma\in\{10^{-2},3\cdot10^{-3},10^{-3},3\cdot10^{-4},10^{-4}\}$
+and 8 or 64 pairs with the $\alpha=0$ (1SPSA) control, \ANPb{} with
+$\eta\in\{0.05,0.02,0.01,0.005\}$ decoupled from $\sigma\in\{10^{-2},10^{-3}\}$ with the
+$\alpha=0$ control, a $\lambda=10^{-2}$ floor and the recurrent-state damping on the
+LSTM; 30-minute screening, then three seeds for an hour at the selected setting
+(Section~\ref{sec:own}). (iii)~\emph{Controls under the protocol}: \ANPb{} with
+$\alpha=0$ and with fp64 losses, \SPSAb{} with a non-inert factor ($\alpha=0.5$,
+$\lambda=10^{-3}$). (iv)~\emph{Estimator alignment}: the cosine between every estimator
+and the true gradient of a fixed batch as a function of the number of forward passes,
+per layer, at initialisation and after a 2000-step backpropagation warm-up, in fp32,
+TF32 and fp64. (v)~\emph{Resources}: every selected configuration is rerun alone on one
+GPU for 150 seconds to measure isolated throughput and peak GPU memory
+(Appendix~\ref{app:resources}). (vi)~Direct-jump random search (Appendix~\ref{app:rsj}).
 
 \paragraph{Hardware and software.}
 All runs use one RTX~5090 per run on an 8-GPU vast.ai node (8 runs at a time; PyTorch
@@ -655,17 +691,7 @@ tasks unchanged, since every method there is still improving at minute 60.
   \input{tables/main_table}
 \end{table}
 
-\begin{table}[t]
-  \caption{The same runs at the end of the hour (secondary, stability metric): test
-  loss and accuracy or bits per character after 60 minutes of training. A dagger marks
-  a pair in which at least one seed was stopped by the divergence rule (its last
-  evaluation is used).}
-  \label{tab:final}
-  \centering
-  \footnotesize
-  \setlength{\tabcolsep}{3.5pt}
-  \input{tables/final_table}
-\end{table}
+
 
 \subsection{Training curves and equal-compute view}
 \label{sec:curves}
@@ -781,6 +807,26 @@ Table~\ref{tab:decouple} and this paragraph will be filled in when they complete
   \input{tables/decouple_table}
 \end{table}
 
+\subsection{The 1.5-order rules under their own recipe}
+\label{sec:own}
+
+\TODO{Own-recipe results: best SGD configuration of 1.5-SPSA (eps, pairs) and 1.5-ANP
+(eta, sigma) per task, the alpha = 0 controls, the 1SPSA / ANP-SGD controls, and how
+they compare with the protocol runs and with the best untied Adam settings.}
+
+\begin{table}[t]
+  \caption{The 1.5-order rules under their own recipe (plain SGD, fp64 losses,
+  30-minute screening): the best configuration by validation loss and its
+  best-checkpoint test loss (accuracy or bits per character), the $\alpha=0$ control
+  at the same grid, the protocol run (Adam, tied $\varepsilon$) at minute 30, and the
+  plain-SGD control of the parent rule.}
+  \label{tab:own}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \input{tables/own_table}
+\end{table}
+
 \subsection{Estimator quality}
 \label{sec:align}
 
@@ -800,8 +846,9 @@ approach the number of weights, need thousands of probes before the node estimat
 carries signal, which is why \NP{} and \INP{} train the ConvNet slowly and the
 weight-space rules hardly at all. The curvature preconditioners behave as their results
 suggest: \SPSAb{} is indistinguishable from \SPSA{} at every probe count, because with
-$\alpha=0.1$ and $\lambda=1$ its per-direction factor lies between 1 and 1.3 and is
-absorbed by Adam, while \ANPb{}'s per-example factor with $\alpha=0.5$ lowers the
+$\alpha=0.1$ and $\lambda=1$ its per-direction factor lies between 1 and 1.3, i.e.\ a
+nearly constant per-step scalar (0.53--0.62 on the MLP, varying by 5\,\% across steps)
+that Adam's normalisation removes, while \ANPb{}'s per-example factor with $\alpha=0.5$ lowers the
 alignment of central-difference \ANP{} from 0.83 to 0.62 on the MLP at $\sigma=10^{-3}$
 (and to 0.09 on the ConvNet), where the fp32 second differences that define it are at
 the rounding floor. \TODO{LSTM and Transformer panels pending.}
@@ -858,8 +905,9 @@ with the same unit count and lose to it on the sequence tasks.
 0.365 on MNIST, 1.597 versus 1.645 on CIFAR-10, 2.96 versus 2.96 and 3.14 versus 3.15
 bits per character), at the price of the clean pass (17\,\% fewer steps per hour): with
 the published $\alpha=0.1$ and $\lambda=1$ the per-direction factor is nearly constant
-and Adam's normalisation removes what is left, so the curvature information does not
-reach the update. \ANPb{} behaves differently in the two task families. On the image
+and Adam's normalisation removes the common scalar that remains, so the curvature
+information does not reach the update under the protocol (Section~\ref{sec:own} shows
+what it does under plain SGD). \ANPb{} behaves differently in the two task families. On the image
 tasks it is clearly worse than \ANP{} (94.4 versus 96.8\,\% on MNIST, 38.4 versus
 62.3\,\% on CIFAR-10): the per-example curvature weights with $\alpha=0.5$ act as a
 random reweighting of examples when the second differences are at the fp32 rounding
@@ -944,6 +992,11 @@ implementations that batch probes well: the probe passes of this code are a Pyth
 loop, the small models are launch-bound, and all runs executed eight at a time on one
 host, so steps per hour (Appendix~\ref{app:throughput}) depend on the host; the
 equal-pass view (Figure~\ref{fig:passes}) is the implementation-independent comparison.
+
+\paragraph{Adam's constants.}
+$(\beta_1,\beta_2)=(0.9,0.99)$ is a protocol choice made before any run (the usual
+$\beta_2=0.999$ would average the second moment over a thousand steps, several seconds
+of these runs); it is shared by every method and is not tuned.
 
 \paragraph{Faithfulness.}
 \SPSA{} and \SPSAb{} use Gaussian rather than Rademacher directions and \RS{} is
@@ -1042,6 +1095,14 @@ Transformer.
 \section{Selected configurations, throughput and ablation tables}
 \label{app:selected}
 
+Table~\ref{tab:selected} lists the selected $\varepsilon$ and the minute of the best
+checkpoint of every pair, Table~\ref{tab:bestacc} the best-validation-\emph{accuracy}
+checkpoints of the two classification tasks, Table~\ref{tab:final} the end-of-hour
+values, Tables~\ref{tab:throughput}--\ref{tab:memory} the throughput, step counts,
+isolated throughput and peak memory, Table~\ref{tab:rsj} the direct-jump random search,
+and Tables~\ref{tab:align}--\ref{tab:precision} the per-layer alignment and the
+precision check.
+
 \begin{table}[ht]
   \caption{Stage 2: selected $\varepsilon^{\ast}$, mean minute of the best validation
   checkpoint and number of seeds for every (task, method) pair.}
@@ -1052,15 +1113,69 @@ Transformer.
   \input{tables/selected_table}
 \end{table}
 
+\begin{table}[ht]
+  \caption{The same runs at the end of the hour (secondary, stability metric): test
+  loss and accuracy or bits per character after 60 minutes of training. A dagger marks
+  a pair in which at least one seed was stopped by the divergence rule (its last
+  evaluation is used).}
+  \label{tab:final}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{3.5pt}
+  \input{tables/final_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Image tasks: test accuracy (\%) and test loss at the evaluation with the
+  highest validation \emph{accuracy}, mean over seeds. Best probe method per task in
+  bold.}
+  \label{tab:bestacc}
+  \centering
+  \footnotesize
+  \input{tables/bestacc_table}
+\end{table}
+
 \label{app:throughput}
 \begin{table}[ht]
   \caption{Throughput: optimizer steps and forward passes per hour (thousands), mean
-  over the seeds of the selected runs, measured with eight runs sharing one host.}
+  over the seeds of the selected runs, measured with eight runs sharing one host (one
+  \BP{} step is counted as one pass; its backward is not counted).}
   \label{tab:throughput}
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \input{tables/throughput_table}
+\end{table}
+
+\label{app:resources}
+\begin{table}[ht]
+  \caption{Steps completed in the hour (thousands) and milliseconds of training time
+  per step, mean over seeds of the selected runs (eight runs sharing one host).}
+  \label{tab:steps}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/steps_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Isolated throughput: every selected configuration run alone on one
+  RTX~5090 for 150 seconds.}
+  \label{tab:isolated}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/isolated_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Peak GPU memory of the training process (MB): tensors allocated, and
+  reserved by the caching allocator, from the isolated runs.}
+  \label{tab:memory}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \input{tables/memory_table}
 \end{table}
 
 \label{app:rsj}
@@ -1175,7 +1290,7 @@ beyond the $\varepsilon$ screening.
   \begin{tabular}{l p{7.9cm}}
     \toprule
     Optimizer & Adam, $(\beta_1,\beta_2)=(0.9,0.99)$, $\epsilon_{\text{Adam}}=10^{-8}$, no schedule, no weight decay (AdamW $10^{-2}$ in the \BP{} ablation only) \\
-    Learning rate $\eta$ $=$ probe scale $\sigma$ $=\varepsilon$ & $\{0.1, 0.01, 0.001\}$ (decoupled in the ablation of Section~\ref{sec:decouple}) \\
+    Learning rate $\eta$ $=$ probe scale $\sigma$ $=\varepsilon$ & $\{0.1, 0.01, 0.001, 0.0001\}$ (untied grid in Section~\ref{sec:decouple}; own recipes in Section~\ref{sec:own}) \\
     Probe distribution & $\mathcal{N}(\mathbf{0},\bI)$, scaled by $\sigma$ \\
     Forward passes per step & 16 (probe methods), 17 (\SPSAb{}, \ANPb{}), 3 / 2 (\FF{}), 1 $+$ 1 backward (\BP{}) \\
     \SPSA{}, \SPSAb{} pairs / \RS{} candidates & 8 / 15 \\
@@ -1186,9 +1301,9 @@ beyond the $\varepsilon$ screening.
     Decorrelation rate $\eta_R$ (\DANP{}) & $10^{-3}$, fixed \\
     Training budget & 60 min of training time per run, evaluation excluded (30 min in the decoupling ablation) \\
     Evaluation interval & every 1 min (stage 2) / 5 min (stage 1) of training time, and at the end \\
-    Divergence rule & non-finite loss, or validation loss $>2\times$ its step-0 value at two consecutive evaluations \\
+    Divergence rule & non-finite loss, or validation loss $>10\times$ its step-0 value at two consecutive evaluations (stage 1: $2\times$, plus the training-loss clause) \\
     Precision & fp32, TF32 off (stage 2); PyTorch default, TF32 on for convolutions (stage 1) \\
-    Seeds & 3 (stage 2), 1 (stage 1 and ablations) \\
+    Seeds & 3 (stage 2 and the replicated untied / own-recipe settings), 1 (stage 1 and screenings) \\
     \bottomrule
   \end{tabular}
 \end{table}
