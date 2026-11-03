@@ -54,9 +54,52 @@ def main():
     ap.add_argument("--resources", default=None,
                     help="write a job list that re-runs every selected (task, method, eps) of results_v2/summary_v2.json ALONE on one GPU "
                          "for 150 s (no wandb) into results_resources/, to measure isolated throughput and peak GPU memory")
+    ap.add_argument("--untied-seeds", default=None,
+                    help="from results_v2/summary_v2.json 'untied_best': 1 h x seeds 0-2 at the best untied (lr, sigma) of every probe "
+                         "method / task whose best differs from the tied diagonal -> results_v2 (with -sig tags)")
+    ap.add_argument("--own-seeds", default=None,
+                    help="from results_v2/summary_v2.json 'own': 1 h x seeds 0-2 at the best own-recipe (SGD) configuration of "
+                         "spsa15 / anp15 on every task -> results_15")
     a = ap.parse_args()
     s = json.load(open(a.summary))
     lines = []
+    if a.untied_seeds or a.own_seeds:
+        v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
+        if a.untied_seeds:
+            lines.append("# K. seeds at the best untied (lr, sigma) where it differs from the tied selection, 1 h, 1-minute evaluations")
+            for k, v in v2.get("untied_best", {}).items():
+                t, o = k.split("/")
+                if v["lr"] == v["sigma"]:
+                    continue          # the tied diagonal already has its seeds
+                for seed in (0, 1, 2):
+                    lines.append(f"--task {t} --opt {o} --lr {float(v['lr']):g} --sigma {float(v['sigma']):g} --seed {seed} --budget 3600 --eval-every 60 --out results_v2")
+            path = a.untied_seeds
+        else:
+            lines.append("# L. seeds at the best own-recipe configuration of the 1.5-order rules, 1 h, 1-minute evaluations")
+            for k, v in v2.get("own", {}).items():
+                t, o = k.split("/")
+                cfg = v["config"]                      # e.g. lr0.001-K129-l64-sgd or lr0.01-sig0.001-lam0.0001-l64-sgd
+                parts = cfg.split("-")
+                args = [f"--lr {float(parts[0][2:]):g}", "--optim sgd", "--loss64"]
+                for part in parts[1:]:
+                    if part.startswith("K"):
+                        args.append(f"--passes {int(part[1:])}")
+                    elif part.startswith("sig"):
+                        args.append(f"--sigma {float(part[3:]):g}")
+                    elif part.startswith("lam"):
+                        args.append(f"--lam {float(part[3:]):g}")
+                    elif part.startswith("a") and part[1:].replace(".", "").isdigit():
+                        args.append(f"--alpha {float(part[1:]):g}")
+                    elif part.startswith("d") and part[1:].replace(".", "").isdigit():
+                        args.append(f"--damp {float(part[1:]):g}")
+                for seed in (0, 1, 2):
+                    lines.append(f"--task {t} --opt {o} " + " ".join(args) + f" --seed {seed} --budget 3600 --eval-every 60 --out results_15")
+            path = a.own_seeds
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        print(f"{len(lines) - 1} jobs -> {path}")
+        return
     if a.resources:
         v2 = json.load(open(os.path.join(a.v2, "summary_v2.json")))
         lines.append("# R. isolated throughput / peak memory: each selected configuration alone on a GPU for 150 s (run the sweep with --gpus 0)")
