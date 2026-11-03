@@ -64,7 +64,9 @@ from stage 1, all applied to every stage-2 run:
   label-accumulation inference over all blocks but the first) and reported with that accuracy;
   the linear readout is reported next to it.
 * **Divergence rule = validation only**: a run is stopped when its clean validation loss exceeds
-  2x its step-0 value at two consecutive evaluations, or when any loss is non-finite.  The
+  10x its step-0 value at two consecutive evaluations, or when any loss is non-finite (stage-2
+  runs before 2026-11-03 01:00 UTC used 2x, which also stopped over-confident but accurate runs
+  such as backprop on CIFAR-10 at 67 % accuracy; runs the 2x rule did not stop are identical).  The
   stage-1 training-loss clause compared each method's own training loss with its first-step
   value, which for SPSA is a probe mean, i.e. it was method-dependent; it is dropped.
 * **Precision**: full fp32 (TF32 disabled for cuDNN convolutions and matmuls; stage 1 ran with

@@ -29,7 +29,8 @@ class BaseOptimizer:
     forward_passes_per_step = 16   # the budget every zero-order method must respect
 
     def __init__(self, model: torch.nn.Module, lr: float, task_kind: str, n_classes: int,
-                 sigma: float | None = None, n_passes: int | None = None, weight_decay: float = 0.0, **kw):
+                 sigma: float | None = None, n_passes: int | None = None, weight_decay: float = 0.0,
+                 optim: str = "adam", **kw):
         self.model = model
         self.lr = lr
         # PROTOCOL.md ties the probe scale to the learning rate (sigma = None -> eps = lr); the
@@ -41,7 +42,12 @@ class BaseOptimizer:
         if n_passes is not None:
             self.forward_passes_per_step = int(n_passes)
         self.weight_decay = float(weight_decay)
-        if self.weight_decay > 0:   # decoupled weight decay (AdamW); only used for the backprop reference ablation
+        self.optim = optim
+        # ``self.adam`` is the step taken on p.grad: Adam (protocol), AdamW (backprop decay ablation) or plain SGD
+        # without momentum (theta <- theta - lr * ghat, the update of the 1.5-SPSA paper and the 1.5-ANP spec).
+        if optim == "sgd":
+            self.adam = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.0, weight_decay=self.weight_decay)
+        elif self.weight_decay > 0:   # decoupled weight decay (AdamW); only used for the backprop reference ablation
             self.adam = torch.optim.AdamW(model.parameters(), lr=lr, betas=ADAM_BETAS, weight_decay=self.weight_decay)
         else:
             self.adam = torch.optim.Adam(model.parameters(), lr=lr, betas=ADAM_BETAS)

@@ -8,7 +8,7 @@
   sampling, evaluation and logging are excluded from the budget.
 * Every ``--eval-every`` seconds of train time (and once at the end) the model is evaluated
   on the full validation and test splits through ``opt.predict``.
-* Divergence watchdog: a non-finite loss, or a clean validation loss > 2x its step-0 value at
+* Divergence watchdog: a non-finite loss, or a clean validation loss > 10x its step-0 value at
   two consecutive evaluations, stops the run and marks it ``diverged``.  The reference is the
   same clean quantity for every optimizer (stage 1 of the sweep, commits db100bc / f5424e9,
   additionally compared each method's own training loss with its first-step value; SPSA's
@@ -48,7 +48,9 @@ from .optimizers.base import ADAM_BETAS
 from .perturb import count_params, ctx, players
 
 LN2 = math.log(2.0)
-DIVERGE_FACTOR = 2.0   # PROTOCOL.md: validation loss > 2x its step-0 value at two consecutive evaluations -> diverged
+DIVERGE_FACTOR = 10.0  # PROTOCOL.md: validation loss > 10x its step-0 value at two consecutive evaluations -> diverged
+# (stage-2 runs before 3 Nov 2026 01:00 UTC used 2x, which also stopped over-confident but accurate runs, e.g. backprop
+# on CIFAR-10 at 67 % accuracy; 10x stops only collapsed networks.  A run that the 2x rule did not stop is identical.)
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -79,6 +81,10 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--weight-decay", type=float, default=0.0, help="decoupled weight decay (AdamW); 0 = protocol")
     p.add_argument("--tf32", action=argparse.BooleanOptionalAction, default=False,
                    help="allow TF32 for cuDNN convolutions / matmuls (default: full fp32 arithmetic)")
+    p.add_argument("--alpha", type=float, default=None, help="curvature exponent of spsa15 / anp15 (default: 0.1 / 0.5)")
+    p.add_argument("--lam", type=float, default=None, help="curvature floor / damping of spsa15 / anp15 (default: 1.0 / 1e-3)")
+    p.add_argument("--optim", choices=["adam", "sgd"], default="adam",
+                   help="update applied to the estimate: adam (protocol) or plain SGD without momentum (1.5-order sources)")
     p.add_argument("--save-ckpt", action=argparse.BooleanOptionalAction, default=True,
                    help="save best-validation / 5-minute / final checkpoints next to the results JSON")
     return p.parse_args(argv)
@@ -95,6 +101,12 @@ def run_tag(args) -> str:
         tag += f"-wd{fmt_lr(args.weight_decay)}"
     if getattr(args, "tf32", False):
         tag += "-tf32"
+    if getattr(args, "alpha", None) is not None:
+        tag += f"-a{fmt_lr(args.alpha)}"
+    if getattr(args, "lam", None) is not None:
+        tag += f"-lam{fmt_lr(args.lam)}"
+    if getattr(args, "optim", "adam") != "adam":
+        tag += f"-{args.optim}"
     return tag
 
 
@@ -279,6 +291,9 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
             "test_loss": test["loss"], "test_acc": test["acc"],
             "steps_per_sec": ev.rate(train_time, step), "wall_time": time.time() - wall0,
         }
+        if cuda:   # peak GPU memory of the process so far (bytes): allocated by tensors / reserved by the caching allocator
+            rec["max_memory_allocated"] = int(torch.cuda.max_memory_allocated(device))
+            rec["max_memory_reserved"] = int(torch.cuda.max_memory_reserved(device))
         if is_lm:
             rec["val_bpc"], rec["test_bpc"] = val["bpc"], test["bpc"]
         if "acc_goodness" in test:
@@ -362,7 +377,10 @@ def train_loop(args, data: Data, opt, result: dict, logger: WandbLogger, out_pat
         do_eval()
     save_ckpt("final", history[-1]["val_loss"])
     result.update(train_time=train_time, steps=step, diverged=diverged, stop_reason=stop_reason,
-                  best_val_loss=best_val[0])
+                  best_val_loss=best_val[0], seconds_per_step=train_time / max(step, 1))
+    if cuda:
+        result.update(max_memory_allocated=int(torch.cuda.max_memory_allocated(device)),
+                      max_memory_reserved=int(torch.cuda.max_memory_reserved(device)))
 
 
 # ----------------------------------------------------------------------------- main
@@ -401,7 +419,13 @@ def main(argv=None) -> int:
         model = build_model(args.task, vocab=data.n_classes).to(device)
         ctx.set_layers(players(model))
         opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes,
-                            sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay)
+                            sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay, optim=args.optim)
+        if args.alpha is not None:                 # curvature exponent (spsa15: saturating_alpha, anp15: alpha)
+            opt.saturating_alpha = opt.alpha = float(args.alpha)
+        if args.lam is not None:                   # curvature floor (spsa15: lambda_reg) / damping (anp15: lam)
+            opt.lambda_reg = opt.lam = float(args.lam)
+        config.update(alpha_eff=getattr(opt, "alpha", getattr(opt, "saturating_alpha", None)),
+                      lam_eff=getattr(opt, "lam", getattr(opt, "lambda_reg", None)))
         config.update(n_params=count_params(model), batch_size=data.batch_size, seq_len=data.seq_len,
                       kind=data.kind, n_classes=data.n_classes, n_train=data.n_train, data_source=data.source,
                       forward_passes_per_step=int(getattr(opt, "forward_passes_per_step", 1)),
