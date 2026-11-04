@@ -70,3 +70,16 @@
   \addplot table [x=passes, y=inp,    col sep=comma] {#1};
   \addplot table [x=passes, y=danp,   col sep=comma] {#1};
 }
+
+% The nine seed-mean curves without FF (its readout loss is not a training loss).
+\newcommand{\zoomeansNoFF}[1]{%
+  \addplot table [x=time, y=bp_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=spsa_mean,   col sep=comma] {#1};
+  \addplot table [x=time, y=spsa15_mean, col sep=comma] {#1};
+  \addplot table [x=time, y=rs_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=np_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=anp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=anp15_mean,  col sep=comma] {#1};
+  \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
+}

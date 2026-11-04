@@ -778,12 +778,16 @@ def main():
 
     # ---- model-size sweep (results_scale/: -sz400k / -sz4m tags, seed 0, selected eps): per-task losses, summed loss vs size ----
     SIZE_N = {"": 40000, "-sz400k": 400000, "-sz4m": 4000000}
-    scale_loss = {}   # (size_tag, task, opt) -> best-checkpoint test loss
+    scale_loss, scale_eps = {}, {}   # (size_tag, task, opt) -> best-checkpoint test loss, selected eps (lowest val loss among the eps run at that size)
+    best_val = {}
     for (t_, o_, eps, seed, tag), r in sc.items():
         if tag in SIZE_N and seed == 0 and o_ in OPTS:
             e = best_eval(r, "val_loss")
-            if e:
+            if e and (((tag, t_, o_) not in best_val) or e["val_loss"] < best_val[(tag, t_, o_)]):
+                best_val[(tag, t_, o_)] = e["val_loss"]
                 scale_loss[(tag, t_, o_)] = e["test_loss"]
+                scale_eps[(tag, t_, o_)] = eps
+    summary["scale_eps"] = {f"{k[0]}/{k[1]}/{k[2]}": v for k, v in scale_eps.items()}
     for t_ in TASKS:
         for o_ in OPTS:
             if f"{t_}/{o_}" in summary["main"]:
@@ -803,7 +807,7 @@ def main():
             for t in range(0, 61):
                 row = [t]
                 for o_ in OPTS:
-                    r = next((r for (tt, oo, ee, ss, tg), r in sc.items() if tt == t_ and oo == o_ and tg == tag and ss == 0), None)
+                    r = sc.get((t_, o_, scale_eps.get((tag, t_, o_)), 0, tag))
                     v = interp_at(r["history"], "train_time", t * 60) if r else float("nan")
                     row += [v, v, v]
                 rows.append(row)
