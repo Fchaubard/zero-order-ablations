@@ -134,9 +134,9 @@ classic and activity-based node perturbation (96.9\,\% on MNIST and 63--65\,\% o
 CIFAR-10, against 97.0 and 69.2\,\% for backpropagation). Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
-responsible. At ten and a hundred times the parameter count (one seed) the node rules hold
-up and classic node perturbation becomes the best probe rule, while the weight-space
-rules and the curvature-weighted rules fall behind. Code and run logs:
+responsible. At ten and a hundred times the parameter count (one seed) the node rules that
+perturb every layer hold up best, while the weight-space rules, the layer-wise rule and
+the curvature-weighted rules fall behind. Code and run logs:
 \url{https://github.com/Fchaubard/zero-order-ablations}.
 \end{abstract}
 
@@ -482,8 +482,8 @@ tasks every rule but \ANP{}, \ANPb{} and \DANP{} is still descending at minute 6
   \\[0.3ex]
   \ref{zoolegendNoFF}
   \caption{Test loss against training time for every optimizer on every task at the
-  three model sizes (40k: seed mean; 400k and 4M: seed 0; $\varepsilon$ selected at
-  40k). Log $y$-axis; the 1.5-order rules are dashed in their parent's colour. \FF{} is
+  three model sizes (40k: seed mean; 400k and 4M: seed 0; $\varepsilon$ re-selected per
+  size). Log $y$-axis; the 1.5-order rules are dashed in their parent's colour. \FF{} is
   omitted: its plotted quantity would be the readout cross-entropy, which is not what it
   trains (its label-accumulation accuracy is in Table~\ref{tab:main}).}
   \label{fig:curves-all12}
@@ -552,29 +552,31 @@ pairs per step it is not (Table~\ref{tab:passes} tests 32).
 
 Figure~\ref{fig:scale} repeats the protocol at ten and a hundred times the parameter
 count (widths scaled, depth unchanged; Table~\ref{tab:scale}): every (task, method)
-pair reruns for one hour, one seed, at the $\varepsilon$ selected at 40k parameters.
-Three things happen with size (summed loss in Figure~\ref{fig:scale}). At $400$k every
-rule that works at $40$k holds or improves (\NP{} 5.54 to 5.47, \INP{} 5.36 to 5.40, the
-weight-space rules within 0.2), \NP{} reaching 98.1\,\% on MNIST and the node rules
-0.1--0.2 bits per character better on the LSTM. At $4$M, with the step size still the one
-selected at $40$k, every probe rule is worse than at $40$k, and the order changes: \NP{}
-is now the best probe rule (5.99) because it keeps improving on MNIST (0.067) while
-\INP{}, whose $\lfloor 15/L\rfloor$ draws per layer do not grow with width, falls to
-6.15, and the weight-space rules lose 0.5--0.6 (\SPSA{} 6.20, \RS{} 6.58), the
-$\sqrt{K/P}$ penalty of a hundred times more weights. \ANPb{}'s MNIST loss degrades fastest (0.16 to 0.53). \BP{}'s summed loss is inflated at both larger sizes by its
-CIFAR-10 runs, whose validation loss never returns below its initial value at
-$\eta=10^{-4}$ (the ``best checkpoint'' is near step 0); on the other three tasks \BP{} improves with size. With one seed and a step size tuned at $40$k, the uniform drop at $4$M says that
-larger models want a smaller $\eta$ at this budget, not that the rules stop working. Figure~\ref{fig:scale-tasks} shows the per-task curves, and
-Tables~\ref{tab:rsj} and~\ref{tab:passes} the follow-up runs: random search with direct
-jumps at the three sizes, and \ANPb{} with four times more pairs against \ANP{} and
-\INP{} at the same 65 passes.
+pair reruns for one hour, one seed, at the $\varepsilon$ selected at 40k, and every
+pair that stalled or collapsed there was re-screened at $\varepsilon/10$ (and $/100$ on
+MNIST at 4M), the lowest validation loss deciding.
+Three things happen with size (summed loss in Figure~\ref{fig:scale}). At $400$k
+every rule that works at $40$k holds or improves (\INP{} 5.36 to 5.38, \NP{} 5.54 to
+5.47, \ANPb{} 6.42 to 6.31, \BP{} 3.53 to 3.04), \NP{} reaching 98.1\,\% on MNIST. At
+$4$M the weight-space rules lose 0.5--0.6 (\SPSA{} 6.18, \RS{} 6.55), the $\sqrt{K/P}$
+penalty of a hundred times more weights, and \INP{} loses 0.7 because its
+$\lfloor 15/L\rfloor$ draws per layer do not grow with width; the node rules that
+perturb every layer hold best, and with the re-selected step size \DANP{} (5.88) edges
+\NP{} (5.98) and \INP{} (6.06) as the best probe rule, largely through CIFAR-10. \BP{}
+improves at every size once its step size is re-selected ($10^{-6}$ at 4M), to 2.98. At a fixed $\varepsilon$ every rule looked worse, so scale acts first on the step size. Figure~\ref{fig:scale-tasks} shows the per-task curves. Two follow-ups
+(Appendix~\ref{app:extra}): random search with direct jumps instead of the Adam
+wrapper is within noise of the protocol's version at every size (Table~\ref{tab:rsj}),
+and giving \ANPb{} four times more pairs
+(32, 65 passes) does not rescue its curvature term, its $\alpha=0$ control still wins on
+every task and \ANP{} and \INP{} at the same 65 passes beat both (Table~\ref{tab:passes}).
 
 \begin{figure}[t]
   \centering
   \input{figures/fig_scale}
   \caption{Test loss summed over the four tasks against model size (log scale), one
-  seed per point at the $\varepsilon$ selected at 40k parameters; the 40k points are
-  the seed means of Table~\ref{tab:main}.}
+  seed per point; $\varepsilon$ selected at 40k and re-screened one or two decades down
+  where a run stalled or collapsed; the 40k points are the seed means of
+  Table~\ref{tab:main}.}
   \label{fig:scale}
 \end{figure}
 
@@ -694,8 +696,8 @@ Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting it
 curvature exponent to zero. Per forward pass the node rules reach
 backpropagation's best MNIST loss with about ten times more passes and never reach its
 CIFAR-10 loss; per unit of time the best probe rule is 0.1 and 4 points behind, and on the language models every zero-order rule is still about one
-bit per character behind after an hour, every curve still descending. At a hundred times the size the same ordering holds with classic node perturbation on
-top and weight-space perturbation falling behind. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
+bit per character behind after an hour, every curve still descending. At a hundred times the size the node rules that perturb every layer lead and
+weight-space perturbation falls behind. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
 
 % ====================================================================================
 \bibliographystyle{plainnat}
@@ -1206,8 +1208,8 @@ about three quarters of that.
 \end{table}
 
 \begin{table}[ht]
-  \caption{Model-size sweep: best-checkpoint test loss per task and summed, at the
-  $\varepsilon$ selected at 40k parameters, one seed (the 40k rows are the seed means
+  \caption{Model-size sweep: best-checkpoint test loss per task and summed, one seed,
+  at the $\varepsilon$ with the lowest validation loss among those run at that size (the 40k rows are the seed means
   of Table~\ref{tab:main}). Widths: MLP hidden (400, 240) and (1600, 1700); ConvNet
   channels (48, 96, 96) and (128, 256, 256); LSTM hidden 265 and 870; Transformer width
   152 and 496.}
@@ -1224,14 +1226,14 @@ about three quarters of that.
   \\[0.5ex]
   \ref{zoolegendX}
   \caption{Per-task best-checkpoint test loss against model size (one seed at 400k and
-  4M, seed mean at 40k; $\varepsilon$ selected at 40k).}
+  4M, seed mean at 40k; $\varepsilon$ re-selected per size).}
   \label{fig:scale-tasks}
 \end{figure}
 
 \begin{table}[ht]
   \caption{Follow-up runs (seed 0, 1 h). Top: random search through Adam (protocol)
   against the direct jump $\btheta\leftarrow\btheta+\sigma\bz_{k^{*}}$ at the three
-  model sizes. Cells marked ``--'' were still running at the time of this build.}
+  model sizes. }
   \label{tab:rsj}
   \centering
   \scriptsize
@@ -1242,8 +1244,7 @@ about three quarters of that.
   \caption{Follow-up runs (seed 0, 1 h): 65 forward passes per step at Adam
   $\eta=10^{-4}$, $\sigma=10^{-3}$ (1.5-ANP with 32 antithetic pairs and fp64 losses,
   with its $\alpha=0$ control; ANP and INP with 64 noisy passes) against the 17- and
-  16-pass tied-protocol selections of Table~\ref{tab:main}. Cells marked ``--'' were
-  still running at the time of this build.}
+  16-pass tied-protocol selections of Table~\ref{tab:main}.}
   \label{tab:passes}
   \centering
   \scriptsize

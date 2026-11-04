@@ -602,7 +602,8 @@ def main():
                 evs = [best_eval(r, "val_loss") for r in runs]
                 rs_cell = (ms([e["test_loss"] for e in evs]) + " (" + (ms([100 * e["test_acc"] for e in evs], 1) if task in IMAGE else ms([e["test_loss"] / LN2 for e in evs], 2)) + ")") if runs else "--"
             else:
-                r = next((r for (t_, o_, e_, s_, tg), r in sc.items() if t_ == task and o_ == "rs" and tg == tag), None)
+                cands = [r for (t_, o_, e_, s_, tg), r in sc.items() if t_ == task and o_ == "rs" and tg == tag and s_ == 0 and best_eval(r, "val_loss")]
+                r = min(cands, key=lambda r: best_eval(r, "val_loss")["val_loss"]) if cands else None
                 rs_cell = _bc(r, task) if r else "--"
             rj = next((r for (t_, o_, e_, s_, tg), r in v2.items() if t_ == task and o_ == "rsj" and tg == tag), None)
             rj_cell = _bc(rj, task) if rj else "--"
