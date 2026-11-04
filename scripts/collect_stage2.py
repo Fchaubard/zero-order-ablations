@@ -796,6 +796,18 @@ def main():
             row.append(sum(vals) if all(v is not None for v in vals) else float("nan"))
         rows.append(row)
     write_csv(os.path.join(data_dir, "scale.csv"), ["params", *OPTS], rows)
+    # test loss vs minute for the larger sizes (seed 0), same column layout as curve2_{task}.csv
+    for tag, lab in (("-sz400k", "400k"), ("-sz4m", "4m")):
+        for t_ in TASKS:
+            rows = []
+            for t in range(0, 61):
+                row = [t]
+                for o_ in OPTS:
+                    r = next((r for (tt, oo, ee, ss, tg), r in sc.items() if tt == t_ and oo == o_ and tg == tag and ss == 0), None)
+                    v = interp_at(r["history"], "train_time", t * 60) if r else float("nan")
+                    row += [v, v, v]
+                rows.append(row)
+            write_csv(os.path.join(data_dir, f"curve2_{t_}_{lab}.csv"), ["time", *[f"{o}_{k}" for o in OPTS for k in ("mean", "min", "max")]], rows)
     for t_ in TASKS:   # per-task curves for the four-panel appendix figure
         write_csv(os.path.join(data_dir, f"scale_{t_}.csv"), ["params", *OPTS],
                   [[SIZE_N[tag], *[scale_loss.get((tag, t_, o_), float("nan")) for o_ in OPTS]] for tag in ("", "-sz400k", "-sz4m")])

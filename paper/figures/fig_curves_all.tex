@@ -1,0 +1,45 @@
+% Figure: test loss vs training minutes for every optimizer, 4 tasks x 3 model sizes (12 panels).
+% Data: data/curve2_{task}.csv (40k, seed mean) and data/curve2_{task}_{400k,4m}.csv (seed 0).
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=4 by 3, horizontal sep=0.75cm, vertical sep=0.9cm},
+      width=0.285\linewidth, height=3.0cm,
+      cycle list name=zoocycleX,
+      ymode=log, log ticks with fixed point,
+      xmin=0, xmax=60, xtick={0, 20, 40, 60},
+      tick label style={font=\tiny},
+      label style={font=\scriptsize},
+      title style={font=\scriptsize, yshift=-1.2ex},
+      every axis plot/.append style={line width=0.55pt, mark repeat=12, mark phase=6, mark size=1.1pt},
+      unbounded coords=jump,
+      grid=major, grid style={gray!20},
+    ]
+    % ---- 40k
+    \nextgroupplot[title={MNIST / MLP, 40k}, ymin=0.05, ymax=3, ylabel={test loss}]
+    \zoomeansX{data/curve2_mlp_mnist.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, 40k}, ymin=0.8, ymax=3]
+    \zoomeansX{data/curve2_conv_cifar10.csv}
+    \nextgroupplot[title={PTB / char-LSTM, 40k}, ymin=1, ymax=5]
+    \zoomeansX{data/curve2_lstm_ptb.csv}
+    \nextgroupplot[title={PTB / char-Transformer, 40k}, ymin=1, ymax=5]
+    \zoomeansX{data/curve2_transformer_ptb.csv}
+    % ---- 400k
+    \nextgroupplot[title={MNIST / MLP, 400k}, ymin=0.05, ymax=3, ylabel={test loss}]
+    \zoomeansX{data/curve2_mlp_mnist_400k.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, 400k}, ymin=0.8, ymax=3]
+    \zoomeansX{data/curve2_conv_cifar10_400k.csv}
+    \nextgroupplot[title={PTB / char-LSTM, 400k}, ymin=1, ymax=5]
+    \zoomeansX{data/curve2_lstm_ptb_400k.csv}
+    \nextgroupplot[title={PTB / char-Transformer, 400k}, ymin=1, ymax=5]
+    \zoomeansX{data/curve2_transformer_ptb_400k.csv}
+    % ---- 4M
+    \nextgroupplot[title={MNIST / MLP, 4M}, ymin=0.05, ymax=3, ylabel={test loss}, xlabel={training time (min)}]
+    \zoomeansX{data/curve2_mlp_mnist_4m.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, 4M}, ymin=0.8, ymax=3, xlabel={training time (min)}]
+    \zoomeansX{data/curve2_conv_cifar10_4m.csv}
+    \nextgroupplot[title={PTB / char-LSTM, 4M}, ymin=1, ymax=5, xlabel={training time (min)}]
+    \zoomeansX{data/curve2_lstm_ptb_4m.csv}
+    \nextgroupplot[title={PTB / char-Transformer, 4M}, ymin=1, ymax=5, xlabel={training time (min)}]
+    \zoomeansX{data/curve2_transformer_ptb_4m.csv}
+  \end{groupplot}
+\end{tikzpicture}
