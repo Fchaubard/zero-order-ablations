@@ -1,0 +1,24 @@
+% Figure: per-task best-checkpoint test loss against model size, one line per method.  Data: data/scale_{task}.csv
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=4 by 1, horizontal sep=0.9cm},
+      width=0.29\linewidth, height=4.2cm,
+      xmode=log, log basis x=10, xtick={40000, 400000, 4000000}, xticklabels={40k, 400k, 4M},
+      xlabel={parameters}, ylabel={test loss},
+      cycle list name=zoocycleX,
+      every axis plot/.append style={line width=0.7pt, mark size=1.6pt, mark options={solid}},
+      unbounded coords=jump,
+      tick label style={font=\scriptsize}, label style={font=\scriptsize},
+      title style={font=\small, yshift=-1ex},
+      grid=major, grid style={gray!25},
+    ]
+    \nextgroupplot[title={MNIST / MLP}, ymode=log, log ticks with fixed point]
+    \zooplotsX{params}{data/scale_mlp_mnist.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet}, ylabel={}]
+    \zooplotsX{params}{data/scale_conv_cifar10.csv}
+    \nextgroupplot[title={PTB / char-LSTM}, ylabel={}]
+    \zooplotsX{params}{data/scale_lstm_ptb.csv}
+    \nextgroupplot[title={PTB / char-Transformer}, ylabel={}]
+    \zooplotsX{params}{data/scale_transformer_ptb.csv}
+  \end{groupplot}
+\end{tikzpicture}

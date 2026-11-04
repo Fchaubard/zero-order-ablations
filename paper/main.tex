@@ -580,7 +580,10 @@ number of units grows. \BP{}'s summed loss is inflated at both larger sizes by i
 CIFAR-10 runs, whose validation loss never returns below its initial value at
 $\eta=10^{-4}$ (the ``best checkpoint'' is near step 0); on the other three tasks \BP{}
 improves with size (1.02 and 1.07 bits per character at $4$M). With one seed and a step size tuned at $40$k, the uniform drop at $4$M says that
-larger models want a smaller $\eta$ at this budget, not that the rules stop working.
+larger models want a smaller $\eta$ at this budget, not that the rules stop working. Figure~\ref{fig:scale-tasks} shows the per-task curves, and
+Tables~\ref{tab:rsj} and~\ref{tab:passes} the follow-up runs: random search with direct
+jumps at the three sizes, and \ANPb{} with four times more pairs against \ANP{} and
+\INP{} at the same 65 passes.
 
 \begin{figure}[t]
   \centering
@@ -1213,6 +1216,38 @@ about three quarters of that.
   \scriptsize
   \setlength{\tabcolsep}{3pt}
   \resizebox{\linewidth}{!}{\input{tables/scale_table}}
+\end{table}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_scale_tasks}
+  \\[0.5ex]
+  \ref{zoolegendX}
+  \caption{Per-task best-checkpoint test loss against model size (one seed at 400k and
+  4M, seed mean at 40k; $\varepsilon$ selected at 40k).}
+  \label{fig:scale-tasks}
+\end{figure}
+
+\begin{table}[ht]
+  \caption{Follow-up runs (seed 0, 1 h). Top: random search through Adam (protocol)
+  against the direct jump $\btheta\leftarrow\btheta+\sigma\bz_{k^{*}}$ at the three
+  model sizes. Cells marked ``--'' were still running at the time of this build.}
+  \label{tab:rsj}
+  \centering
+  \scriptsize
+  \input{tables/rsj_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Follow-up runs (seed 0, 1 h): 65 forward passes per step at Adam
+  $\eta=10^{-4}$, $\sigma=10^{-3}$ (1.5-ANP with 32 antithetic pairs and fp64 losses,
+  with its $\alpha=0$ control; ANP and INP with 64 noisy passes) against the 17- and
+  16-pass tied-protocol selections of Table~\ref{tab:main}. Cells marked ``--'' were
+  still running at the time of this build.}
+  \label{tab:passes}
+  \centering
+  \scriptsize
+  \resizebox{\linewidth}{!}{\input{tables/passes_table}}
 \end{table}
 
 \begin{figure}[ht]
