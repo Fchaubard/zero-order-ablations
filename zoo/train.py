@@ -86,6 +86,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--lam", type=float, default=None, help="curvature floor / damping of spsa15 / anp15 (default: 1.0 / 1e-3)")
     p.add_argument("--loss64", action="store_true", help="spsa15 / anp15: evaluate the losses in fp64 (forward stays fp32)")
     p.add_argument("--damp", type=float, default=None, help="anp15 on the LSTM: damping of the perturbed recurrent state (spec: 0.5)")
+    p.add_argument("--lr-decor", type=float, default=None, help="danp: decorrelation rate (default 1e-3)")
     p.add_argument("--optim", choices=["adam", "sgd"], default="adam",
                    help="update applied to the estimate: adam (protocol) or plain SGD without momentum (1.5-order sources)")
     p.add_argument("--save-ckpt", action=argparse.BooleanOptionalAction, default=True,
@@ -112,6 +113,8 @@ def run_tag(args) -> str:
         tag += "-l64"
     if getattr(args, "damp", None) is not None:
         tag += f"-d{fmt_lr(args.damp)}"
+    if getattr(args, "lr_decor", None) is not None:
+        tag += f"-dr{fmt_lr(args.lr_decor)}"
     if getattr(args, "optim", "adam") != "adam":
         tag += f"-{args.optim}"
     tag += SIZE_TAG.get(getattr(args, "size", "s"), "")
@@ -428,6 +431,7 @@ def main(argv=None) -> int:
         ctx.set_layers(players(model))
         opt = get_optimizer(args.opt, model, args.lr, data.kind, data.n_classes,
                             sigma=args.sigma, n_passes=args.passes, weight_decay=args.weight_decay, optim=args.optim,
+                            **({'lr_decor': args.lr_decor} if args.lr_decor is not None else {}),
                             loss64=args.loss64, damp=args.damp)
         if args.alpha is not None:                 # curvature exponent (spsa15: saturating_alpha, anp15: alpha)
             opt.saturating_alpha = opt.alpha = float(args.alpha)

@@ -178,6 +178,7 @@ def main():
     ap.add_argument("--warmup-steps", type=int, default=2000)
     ap.add_argument("--precision-only", action="store_true", help="only the fp32 / tf32 / fp64 check (trained state, P=1024)")
     ap.add_argument("--device", default=None)
+    ap.add_argument("--size", default="s", choices=("s", "m", "l"), help="model size (zoo.models.SIZES)")
     ap.add_argument("--passes", default=None, help="comma list overriding the pass counts (tests)")
     ap.add_argument("--sigmas", default=None, help="comma list overriding the probe scales (tests)")
     ap.add_argument("--estimators", default=None, help="comma list overriding the estimators (tests)")
@@ -200,7 +201,7 @@ def main():
         for state in (["trained"] if a.precision_only else ["init", "trained"]):
             set_precision("fp32")
             torch.manual_seed(0)
-            model = build_model(task, vocab=data.n_classes).to(device)
+            model = build_model(task, vocab=data.n_classes, size=args.size).to(device)
             ctx.set_layers(players(model))
             if state == "trained":
                 warm_up(model, data, a.warmup_steps)
