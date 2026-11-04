@@ -201,7 +201,7 @@ def main():
         for state in (["trained"] if a.precision_only else ["init", "trained"]):
             set_precision("fp32")
             torch.manual_seed(0)
-            model = build_model(task, vocab=data.n_classes, size=args.size).to(device)
+            model = build_model(task, vocab=data.n_classes, size=a.size).to(device)
             ctx.set_layers(players(model))
             if state == "trained":
                 warm_up(model, data, a.warmup_steps)
