@@ -1,0 +1,29 @@
+# Follow-up (2026-11-04): direct-jump random search at the RS eps at all three sizes; 1.5-ANP with 32 pairs (65 passes) vs ANP / INP at 65 passes, fp64 losses, sigma 1e-3, Adam lr 1e-4, and the alpha = 0 control; 1 h, seed 0
+--task mlp_mnist --opt rsj --lr 0.0001 --size s --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rsj --lr 0.0001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt rsj --lr 0.0001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rsj --lr 0.0001 --size s --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rsj --lr 0.0001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt rsj --lr 0.0001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rsj --lr 0.001 --size s --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rsj --lr 0.001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt rsj --lr 0.001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rsj --lr 0.001 --size s --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rsj --lr 0.001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt rsj --lr 0.001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt anp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt anp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt anp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp15 --lr 0.0001 --sigma 0.001 --loss64 --passes 65 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt anp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp --lr 0.0001 --sigma 0.001 --passes 65 --seed 0 --budget 3600 --eval-every 60 --out results_v2
