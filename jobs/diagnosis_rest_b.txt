@@ -1,0 +1,11 @@
+# Diagnosis sweep (2026-11-04): DANP decorrelation rate; 4M sequence models with eps x10 / /10, SGD and 129 passes; 1 h, seed 0
+--task lstm_ptb --opt np --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task lstm_ptb --opt spsa --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task lstm_ptb --opt spsa15 --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt np --lr 0.001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt spsa --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt spsa15 --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp --lr 0.01 --size l --optim sgd --sigma 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt spsa --lr 0.01 --size l --optim sgd --sigma 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp --lr 0.001 --size l --passes 129 --seed 0 --budget 3600 --eval-every 60 --out results_scale
