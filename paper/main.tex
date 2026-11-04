@@ -571,10 +571,30 @@ damping gains 0.1 on the LSTM (Table~\ref{tab:x}).
   \resizebox{\linewidth}{!}{\input{tables/x_table}}
 \end{table}
 
+\subsection{Model size}
+\label{sec:scale}
+
+Figure~\ref{fig:scale} repeats the protocol at ten and a hundred times the parameter
+count (widths scaled, depth unchanged; Table~\ref{tab:scale}): every (task, method)
+pair reruns for one hour, one seed, at the $\varepsilon$ selected at 40k parameters.
+\TODO{Fill when the 4M runs complete (about 04:30 UTC): which rules gain from width,
+whether the weight-space rules fall behind as $P$ grows, and that \BP{}'s 400k CIFAR-10
+score is inflated by its validation loss never returning below the initial value at
+$\eta=10^{-4}$.}
+
+\begin{figure}[t]
+  \centering
+  \input{figures/fig_scale}
+  \caption{Test loss summed over the four tasks against model size (log scale), one
+  seed per point at the $\varepsilon$ selected at 40k parameters; the 40k points are
+  the seed means of Table~\ref{tab:main}. Missing points are runs still in progress.}
+  \label{fig:scale}
+\end{figure}
+
 \subsection{Estimator quality}
 \label{sec:align}
 
-Figure~\ref{fig:align} measures, on one fixed batch per task, the cosine between each
+Figure~\ref{fig:align} (Appendix~\ref{app:extra}) measures, on one fixed batch per task, the cosine between each
 estimator and the true gradient against the number of forward passes spent on it,
 after a 2000-step backpropagation warm-up, in fp32 on the GPU (Appendix~\ref{app:align}). On the MLP the node-perturbation rules obtain from the
 protocol's 16 passes a direction with cosine 0.4--0.6 to the gradient, rising to
@@ -592,16 +612,6 @@ fp32, whereas \ANPb{}'s second difference reaches the rounding floor (0.74 at
 $10^{-2}$ to 0.46 at $10^{-5}$ on the MLP, Table~\ref{tab:alignsigma}), which is why it needs $\sigma\ge10^{-3}$
 (Section~\ref{sec:own}); TF32 lowers the ConvNet cosines (Table~\ref{tab:precision}), so stage 2 ran in fp32.
 
-\begin{figure}[t]
-  \centering
-  \input{figures/fig_align}
-  \\[0.5ex]
-  \ref{zoolegendAlign}
-  \caption{Cosine between each estimator and the true gradient of one batch (whole
-  parameter vector) versus the number of forward passes spent, $\sigma=10^{-3}$, after
-  a 2000-step backpropagation warm-up. The protocol spends 16--17 passes per step.}
-  \label{fig:align}
-\end{figure}
 
 \subsection{Analysis}
 \label{sec:analysis}
@@ -1202,6 +1212,30 @@ about three quarters of that.
   \scriptsize
   \resizebox{\linewidth}{!}{\input{tables/untied_rep_table}}
 \end{table}
+
+\begin{table}[ht]
+  \caption{Model-size sweep: best-checkpoint test loss per task and summed, at the
+  $\varepsilon$ selected at 40k parameters, one seed (the 40k rows are the seed means
+  of Table~\ref{tab:main}). Widths: MLP hidden (400, 240) and (1600, 1700); ConvNet
+  channels (48, 96, 96) and (128, 256, 256); LSTM hidden 265 and 870; Transformer width
+  152 and 496.}
+  \label{tab:scale}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \resizebox{\linewidth}{!}{\input{tables/scale_table}}
+\end{table}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_align}
+  \\[0.5ex]
+  \ref{zoolegendAlign}
+  \caption{Cosine between each estimator and the true gradient of one batch (whole
+  parameter vector) versus the number of forward passes spent, $\sigma=10^{-3}$, after
+  a 2000-step backpropagation warm-up. The protocol spends 16--17 passes per step.}
+  \label{fig:align}
+\end{figure}
 
 \paragraph{Estimator alignment.}
 Figure~\ref{fig:align} measures, on one fixed batch per task, the cosine between each
