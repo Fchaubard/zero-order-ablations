@@ -563,8 +563,7 @@ the weight-space rules stay within 0.3 of it. The step size matters more than th
 estimator: at the $\varepsilon$ selected at $40$k every probe rule on the $4$M
 Transformer plateaued from minute 10 at 2.5--2.9; one decade down \SPSA{}, \INP{} and
 \SPSAb{} reach 2.14--2.17, as good as at $40$k, one decade up they diverge, and plain
-SGD or 128 passes at the old $\varepsilon$ do not help. The $4$M LSTM is
-budget-limited (16--33k steps per hour, every rule still descending). Alignment does degrade with width (Table~\ref{tab:align4m}: tenfold for the
+SGD or 128 passes at the old $\varepsilon$ do not help. The $4$M LSTM is budget-limited (16--33k steps an hour). Alignment does degrade with width (Table~\ref{tab:align4m}: tenfold for the
 weight-space rules, three- to fivefold for the node rules). Figure~\ref{fig:scale-tasks} shows the per-task curves. Two follow-ups
 (Appendix~\ref{app:extra}): random search with direct jumps instead of the Adam
 wrapper is within noise of the protocol's version at every size (Table~\ref{tab:rsj}),
@@ -637,8 +636,8 @@ The measured activity difference (\ANP{}) is worth nothing over \NP{} at the rig
 step size (within seed noise on both image tasks), but on the recurrent and attention models its normalisation by a squared
 activity difference summed over 25k--48k unit-positions, whose perturbations propagate
 through shared weights, produces updates of erratic size (the spikes in
-Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution has only $\lfloor 15/L\rfloor$ draws per
-layer, yet removes all cross-layer noise and is never worse than third on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best checkpoint at minute 5, 63.0\,\%) but
+Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution removes all cross-layer noise and is never
+worse than third on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best checkpoint at minute 5, 63.0\,\%) but
 drifts to 1.36 by minute 60, is behind on MNIST (94.0\,\%) and on the sequence tasks
 (3.80 and 3.72 bits per character), and was the screening's most fragile rule; its drift after the early peak comes
 from the fixed decorrelation rate (Appendix~\ref{app:extra}: $\eta_R=10^{-4}$ removes it
