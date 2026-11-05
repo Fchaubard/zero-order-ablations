@@ -1,0 +1,8 @@
+# DANP decorrelation-rate reruns (node 13's GPU died mid-run): eta_R = 1e-4 at the selected eps, 1 h, seed 0
+--task mlp_mnist --opt danp --lr 0.001 --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.001 --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt danp --lr 0.001 --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt danp --lr 0.01 --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt danp --lr 0.001 --lr-decor 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt danp --lr 0.0001 --size l --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task conv_cifar10 --opt danp --lr 0.001 --size m --lr-decor 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_scale
