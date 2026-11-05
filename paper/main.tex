@@ -134,9 +134,9 @@ classic and activity-based node perturbation (96.9\,\% on MNIST and 63--65\,\% o
 CIFAR-10, against 97.0 and 69.2\,\% for backpropagation). Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
-responsible. At ten and a hundred times the parameter count (one seed) the node rules that
-perturb every layer hold up best, while the weight-space rules, the layer-wise rule and
-the curvature-weighted rules fall behind. Code and run logs:
+responsible. At ten and a hundred times the parameter count (one seed) iterative node
+perturbation stays the best probe rule, the gap to backpropagation widens, and the
+step size selected at the small size has to shrink with width. Code and run logs:
 \url{https://github.com/Fchaubard/zero-order-ablations}.
 \end{abstract}
 
@@ -555,15 +555,17 @@ count (widths scaled, depth unchanged; Table~\ref{tab:scale}): every (task, meth
 pair reruns for one hour, one seed, at the $\varepsilon$ selected at 40k, and every
 pair that stalled or collapsed there was re-screened at $\varepsilon/10$ (and $/100$ on
 MNIST at 4M), the lowest validation loss deciding.
-Three things happen with size (summed loss in Figure~\ref{fig:scale}). At $400$k
-every rule that works at $40$k holds or improves (\INP{} 5.36 to 5.38, \NP{} 5.54 to
-5.47, \ANPb{} 6.42 to 6.31, \BP{} 3.53 to 3.04), \NP{} reaching 98.1\,\% on MNIST. At
-$4$M the weight-space rules lose 0.5--0.6 (\SPSA{} 6.18, \RS{} 6.55), the $\sqrt{K/P}$
-penalty of a hundred times more weights, and \INP{} loses 0.7 because its
-$\lfloor 15/L\rfloor$ draws per layer do not grow with width; the node rules that
-perturb every layer hold best, and with the re-selected step size \DANP{} (5.88) edges
-\NP{} (5.98) and \INP{} (6.06) as the best probe rule, largely through CIFAR-10. \BP{}
-improves at every size once its step size is re-selected ($10^{-6}$ at 4M), to 2.98. At a fixed $\varepsilon$ every rule looked worse, so scale acts first on the step size. Figure~\ref{fig:scale-tasks} shows the per-task curves. Two follow-ups
+At $400$k every rule that works at $40$k holds or improves (\INP{} 5.36 to 5.38, \NP{}
+5.54 to 5.47, \BP{} 3.53 to 3.04; summed loss, Figure~\ref{fig:scale}). At $4$M the probe
+rules lose 0.2--0.6 (\INP{} 5.52, \SPSA{} 5.84, \DANP{} 5.88, \NP{} 5.91, \RS{} 6.55)
+while \BP{} keeps improving (2.98): the gap widens, \INP{} stays the best probe rule and
+the weight-space rules stay within 0.3 of it. The step size matters more than the
+estimator: at the $\varepsilon$ selected at $40$k every probe rule on the $4$M
+Transformer plateaued from minute 10 at 2.5--2.9; one decade down \SPSA{}, \INP{} and
+\SPSAb{} reach 2.14--2.17, as good as at $40$k, one decade up they diverge, and plain
+SGD or 128 passes at the old $\varepsilon$ do not help. The $4$M LSTM is
+budget-limited (16--33k steps per hour, every rule still descending). Alignment does degrade with width (Table~\ref{tab:align4m}: tenfold for the
+weight-space rules, three- to fivefold for the node rules). Figure~\ref{fig:scale-tasks} shows the per-task curves. Two follow-ups
 (Appendix~\ref{app:extra}): random search with direct jumps instead of the Adam
 wrapper is within noise of the protocol's version at every size (Table~\ref{tab:rsj}),
 and giving \ANPb{} four times more pairs
@@ -638,7 +640,9 @@ through shared weights, produces updates of erratic size (the spikes in
 Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution has only $\lfloor 15/L\rfloor$ draws per
 layer, yet removes all cross-layer noise and is never worse than third on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best checkpoint at minute 5, 63.0\,\%) but
 drifts to 1.36 by minute 60, is behind on MNIST (94.0\,\%) and on the sequence tasks
-(3.80 and 3.72 bits per character), and was the screening's most fragile rule.
+(3.80 and 3.72 bits per character), and was the screening's most fragile rule; its drift after the early peak comes
+from the fixed decorrelation rate (Appendix~\ref{app:extra}: $\eta_R=10^{-4}$ removes it
+on MNIST and gives 72.5\,\% on CIFAR-10 at $4$M, $10^{-5}$ collapses).
 
 \paragraph{Sequence models and forward-forward.}
 Against count models on the training text (unigram 4.32 bits/char, bigram 3.31,
@@ -665,8 +669,8 @@ stage 2 reports the best validation checkpoint as primary and the final value fo
 stability. A learning-rate schedule, not in the protocol, would be the other remedy.
 
 \paragraph{Screening, budget and scale.}
-The selection rests on one seed per $\varepsilon$, so the error bars are conditional
-on $\varepsilon^{\ast}$ and exclude selection noise. The budget is identical for all methods and the models are small; Section~\ref{sec:scale}
+The selection rests on one seed per $\varepsilon$, so the error bars exclude
+selection noise. The budget is identical for all methods and the models are small; Section~\ref{sec:scale}
 shows the weight-space rules losing ground with $P$.
 Wall-clock comparisons reward implementations that batch probes well and depend on
 the host (eight runs at a time here); the equal-pass view (Figure~\ref{fig:passes}) is
@@ -696,8 +700,8 @@ Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting it
 curvature exponent to zero. Per forward pass the node rules reach
 backpropagation's best MNIST loss with about ten times more passes and never reach its
 CIFAR-10 loss; per unit of time the best probe rule is 0.1 and 4 points behind, and on the language models every zero-order rule is still about one
-bit per character behind after an hour, every curve still descending. At a hundred times the size the node rules that perturb every layer lead and
-weight-space perturbation falls behind. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
+bit per character behind after an hour, every curve still descending. At a hundred times the size the same ordering holds once the step size is
+re-selected, and the gap to backpropagation widens. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
 
 % ====================================================================================
 \bibliographystyle{plainnat}
@@ -1540,6 +1544,15 @@ scale, the per-layer alignment and the precision check.
   \centering
   \scriptsize
   \input{tables/align_sigma_table}
+\end{table}
+
+\begin{table}[ht]
+  \caption{Gradient alignment at $40$k and $4$M parameters on the sequence models
+  (whole-model cosine with the true gradient, $\sigma=10^{-3}$, trained state).}
+  \label{tab:align4m}
+  \centering
+  \scriptsize
+  \input{tables/align4m_table}
 \end{table}
 
 \begin{table}[ht]
