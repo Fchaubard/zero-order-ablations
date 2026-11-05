@@ -172,8 +172,8 @@ class CurvatureANP(_NodePerturbation):
                 raise RuntimeError(f"anp15: cannot map layer {li} activity shapes {[tuple(t.shape) for t in a]} onto tokens")
         return out
 
-    def _noisy_pass15(self, x, y, sign: float, bank):
-        ctx.mode, ctx.sigma, ctx.noise_layer, ctx.sign, ctx.xi_bank = "noisy", self.eps, None, sign, bank
+    def _noisy_pass15(self, x, y, sign: float, bank, noise_layer=None):
+        ctx.mode, ctx.sigma, ctx.noise_layer, ctx.sign, ctx.xi_bank = "noisy", self.eps, noise_layer, sign, bank
         ctx.damp = self.damp
         for layer in self.layers:
             layer.xi, layer.a_noisy = [], []
@@ -221,16 +221,32 @@ class CurvatureANP(_NodePerturbation):
                     n_units -= (len(layer.a) - 1) * (layer.a[0].numel() // N)
         units = float(n_units)
         n_units_t = l0.new_tensor(units)
+        if not hasattr(self, "_layer_units"):
+            self._layer_units = []
+            for li, layer in enumerate(self.layers):
+                lay = self._layout[li]
+                if lay == "ex":
+                    self._layer_units.append(sum(a.numel() // N for a in layer.a))
+                elif lay == "tok":
+                    self._layer_units.append(sum(a.numel() // (N * T) for a in layer.a))
+                elif lay == "call":
+                    self._layer_units.append(layer.a[0].numel() // N)
+                else:
+                    self._layer_units.append(sum(a.numel() // T for a in layer.a))
 
         abs_dloss = l0.new_zeros(())
         curv_sum = l0.new_zeros(())
         inv = 1.0 / (N * (T or 1) * K)                           # batch-mean over units, mean over pairs
         try:
-            for _ in range(K):
-                lp, a_plus = self._noisy_pass15(x, y, +1.0, None)
+            for k in range(K):
+                nl = self._pair_layer(k)                               # None (1.5-ANP) or one layer index (1.5-INP)
+                lp, a_plus = self._noisy_pass15(x, y, +1.0, None, nl)
                 bank = [list(layer.xi) for layer in self.layers]
-                lm, a_minus = self._noisy_pass15(x, y, -1.0, bank)
+                lm, a_minus = self._noisy_pass15(x, y, -1.0, bank, nl)
                 D = [[ap - am for ap, am in zip(Lp, Lm)] for Lp, Lm in zip(a_plus, a_minus)]
+                if nl is not None:                                     # attribute only to the perturbed layer
+                    D = [Dl if li == nl else [torch.zeros_like(d) for d in Dl] for li, Dl in enumerate(D)]
+                    n_units_t = l0.new_tensor(float(self._layer_units[nl]))
                 # ---- ||d_u||^2 per attribution unit ----
                 sq = torch.zeros_like(l0)
                 for li, Dl in enumerate(D):
@@ -280,3 +296,27 @@ class CurvatureANP(_NodePerturbation):
         if self._last_curv is not None:
             d["curvature"] = float(self._last_curv)
         return d
+
+    def _pair_layer(self, k):
+        """Which layer pair k perturbs: None = every layer (1.5-ANP)."""
+        return None
+
+
+@register("inp15")
+class CurvatureINP(CurvatureANP):
+    """1.5-INP: the 1.5-ANP estimator with INP's one-layer-at-a-time probing.  Each of the 8
+    antithetic pairs per step perturbs a single layer, the layers being visited round-robin across
+    steps (so every depth keeps the 17-pass budget); the loss difference of a pair is attributed to
+    the perturbed layer's units only, with that layer's unit count as N."""
+    variant = "inp15"
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self._cursor = 0
+
+    def _pair_layer(self, k):
+        L = len(self.layers)
+        if k == 0:
+            self._start = self._cursor
+            self._cursor = (self._cursor + self.n_pairs) % L
+        return (self._start + k) % L
