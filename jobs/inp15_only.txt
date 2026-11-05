@@ -1,0 +1,9 @@
+# 1.5-INP (2026-11-05): the 1.5-ANP estimator with INP's layer-wise probing, at INP's selected eps, fp64 losses, alpha 0.5 and 0; plus the DANP decorrelation-rate reruns; 1 h, seed 0
+--task mlp_mnist --opt inp15 --lr 0.0001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp15 --lr 0.0001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 0.0001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 0.0001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp15 --lr 0.001 --loss64 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp15 --lr 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
