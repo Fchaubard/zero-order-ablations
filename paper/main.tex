@@ -134,7 +134,8 @@ classic and activity-based node perturbation (96.9\,\% on MNIST and 63--65\,\% o
 CIFAR-10, against 97.0 and 69.2\,\% for backpropagation). Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
-responsible. At ten and a hundred times the parameter count (one seed) iterative node
+responsible; its estimator driven by INP's layer-wise probing (1.5-INP, $\alpha=0$) ties
+INP on three tasks and is the best probe rule on the LSTM. At ten and a hundred times the parameter count (one seed) iterative node
 perturbation stays the best probe rule, the gap to backpropagation widens, and the
 step size selected at the small size has to shrink with width. Code and run logs:
 \url{https://github.com/Fchaubard/zero-order-ablations}.
@@ -544,7 +545,12 @@ models (Table~\ref{tab:x}) and, under its own SGD recipe, on two of the four tas
 other differences to \ANP{} (central differences, per-unit normalisation, token-local
 credit assignment) are not separated by any run here. A curvature term can only help
 where its estimate is less noisy than the gradient estimate it rescales, which at 8
-pairs per step it is not (Table~\ref{tab:passes} tests 32).
+pairs per step it is not (Table~\ref{tab:passes} tests 32). The converse, \ANPb{}'s estimator with \INP{}'s one-layer-at-a-time probing
+(``1.5-INP'', eight pairs per step cycling over layers), is the one new rule here: at
+$\alpha=0$ it ties \INP{} on MNIST and the Transformer (0.103 and 2.174 against 0.107 and
+2.176), beats it on the LSTM (1.907, 2.75 bits per character, the best probe result there)
+and loses on CIFAR-10 (1.152 against 1.055); $\alpha=0.5$ is worse on every task
+(Table~\ref{tab:inp15}).
 
 
 \subsection{Model size}
@@ -639,9 +645,9 @@ through shared weights, produces updates of erratic size (the spikes in
 Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution removes all cross-layer noise and is never
 worse than third on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best checkpoint at minute 5, 63.0\,\%) but
 drifts to 1.36 by minute 60, is behind on MNIST (94.0\,\%) and on the sequence tasks
-(3.80 and 3.72 bits per character), and was the screening's most fragile rule; its drift after the early peak comes
-from the fixed decorrelation rate (Appendix~\ref{app:extra}: $\eta_R=10^{-4}$ removes it
-on MNIST and gives 72.5\,\% on CIFAR-10 at $4$M, $10^{-5}$ collapses).
+(3.80 and 3.72 bits per character), and was the screening's most fragile rule; the drift is not the decorrelation rate (the MNIST run drifts
+to 1.0--1.1 at every $\eta_R\in\{10^{-3},10^{-4},10^{-5}\}$) but the step size: at
+$\varepsilon=10^{-4}$ and $4$M it reaches 72.5\,\% on CIFAR-10, the best probe result there.
 
 \paragraph{Sequence models and forward-forward.}
 Against count models on the training text (unigram 4.32 bits/char, bigram 3.31,
@@ -649,8 +655,7 @@ trigram 2.61; Appendix~\ref{app:impl}) the zero-order rules learn roughly bigram
 statistics in an hour---six rules beat the bigram on the LSTM (2.91--3.22) and four on
 the Transformer (3.11--3.28), none the trigram---and \BP{} (1.80 and 1.84) a real
 character model; every probe curve is still descending at minute 60, so part of the gap is
-budget rather than estimator, but at 12--34k steps per hour on the LSTM closing it
-would take days. \FF{}, not a probe method, trains fast but its two inference rules disagree: on MNIST its selected $\varepsilon=0.1$ is seed-fragile (label accumulation
+budget, but at 12--34k steps per hour closing it would take days. \FF{}, not a probe method, trains fast but its two inference rules disagree: on MNIST its selected $\varepsilon=0.1$ is seed-fragile (label accumulation
 59.7(295)\,\% over three seeds against 93.1(3)\,\% at $\varepsilon=0.01$) and the
 linear readout collapses to 11--14\,\%; on CIFAR-10 both numbers are 27--34\,\%, and on the sequence tasks \FF{} is third-worst on the LSTM and
 worst on the Transformer (3.78 and 4.23 bits per character; Appendix~\ref{app:extra}).
@@ -665,21 +670,19 @@ peaks within minutes and then drifts: once the estimate's signal is exhausted th
 parameters random-walk with step $\eta$ and the network grows over-confident. The loss after a fixed hour therefore ranks methods by where their random walk
 settles, and selecting $\varepsilon$ by it produced degenerate choices in stage 1; hence
 stage 2 reports the best validation checkpoint as primary and the final value for
-stability. A learning-rate schedule, not in the protocol, would be the other remedy.
+stability (a learning-rate schedule would be the other remedy).
 
 \paragraph{Screening, budget and scale.}
-The selection rests on one seed per $\varepsilon$, so the error bars exclude
-selection noise. The budget is identical for all methods and the models are small; Section~\ref{sec:scale}
-shows the weight-space rules losing ground with $P$.
-Wall-clock comparisons reward implementations that batch probes well and depend on
-the host (eight runs at a time here); the equal-pass view (Figure~\ref{fig:passes}) is
-the implementation-independent comparison.
+The selection rests on one seed per $\varepsilon$, so the error bars exclude selection
+noise; the models are small, and Section~\ref{sec:scale} shows the weight-space rules losing
+ground with $P$.
+Wall-clock comparisons reward implementations that batch probes well; the equal-pass
+view (Figure~\ref{fig:passes}) is the implementation-independent comparison.
 
 \paragraph{Faithfulness.}
-Every departure of an implementation from its source (Gaussian rather than
-Rademacher directions, \RS{} through Adam, \FF{} at the parameter budget, \DANP{}'s
-fixed decorrelation rate) is stated where the method is defined and discussed in
-Appendix~\ref{app:extra}.
+Every departure from a method's source (Gaussian rather than Rademacher directions,
+\RS{} through Adam, \FF{} at the parameter budget, \DANP{}'s fixed decorrelation rate)
+is stated where the method is defined and discussed in Appendix~\ref{app:extra}.
 % ====================================================================================
 \section{Conclusion}
 \label{sec:conclusion}
@@ -696,11 +699,12 @@ activity-based node perturbation match it on images and the activity-based rule 
 on sequences; weight-space perturbation competes where the number of perturbed units
 approaches the number of weights; curvature preconditioning adds nothing to SPSA under
 Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting its
-curvature exponent to zero. Per forward pass the node rules reach
+curvature exponent to zero; its estimator with INP's layer-wise probing (1.5-INP) gives
+the best LSTM result of any probe rule. Per forward pass the node rules reach
 backpropagation's best MNIST loss with about ten times more passes and never reach its
 CIFAR-10 loss; per unit of time the best probe rule is 0.1 and 4 points behind, and on the language models every zero-order rule is still about one
 bit per character behind after an hour, every curve still descending. At a hundred times the size the same ordering holds once the step size is
-re-selected, and the gap to backpropagation widens. Code, job lists and all run logs are public; adding a rule costs about 30 GPU-hours.
+re-selected, and the gap to backpropagation widens. Code, job lists and run logs are public; adding a rule costs about 30 GPU-hours.
 
 % ====================================================================================
 \bibliographystyle{plainnat}
@@ -1252,6 +1256,18 @@ about three quarters of that.
   \centering
   \scriptsize
   \resizebox{\linewidth}{!}{\input{tables/passes_table}}
+\end{table}
+
+\begin{table}[ht]
+  \caption{1.5-INP: the 1.5-ANP estimator (antithetic pairs, per-unit normalisation,
+  token-local attribution, fp64 losses) with \INP{}'s one-layer-at-a-time probing, eight
+  pairs per step cycling over the layers, at \INP{}'s selected $\varepsilon$: best-checkpoint
+  test loss (accuracy or bits per character), mean $\pm$ s.d.\ over seeds where more than
+  one ran, against the tied selections of \INP{} and \ANPb{}.}
+  \label{tab:inp15}
+  \centering
+  \scriptsize
+  \input{tables/inp15_table}
 \end{table}
 
 \begin{figure}[ht]

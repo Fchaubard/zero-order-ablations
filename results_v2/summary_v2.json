@@ -6770,5 +6770,39 @@
   "-sz40k/transformer_ptb/inp": 2.176495548414359,
   "-sz40k/transformer_ptb/danp": 2.5784501212759006,
   "-sz40k/transformer_ptb/ff": 2.9322180672865334
+ },
+ "inp15": {
+  "mlp_mnist/-l64": {
+   "test_loss": 0.13421233760887039,
+   "n": 1
+  },
+  "mlp_mnist/-a0-l64": {
+   "test_loss": 0.10327898456063163,
+   "n": 1
+  },
+  "conv_cifar10/-l64": {
+   "test_loss": 1.395305004462169,
+   "n": 1
+  },
+  "conv_cifar10/-a0-l64": {
+   "test_loss": 1.1516980929758138,
+   "n": 1
+  },
+  "lstm_ptb/-l64": {
+   "test_loss": 2.1655986841423585,
+   "n": 1
+  },
+  "lstm_ptb/-a0-l64": {
+   "test_loss": 1.9073651490306447,
+   "n": 1
+  },
+  "transformer_ptb/-l64": {
+   "test_loss": 2.3565914711775853,
+   "n": 1
+  },
+  "transformer_ptb/-a0-l64": {
+   "test_loss": 2.173520356484531,
+   "n": 1
+  }
  }
 }
