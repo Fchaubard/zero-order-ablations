@@ -134,8 +134,8 @@ classic and activity-based node perturbation (96.9\,\% on MNIST and 63--65\,\% o
 CIFAR-10, against 97.0 and 69.2\,\% for backpropagation). Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
-responsible; its estimator driven by INP's layer-wise probing (1.5-INP, $\alpha=0$, one
-seed) matches INP on MNIST and the Transformer, beats it on the LSTM and loses on
+responsible; its estimator driven by INP's layer-wise probing (1.5-INP, $\alpha=0$, three
+seeds) matches INP on MNIST and the Transformer, beats it on the LSTM and loses on
 CIFAR-10. At ten and a hundred times the parameter count (one seed) iterative node
 perturbation stays the best probe rule, the gap to backpropagation widens, and the
 step size selected at the small size has to shrink with width. Code and run logs:
@@ -545,12 +545,12 @@ other differences to \ANP{} (central differences, per-unit normalisation, token-
 credit assignment) are not separated by any run here. A curvature term can only help
 where its estimate is less noisy than the gradient estimate it rescales, which at 8
 pairs per step it is not (Table~\ref{tab:passes} tests 32). A second combination, \ANPb{}'s estimator with \INP{}'s one-layer-at-a-time probing
-(``1.5-INP'', Appendix~\ref{app:optimizers}), is the one new rule here (one seed at
+(``1.5-INP'', Appendix~\ref{app:optimizers}), is the one new rule here (three seeds at
 \INP{}'s $\varepsilon$, with the same confound of pairs, normalisation and fp64 losses):
-at $\alpha=0$ it matches \INP{} on MNIST and the Transformer (0.103 and 2.174 against
-0.107 and 2.176), beats it on the LSTM (1.907, 2.75 bits per character, the best probe
-result there) and loses on CIFAR-10 (1.152 against 1.055); $\alpha=0.5$ is worse
-everywhere (Table~\ref{tab:inp15}).
+at $\alpha=0$ it matches \INP{} on MNIST and the Transformer (0.104 and 2.164 against
+0.107 and 2.176), beats it on the LSTM (1.925, 2.78 bits per character, the best probe
+result there) and loses on CIFAR-10 (1.139 against 1.055), a summed loss of 5.33 against
+\INP{}'s 5.36; $\alpha=0.5$ (one seed) is worse everywhere (Table~\ref{tab:inp15}).
 
 
 \subsection{Model size}
@@ -703,8 +703,8 @@ activity-based node perturbation match it on images and the activity-based rule 
 on sequences; weight-space perturbation competes where the number of perturbed units
 approaches the number of weights; curvature preconditioning adds nothing to SPSA under
 Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting its
-curvature exponent to zero; its estimator with INP's layer-wise probing (1.5-INP, one
-seed) gives the best LSTM result of any probe rule. Per forward pass the node rules
+curvature exponent to zero; its estimator with INP's layer-wise probing (1.5-INP) gives
+the best LSTM result of any probe rule. Per forward pass the node rules
 reach backpropagation's best MNIST loss with ten times more passes and never its
 CIFAR-10 loss; per unit of time the best probe rule is 0.1 and 4 points behind, and on
 the language models every zero-order rule is still about one bit per character behind
@@ -1273,8 +1273,8 @@ about half of that on MNIST and three quarters on CIFAR-10.
   \caption{1.5-INP: the 1.5-ANP estimator (antithetic pairs, per-unit normalisation,
   token-local attribution, fp64 losses) with \INP{}'s one-layer-at-a-time probing, eight
   pairs per step cycling over the layers, at \INP{}'s selected $\varepsilon$: best-checkpoint
-  test loss (accuracy or bits per character), mean $\pm$ s.d.\ over seeds where more than
-  one ran, against the tied selections of \INP{} and \ANPb{}.}
+  test loss (accuracy or bits per character), mean $\pm$ s.d.\ over three seeds for
+  $\alpha=0$ and one seed for $\alpha=0.5$, against the tied selections of \INP{} and \ANPb{}.}
   \label{tab:inp15}
   \centering
   \scriptsize
