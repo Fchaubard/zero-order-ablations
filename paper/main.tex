@@ -545,12 +545,13 @@ other differences to \ANP{} (central differences, per-unit normalisation, token-
 credit assignment) are not separated by any run here. A curvature term can only help
 where its estimate is less noisy than the gradient estimate it rescales, which at 8
 pairs per step it is not (Table~\ref{tab:passes} tests 32). A second combination, \ANPb{}'s estimator with \INP{}'s one-layer-at-a-time probing
-(``1.5-INP'', Appendix~\ref{app:optimizers}), is the one new rule here (three seeds at
-\INP{}'s $\varepsilon$, with the same confound of pairs, normalisation and fp64 losses):
-at $\alpha=0$ it matches \INP{} on MNIST and the Transformer (0.104 and 2.164 against
-0.107 and 2.176), beats it on the LSTM (1.925, 2.78 bits per character, the best probe
-result there) and loses on CIFAR-10 (1.139 against 1.055), a summed loss of 5.33 against
-\INP{}'s 5.36; $\alpha=0.5$ (one seed) is worse everywhere (Table~\ref{tab:inp15}).
+(``1.5-INP'', Appendix~\ref{app:optimizers}), is the one new rule here (same confound of pairs, normalisation and fp64 losses;
+$\varepsilon$ bracketed in Table~\ref{tab:inp15-eps}; three seeds): at $\alpha=0$ it
+matches \INP{} on MNIST and the Transformer (0.104 and 2.164 against 0.107 and 2.176),
+beats it on the LSTM (1.867 against 2.017, 2.69 bits per character, the best probe result
+there) and loses on CIFAR-10 (1.139 against 1.055); summed, 5.27 against 5.36. An untied
+$\sigma=10\varepsilon$ wins only on the Transformer (2.146, lower on all three seeds; \INP{}
+has no run there); $\alpha=0.5$ is worse everywhere (Table~\ref{tab:inp15}).
 
 
 \subsection{Model size}
@@ -857,8 +858,8 @@ The step costs 17 passes. \emph{1.5-INP} keeps this estimator but perturbs one l
 pair, as \INP{} does: pair $k$ of step $t$ perturbs layer $(8t+k)\bmod L$, so each step
 touches eight layers (all of them when $L\le8$, eight of the Transformer's 15), the
 loss difference of a unit is attributed to that layer's $N_u$ nodes only, and the
-update is otherwise Eq.~\eqref{eq:anp15}; it costs the same 17 passes and is run at
-\INP{}'s selected $\varepsilon$ with fp64 losses. The specification uses plain SGD with a learning rate 20--50
+update is otherwise Eq.~\eqref{eq:anp15}; it costs the same 17 passes and runs with fp64
+losses at the $\varepsilon$ of a bracket around \INP{}'s (Table~\ref{tab:inp15-eps}). The specification uses plain SGD with a learning rate 20--50
 times $\sigma$ and damps the deviation of the perturbed recurrent state by one half at
 every time step; the protocol runs tie $\eta=\sigma$ under Adam without damping, and
 Section~\ref{sec:own} runs the rule under its own recipe with both (the settings its
@@ -1272,13 +1273,28 @@ about half of that on MNIST and three quarters on CIFAR-10.
 \begin{table}[ht]
   \caption{1.5-INP: the 1.5-ANP estimator (antithetic pairs, per-unit normalisation,
   token-local attribution, fp64 losses) with \INP{}'s one-layer-at-a-time probing, eight
-  pairs per step cycling over the layers, at \INP{}'s selected $\varepsilon$: best-checkpoint
-  test loss (accuracy or bits per character), mean $\pm$ s.d.\ over three seeds for
-  $\alpha=0$ and one seed for $\alpha=0.5$, against the tied selections of \INP{} and \ANPb{}.}
+  pairs per step cycling over the layers: best-checkpoint test loss (accuracy or bits per
+  character). $\alpha=0.5$: one seed at \INP{}'s $\varepsilon$. $\alpha=0$: mean $\pm$
+  s.d.\ over three seeds at the tied $\varepsilon$ with the best seed-0 validation loss
+  (Table~\ref{tab:inp15-eps}). Untied: the $(\varepsilon,\sigma)$ pair with the best
+  seed-0 validation loss among $\sigma\in\{10\varepsilon,100\varepsilon\}$ at the selected
+  $\varepsilon$ (only $10\varepsilon$ on the Transformer, with three seeds; one seed otherwise; not run on the LSTM;
+  \INP{}'s untied grid, Table~\ref{tab:decouple}, has no run at these pairs). Last two
+  columns: the tied selections of \INP{} and \ANPb{}.}
   \label{tab:inp15}
   \centering
   \scriptsize
-  \input{tables/inp15_table}
+  \resizebox{\linewidth}{!}{\input{tables/inp15_table}}
+\end{table}
+
+\begin{table}[ht]
+  \caption{1.5-INP step-size bracket ($\alpha=0$, seed 0, tied $\sigma=\varepsilon$):
+  best-checkpoint test loss at each $\varepsilon$; the $\varepsilon$ selected by validation
+  loss in bold; -- not run.}
+  \label{tab:inp15-eps}
+  \centering
+  \scriptsize
+  \input{tables/inp15_eps_table}
 \end{table}
 
 \begin{table}[ht]
