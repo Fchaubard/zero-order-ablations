@@ -1,0 +1,9 @@
+# 1.5-INP alpha = 0, round 2: LSTM bracket above the new winner (1e-1) and seeds at 1e-2; probe scale decoupled above the step size on the image tasks (as 1.5-ANP's untied gain) and the Transformer
+--task lstm_ptb --opt inp15 --lr 0.01 --loss64 --alpha 0 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.01 --loss64 --alpha 0 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.1 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp15 --lr 0.0001 --sigma 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp15 --lr 0.0001 --sigma 0.01 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 0.0001 --sigma 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 0.0001 --sigma 0.01 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp15 --lr 0.001 --sigma 0.01 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
