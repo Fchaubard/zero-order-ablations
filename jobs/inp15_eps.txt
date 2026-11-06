@@ -1,0 +1,9 @@
+# 1.5-INP alpha = 0: step-size bracket one decade either side of INP's selected eps, seed 0, fp64 losses, 1 h
+--task mlp_mnist --opt inp15 --lr 1e-05 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt inp15 --lr 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 1e-05 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt inp15 --lr 0.001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.0001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt inp15 --lr 0.01 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp15 --lr 0.0001 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt inp15 --lr 0.01 --loss64 --alpha 0 --seed 0 --budget 3600 --eval-every 60 --out results_v2
