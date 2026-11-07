@@ -16,10 +16,10 @@
     ]
     % ---- 40k
     \nextgroupplot[title={MNIST / MLP, 40k}, ymin=0.05, ymax=3, ylabel={test loss},
-      legend to name=zoolegendNoFF, legend columns=10,
+      legend to name=zoolegendNoFF, legend columns=11,
       legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.3em}},
       legend image post style={xscale=0.7},
-      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, 1.5-INP}]
+      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, 1.5-INP, DUST}]
     \zoomeansNoFFi{data/curve2_mlp_mnist.csv}
     \nextgroupplot[title={CIFAR-10 / ConvNet, 40k}, ymin=0.8, ymax=3]
     \zoomeansNoFFi{data/curve2_conv_cifar10.csv}

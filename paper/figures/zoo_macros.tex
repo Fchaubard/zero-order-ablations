@@ -29,6 +29,8 @@
 
 % 1.5-INP (added after the protocol): INP's colour, dashed, plotted last with explicit options.
 \pgfplotsset{zooinpb/.style={color=zooinp, densely dashed, mark=pentagon, mark size=1.5pt}}
+% DUST (added after the protocol): its own colour, plotted after 1.5-INP with explicit options.
+\pgfplotsset{zoodustst/.style={color=zoodust, solid, mark=star, mark size=1.8pt}}
 
 % Seed band (min..max over seeds) of one method: #1 csv, #2 column prefix, #3 colour.
 \newcommand{\zooband}[3]{%
@@ -49,6 +51,7 @@
   \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
   \addplot table [x=time, y=ff_mean,     col sep=comma] {#1};
   \addplot[zooinpb] table [x=time, y=inp15_mean, col sep=comma] {#1};
+  \addplot[zoodustst] table [x=time, y=dust_mean, col sep=comma] {#1};
 }
 % The ten curves of a CSV with plain method columns and x column #1 (zoocycleX order).
 \newcommand{\zooplotsX}[2]{%
@@ -76,6 +79,7 @@
   \addplot table [x=#1, y=danp,   col sep=comma] {#2};
   \addplot table [x=#1, y=ff,     col sep=comma] {#2};
   \addplot[zooinpb] table [x=#1, y=inp15, col sep=comma] {#2};
+  \addplot[zoodustst] table [x=#1, y=dust, col sep=comma] {#2};
 }
 % The eight probe-estimator alignment curves of an align_{task}_{state}.csv file.
 \newcommand{\zooalignX}[1]{%
@@ -113,4 +117,5 @@
   \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
   \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
   \addplot[zooinpb] table [x=time, y=inp15_mean, col sep=comma] {#1};
+  \addplot[zoodustst] table [x=time, y=dust_mean, col sep=comma] {#1};
 }

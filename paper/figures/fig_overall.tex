@@ -9,7 +9,7 @@
 \begin{tikzpicture}
   \begin{axis}[
       xbar stacked,
-      width=0.9\linewidth, height=3.6cm,
+      width=0.9\linewidth, height=3.8cm,
       bar width=5.5pt,
       xmin=0, xmax=7,
       ytick=data, yticklabels from table={\overalltable}{label},
@@ -30,6 +30,6 @@
     \addplot[fill=ovC, draw=none] table [x=lstm,        y expr=\coordindex, col sep=comma] {data/overall_main.csv};
     \addplot[fill=ovD, draw=none] table [x=transformer, y expr=\coordindex, col sep=comma] {data/overall_main.csv};
     \legend{MNIST / MLP, CIFAR-10 / ConvNet, PTB / char-LSTM, PTB / char-Transformer}
-    \draw[dotted, gray] (axis cs:3.53,-0.6) -- (axis cs:3.53,9.6);
+    \draw[dotted, gray] (axis cs:3.53,-0.6) -- (axis cs:3.53,10.6);
   \end{axis}
 \end{tikzpicture}

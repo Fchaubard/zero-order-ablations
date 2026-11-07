@@ -40,11 +40,11 @@ from collections import defaultdict
 
 TASKS = ["mlp_mnist", "conv_cifar10", "lstm_ptb", "transformer_ptb"]
 IMAGE = ["mlp_mnist", "conv_cifar10"]
-OPTS = ["bp", "spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "danp", "ff"]   # table row order
-NO_SIZE = {"inp15"}   # rules without model-size or untied-grid runs (kept out of those tables and figures)
-PROBE = ["spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "danp"]
+OPTS = ["bp", "spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "dust", "danp", "ff"]   # table row order
+NO_SIZE = {"inp15", "dust"}   # rules without model-size or untied-grid runs (kept out of those tables and figures)
+PROBE = ["spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "dust", "danp"]
 OPT_LABEL = {"bp": "\\BP{}", "spsa": "\\SPSA{}", "spsa15": "\\SPSAb{}", "rs": "\\RS{}", "np": "\\NP{}", "anp": "\\ANP{}",
-             "anp15": "\\ANPb{}", "inp": "\\INP{}", "danp": "\\DANP{}", "ff": "\\FF{}", "inp15": "1.5-INP", "rsj": "RS-jump"}
+             "anp15": "\\ANPb{}", "inp": "\\INP{}", "danp": "\\DANP{}", "ff": "\\FF{}", "inp15": "1.5-INP", "dust": "\\DUST{}", "rsj": "RS-jump"}
 TASK_SHORT = {"mlp_mnist": "MNIST", "conv_cifar10": "CIFAR-10", "lstm_ptb": "LSTM", "transformer_ptb": "Transformer"}
 TASK_LABEL = {"mlp_mnist": "MNIST / MLP", "conv_cifar10": "CIFAR-10 / ConvNet",
               "lstm_ptb": "PTB / char-LSTM", "transformer_ptb": "PTB / char-Transformer"}
@@ -314,7 +314,7 @@ def main():
         lines += ["\\bottomrule", "\\end{tabular}"]
         open(os.path.join(tab_dir, f"{kind}_table.tex"), "w").write("\n".join(lines) + "\n")
         rows = []
-        PLAIN = {"bp": "BP", "spsa": "SPSA", "spsa15": "1.5-SPSA", "rs": "RS", "np": "NP", "anp": "ANP", "anp15": "1.5-ANP", "inp": "INP", "inp15": "1.5-INP", "danp": "DANP", "ff": "FF"}
+        PLAIN = {"bp": "BP", "spsa": "SPSA", "spsa15": "1.5-SPSA", "rs": "RS", "np": "NP", "anp": "ANP", "anp15": "1.5-ANP", "inp": "INP", "inp15": "1.5-INP", "dust": "DUST", "danp": "DANP", "ff": "FF"}
         for o in order:
             if math.isnan(score[o]) or o == "ff":
                 continue
@@ -484,7 +484,7 @@ def main():
         write_csv(os.path.join(data_dir, f"curve2_{task}.csv"), ["time", *[f"{o}_{k}" for o in OPTS for k in ("mean", "min", "max")]], rows)
         # seed bands only for the methods that have data (pgfplots' fill between fails on empty paths)
         colors = {"bp": "black", "spsa": "zoospsa", "spsa15": "zoospsa", "rs": "zoors", "np": "zoonp", "anp": "zooanp", "anp15": "zooanp",
-                  "inp": "zooinp", "inp15": "zooinp", "danp": "zoodanp", "ff": "zooff"}
+                  "inp": "zooinp", "inp15": "zooinp", "dust": "zoodust", "danp": "zoodanp", "ff": "zooff"}
         fig_dir = os.path.join(a.paper, "figures")
         os.makedirs(fig_dir, exist_ok=True)
         with open(os.path.join(fig_dir, f"bands_{task}.tex"), "w") as f:
