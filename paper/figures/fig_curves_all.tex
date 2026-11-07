@@ -1,5 +1,5 @@
 % Figure: test loss vs training minutes for every optimizer, 4 tasks x 3 model sizes (12 panels).
-% Data: data/curve2_{task}.csv (40k, seed mean) and data/curve2_{task}_{400k,4m}.csv (seed 0).
+% Data: data/curve2_{task}.csv (40k, seed mean, with 1.5-INP) and data/curve2_{task}_{400k,4m}.csv (seed 0).
 \begin{tikzpicture}
   \begin{groupplot}[
       group style={group size=4 by 3, horizontal sep=0.75cm, vertical sep=0.9cm},
@@ -16,16 +16,17 @@
     ]
     % ---- 40k
     \nextgroupplot[title={MNIST / MLP, 40k}, ymin=0.05, ymax=3, ylabel={test loss},
-      legend to name=zoolegendNoFF, legend columns=9,
-      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.4em}},
-      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP}]
-    \zoomeansNoFF{data/curve2_mlp_mnist.csv}
+      legend to name=zoolegendNoFF, legend columns=10,
+      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.3em}},
+      legend image post style={xscale=0.7},
+      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, 1.5-INP}]
+    \zoomeansNoFFi{data/curve2_mlp_mnist.csv}
     \nextgroupplot[title={CIFAR-10 / ConvNet, 40k}, ymin=0.8, ymax=3]
-    \zoomeansNoFF{data/curve2_conv_cifar10.csv}
+    \zoomeansNoFFi{data/curve2_conv_cifar10.csv}
     \nextgroupplot[title={PTB / char-LSTM, 40k}, ymin=1, ymax=5]
-    \zoomeansNoFF{data/curve2_lstm_ptb.csv}
+    \zoomeansNoFFi{data/curve2_lstm_ptb.csv}
     \nextgroupplot[title={PTB / char-Transformer, 40k}, ymin=1, ymax=5]
-    \zoomeansNoFF{data/curve2_transformer_ptb.csv}
+    \zoomeansNoFFi{data/curve2_transformer_ptb.csv}
     % ---- 400k
     \nextgroupplot[title={MNIST / MLP, 400k}, ymin=0.05, ymax=3, ylabel={test loss}]
     \zoomeansNoFF{data/curve2_mlp_mnist_400k.csv}

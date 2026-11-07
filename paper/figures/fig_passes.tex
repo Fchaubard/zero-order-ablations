@@ -16,15 +16,15 @@
       grid=major, grid style={gray!25},
     ]
     \nextgroupplot[title={MNIST / MLP}, ymin=0.08, ymax=3]
-    \zooplotsX{passes}{data/passes_mlp_mnist.csv}
+    \zooplotsXi{passes}{data/passes_mlp_mnist.csv}
 
     \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3, ylabel={}]
-    \zooplotsX{passes}{data/passes_conv_cifar10.csv}
+    \zooplotsXi{passes}{data/passes_conv_cifar10.csv}
 
     \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5, ylabel={}]
-    \zooplotsX{passes}{data/passes_lstm_ptb.csv}
+    \zooplotsXi{passes}{data/passes_lstm_ptb.csv}
 
     \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5, ylabel={}]
-    \zooplotsX{passes}{data/passes_transformer_ptb.csv}
+    \zooplotsXi{passes}{data/passes_transformer_ptb.csv}
   \end{groupplot}
 \end{tikzpicture}

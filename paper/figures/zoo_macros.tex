@@ -27,6 +27,9 @@
   color=zoodanp, solid,  mark=x,         mark size=1.8pt\\
 }
 
+% 1.5-INP (added after the protocol): INP's colour, dashed, plotted last with explicit options.
+\pgfplotsset{zooinpb/.style={color=zooinp, densely dashed, mark=pentagon, mark size=1.5pt}}
+
 % Seed band (min..max over seeds) of one method: #1 csv, #2 column prefix, #3 colour.
 \newcommand{\zooband}[3]{%
   \addplot [name path=#2max, draw=none, forget plot] table [x=time, y=#2_max, col sep=comma] {#1};
@@ -45,6 +48,7 @@
   \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
   \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
   \addplot table [x=time, y=ff_mean,     col sep=comma] {#1};
+  \addplot[zooinpb] table [x=time, y=inp15_mean, col sep=comma] {#1};
 }
 % The ten curves of a CSV with plain method columns and x column #1 (zoocycleX order).
 \newcommand{\zooplotsX}[2]{%
@@ -58,6 +62,20 @@
   \addplot table [x=#1, y=inp,    col sep=comma] {#2};
   \addplot table [x=#1, y=danp,   col sep=comma] {#2};
   \addplot table [x=#1, y=ff,     col sep=comma] {#2};
+}
+% The same plus 1.5-INP (40k CSVs; the model-size CSVs have no 1.5-INP column).
+\newcommand{\zooplotsXi}[2]{%
+  \addplot table [x=#1, y=bp,     col sep=comma] {#2};
+  \addplot table [x=#1, y=spsa,   col sep=comma] {#2};
+  \addplot table [x=#1, y=spsa15, col sep=comma] {#2};
+  \addplot table [x=#1, y=rs,     col sep=comma] {#2};
+  \addplot table [x=#1, y=np,     col sep=comma] {#2};
+  \addplot table [x=#1, y=anp,    col sep=comma] {#2};
+  \addplot table [x=#1, y=anp15,  col sep=comma] {#2};
+  \addplot table [x=#1, y=inp,    col sep=comma] {#2};
+  \addplot table [x=#1, y=danp,   col sep=comma] {#2};
+  \addplot table [x=#1, y=ff,     col sep=comma] {#2};
+  \addplot[zooinpb] table [x=#1, y=inp15, col sep=comma] {#2};
 }
 % The eight probe-estimator alignment curves of an align_{task}_{state}.csv file.
 \newcommand{\zooalignX}[1]{%
@@ -82,4 +100,17 @@
   \addplot table [x=time, y=anp15_mean,  col sep=comma] {#1};
   \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
   \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
+}
+% The same plus 1.5-INP (40k CSVs only).
+\newcommand{\zoomeansNoFFi}[1]{%
+  \addplot table [x=time, y=bp_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=spsa_mean,   col sep=comma] {#1};
+  \addplot table [x=time, y=spsa15_mean, col sep=comma] {#1};
+  \addplot table [x=time, y=rs_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=np_mean,     col sep=comma] {#1};
+  \addplot table [x=time, y=anp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=anp15_mean,  col sep=comma] {#1};
+  \addplot table [x=time, y=inp_mean,    col sep=comma] {#1};
+  \addplot table [x=time, y=danp_mean,   col sep=comma] {#1};
+  \addplot[zooinpb] table [x=time, y=inp15_mean, col sep=comma] {#1};
 }
