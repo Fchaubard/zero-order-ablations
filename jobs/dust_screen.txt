@@ -1,0 +1,16 @@
+--task mlp_mnist --opt dust --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt dust --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt dust --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt dust --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt dust --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt dust --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt dust --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt dust --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt dust --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt dust --lr 1e-05 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task mlp_mnist --opt dust --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task conv_cifar10 --opt dust --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt dust --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt dust --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task lstm_ptb --opt dust --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt dust --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
