@@ -1,0 +1,17 @@
+# Identity-path credit (Noise speedrun, Q Labs 2026), Transformer only (2026-11-08): 40k eps grid (decades) seed 0, seeds 1-2 at 1e-4..1e-2; 400k and 4M at 1e-4..1e-2, seed 0; 1 h each
+--task transformer_ptb --opt ipc --lr 0.0001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.001 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.01 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.1 --seed 0 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.0001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.001 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.01 --seed 1 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.0001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.001 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.01 --seed 2 --budget 3600 --eval-every 60 --out results_v2
+--task transformer_ptb --opt ipc --lr 0.0001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt ipc --lr 0.001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt ipc --lr 0.01 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt ipc --lr 0.0001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt ipc --lr 0.001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt ipc --lr 0.01 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale

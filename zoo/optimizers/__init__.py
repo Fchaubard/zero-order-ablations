@@ -15,7 +15,7 @@ def register(name):
 def get_optimizer(name, model, lr, task_kind, n_classes, **kw) -> BaseOptimizer:
     # import lazily so a broken module does not break the others
     import importlib
-    for mod in ("backprop", "spsa", "random_search", "node_perturbation", "forward_forward", "curvature", "dust"):
+    for mod in ("backprop", "spsa", "random_search", "node_perturbation", "forward_forward", "curvature", "dust", "ipc"):
         try:
             importlib.import_module(f"zoo.optimizers.{mod}")
         except ImportError as e:  # pragma: no cover
@@ -32,8 +32,9 @@ _MODULE_OF = {
     "forward_forward": ("ff",),
     "curvature": ("spsa15", "anp15", "inp15"),
     "dust": ("dust",),
+    "ipc": ("ipc",),
 }
 # Protocol optimizers in column order; spsa15 / anp15 (17 passes: 1 clean + 8 antithetic pairs) were
 # added for stage 2 of the survey.
 ALL_OPTIMIZERS = ["bp", "spsa", "rs", "np", "anp", "inp", "danp", "ff", "spsa15", "anp15"]
-EXTRA_OPTIMIZERS = ["rsj", "inp15", "dust"]   # ablations outside the protocol (direct-jump random search)
+EXTRA_OPTIMIZERS = ["rsj", "inp15", "dust", "ipc"]   # ablations outside the protocol (direct-jump random search)
