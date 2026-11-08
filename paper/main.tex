@@ -137,8 +137,9 @@ CIFAR-10, against 97.0 and 69.2\,\%), and DUST and 1.5-INP match them on MNIST b
 CIFAR-10 (61 and 60\,\%). Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
-responsible. At ten and a hundred times the parameter count (one seed; 1.5-INP and DUST not run)
-INP stays the best probe rule, the gap to backpropagation widens, and the
+responsible. At ten and a hundred times the parameter count (one seed) DUST and
+1.5-INP stay the two best probe rules (summed loss 4.78 and 5.00 at 400k, 4.91 and 5.08 at 4M,
+against 5.38 and 5.52 for INP), the gap to backpropagation widens, and the
 step size selected at the small size has to shrink with width. Code and run logs:
 \url{https://github.com/Fchaubard/zero-order-ablations}.
 \end{abstract}
@@ -455,8 +456,8 @@ MNIST and 4 points behind on CIFAR-10, and on the LSTM and the Transformer the g
 and 0.9 bits per character, a factor 1.4--1.5 in test loss. The end-of-hour view
 (Table~\ref{tab:final}) promotes \NP{} and \SPSAb{}, which drift least, keeps \DUST{}'s
 score the lowest (4.96; 1.5-INP 5.39), and on the sequence tasks changes, among the probe rules, only
-\ANP{}, \ANPb{} and \DANP{}, which drift. Figure~\ref{fig:curves-all12} shows the curves (seed bands and the equal-pass view:
-Appendix~\ref{app:extra}): on the image tasks \BP{} peaks
+\ANP{}, \ANPb{} and \DANP{}, which drift. Figures~\ref{fig:curves}--\ref{fig:curves4m} (Appendix~\ref{app:extra}) show the curves at the three
+sizes: on the image tasks \BP{} peaks
 within five minutes and then grows over-confident, the weight-space rules and
 \SPSAb{} have their best checkpoint in the last fifteen minutes, and on the sequence
 tasks every rule but \ANP{}, \ANPb{} and \DANP{} is still descending or flat at minute 60.
@@ -487,18 +488,6 @@ tasks every rule but \ANP{}, \ANPb{} and \DANP{} is still descending or flat at 
 
 \label{sec:curves}
 
-\begin{figure}[t]
-  \centering
-  \input{figures/fig_curves_all}
-  \\[0.3ex]
-  \ref{zoolegendNoFF}
-  \caption{Test loss against training time for every optimizer on every task at the
-  three model sizes (40k: seed mean; 400k and 4M: seed 0, no 1.5-INP or \DUST{}; $\varepsilon$
-  re-selected per size). Log $y$-axis; the 1.5-order rules are dashed in their parent's colour. \FF{} is
-  omitted: its plotted quantity would be the readout cross-entropy, which is not what it
-  trains (its label-accumulation accuracy is in Table~\ref{tab:main}).}
-  \label{fig:curves-all12}
-\end{figure}
 
 \subsection{The backpropagation reference}
 \label{sec:bpref}
@@ -566,13 +555,19 @@ count (widths scaled, depth unchanged; Table~\ref{tab:scale}): every (task, meth
 pair reruns for one hour, one seed, at the $\varepsilon$ selected at 40k, and every
 pair that stalled or collapsed there was re-screened at $\varepsilon/10$ (and $/100$ on
 MNIST at 4M), the lowest validation loss deciding.
-At $400$k the node rules and \BP{} hold or improve (\INP{} 5.36 to 5.38, \NP{}
-5.54 to 5.47, \BP{} 3.53 to 3.04; summed loss, Figure~\ref{fig:scale}) while the
-weight-space rules lose 0.05--0.23. At $4$M most probe rules lose 0.1--0.6 against $40$k
-(\INP{} 5.52, \SPSA{} 5.84, \NP{} 5.91, \RS{} 6.55), \DANP{} improves to 5.88, and
-\BP{} keeps improving (2.98): the gap widens, \INP{} stays the best probe rule run there
-(1.5-INP and \DUST{} were not) and
-\SPSA{} and \SPSAb{} stay within 0.4 of it. The step size matters more than the
+At $400$k the node rules and \BP{} hold or improve (\DUST{} 4.86 to 4.78, 1.5-INP 5.27 to
+5.00, \INP{} 5.36 to 5.38, \NP{} 5.54 to 5.47, \BP{} 3.53 to 3.04; summed loss,
+Figure~\ref{fig:scale}) while the weight-space rules lose 0.05--0.23. At $4$M most probe
+rules lose 0.1--0.6 against $40$k (\INP{} 5.52, \SPSA{} 5.84, \NP{} 5.91, \RS{} 6.55),
+\DANP{} improves to 5.88, and \BP{} keeps improving (2.98): the gap widens, and \DUST{} and
+1.5-INP stay the two best probe rules (4.91 and 5.08). They are the two best on both
+sequence tasks at every size (\DUST{} first on the LSTM, 1.5-INP on the Transformer at 400k
+and 4M, 1.81 against 1.87 at 4M, with every other rule above 2.13) and trail the node rules
+on CIFAR-10. Unlike the other rules, which were re-screened only where they stalled, both
+were run at the $40$k $\varepsilon$ and a decade below in every cell (two decades on MNIST
+at $4$M, none on CIFAR-10 at $400$k); at the $40$k $\varepsilon$ alone they still lead \INP{}
+at $400$k (5.09 and 5.29) but not at $4$M (5.81 and 5.57), where their sequence-model runs
+plateau like everyone else's. The step size matters more than the
 estimator: at the $\varepsilon$ selected at $40$k every probe rule on the $4$M
 Transformer plateaued from minute 10 at 2.5--2.9; one decade down \SPSA{}, \INP{} and
 \SPSAb{} reach 2.14--2.17, as good as at $40$k, one decade up they diverge, and plain
@@ -591,7 +586,8 @@ every task, and \INP{} at 65 passes beats both on two tasks (Table~\ref{tab:pass
   \input{figures/fig_scale}
   \caption{Test loss summed over the four tasks against model size (log scale), one
   seed per point, $\varepsilon$ selected at 40k and re-screened a decade or two down where
-  a run stalled; the 40k points are the seed means of Table~\ref{tab:main}.}
+  a run stalled (1.5-INP and \DUST{}: a decade down in every cell); the 40k points are the
+  seed means of Table~\ref{tab:main}; \FF{} omitted, as in Figure~\ref{fig:overall}.}
   \label{fig:scale}
 \end{figure}
 
@@ -611,8 +607,8 @@ $\sigma\ge10^{-3}$.
 
 \paragraph{Which zero-order method wins?}
 \DUST{}, if a single rule must be chosen: it has the lowest score at the best checkpoint
-and at the end of the hour (4.86 and 4.96; 1.5-INP 5.27 and 5.39, \INP{} 5.36 and 5.58),
-the best mean rank, and leads both sequence tasks by 0.2--0.3 bits per character, but is
+and at the end of the hour (4.86 and 4.96; 1.5-INP 5.27 and 5.39, \INP{} 5.36 and 5.58)
+and at 400k and 4M, the best mean rank, and leads both sequence tasks by 0.2--0.3 bits per character, but is
 0.11 behind on CIFAR-10, where \ANP{}, \NP{} and \INP{} are indistinguishable and \DANP{}
 is the fastest. It differs from \INP{} by rewarding each unit's jitter with the loss change
 at its own token rather than the sequence mean, centring the reward across draws, and
@@ -709,8 +705,8 @@ on sequences; weight-space perturbation competes where the number of perturbed u
 approaches the number of weights; curvature preconditioning adds nothing to SPSA under
 Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting its
 curvature exponent to zero. On the language models the best zero-order rule is still 0.7 and 0.9 bits per character
-behind backpropagation after an hour. At a hundred times the size the ordering holds once the step size is
-re-selected and the gap widens.
+behind backpropagation after an hour. At ten and a hundred times the size \DUST{} and 1.5-INP remain the two best probe rules
+once the step size is re-selected, and the gap to backpropagation widens.
 
 % ====================================================================================
 \bibliographystyle{plainnat}
@@ -1113,9 +1109,29 @@ configuration, evaluation history and final metrics.
   \\[0.5ex]
   \ref{zoolegendX}
   \caption{Test loss versus training time (minutes; evaluation excluded) of the selected
-  runs: seed mean (line) and seed range (shaded). Log $y$-axis. The 1.5-order rules are
-  dashed in their parent's colour.}
+  40k runs: seed mean (line) and seed range (shaded). Log $y$-axis on the image tasks, linear
+  (clipped at 3.2) on the language models. The 1.5-order rules are dashed in their parent's colour.}
   \label{fig:curves}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_curves_400k}
+  \\[0.5ex]
+  \ref{zoolegendSz}
+  \caption{Test loss versus training time at 400k parameters (seed 0, $\varepsilon$
+  selected at that size; Section~\ref{sec:scale}); axes as in Figure~\ref{fig:curves}. \FF{} is omitted: its plotted
+  quantity would be the readout cross-entropy, which is not what it trains.}
+  \label{fig:curves400k}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/fig_curves_4m}
+  \\[0.5ex]
+  \ref{zoolegendSz}
+  \caption{Test loss versus training time at 4M parameters, as in Figure~\ref{fig:curves400k}.}
+  \label{fig:curves4m}
 \end{figure}
 
 \paragraph{Equal-pass view.}
@@ -1278,7 +1294,7 @@ about half of that on MNIST and three quarters on CIFAR-10.
   \\[0.5ex]
   \ref{zoolegendX}
   \caption{Per-task best-checkpoint test loss against model size (one seed at 400k and
-  4M, seed mean at 40k; $\varepsilon$ re-selected per size; 1.5-INP and \DUST{} not run at these sizes).}
+  4M, seed mean at 40k; $\varepsilon$ re-selected per size; 1.5-INP and \DUST{} run at the 40k $\varepsilon$ and a decade below).}
   \label{fig:scale-tasks}
 \end{figure}
 

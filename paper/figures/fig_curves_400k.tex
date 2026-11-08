@@ -1,0 +1,30 @@
+% Figure: test loss vs training minutes at 400k parameters (seed 0, eps selected at that size), 2x2 panels.
+% Data: data/curve2_{task}_400k.csv (written by scripts/collect_stage2.py).  FF omitted (readout loss is not its objective).
+\begin{tikzpicture}
+  \begin{groupplot}[
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
+      width=0.5\linewidth, height=5.2cm,
+      cycle list name=zoocycleX,
+      ymode=log, log ticks with fixed point,
+      xmin=0, xmax=60, xtick={0, 10, 20, 30, 40, 50, 60},
+      xlabel={training time (min)}, ylabel={test loss},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      title style={font=\small, yshift=-1ex},
+      every axis plot/.append style={line width=0.7pt, mark repeat=10, mark phase=5},
+      unbounded coords=jump,
+      grid=major, grid style={gray!25},
+    ]
+    \nextgroupplot[title={MNIST / MLP, 400k}, ymin=0.05, ymax=3, ytick={0.05,0.1,0.2,0.5,1,2},
+      legend to name=zoolegendSz, legend columns=6,
+      legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.4em}},
+      legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, 1.5-INP, DUST}]
+    \zoomeansNoFFi{data/curve2_mlp_mnist_400k.csv}
+    \nextgroupplot[title={CIFAR-10 / ConvNet, 400k}, ymin=0.8, ymax=3, ytick={0.8,1,1.5,2,3}]
+    \zoomeansNoFFi{data/curve2_conv_cifar10_400k.csv}
+    \nextgroupplot[title={PTB / char-LSTM, 400k}, ymode=normal, ymin=1, ymax=3.2, ytick={1,1.5,2,2.5,3}]
+    \zoomeansNoFFi{data/curve2_lstm_ptb_400k.csv}
+    \nextgroupplot[title={PTB / char-Transformer, 400k}, ymode=normal, ymin=1, ymax=3.2, ytick={1,1.5,2,2.5,3}]
+    \zoomeansNoFFi{data/curve2_transformer_ptb_400k.csv}
+  \end{groupplot}
+\end{tikzpicture}

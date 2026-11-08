@@ -1,0 +1,9 @@
+# Model-size sweep for 1.5-INP and DUST (2026-11-08): 40k-selected eps and eps/10 (eps/100 on MNIST at 4M; no eps/10 for CIFAR-10 at 400k), seed 0, 1 h; lowest val loss decides
+--task conv_cifar10 --opt inp15 --loss64 --alpha 0 --lr 0.0001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp15 --loss64 --alpha 0 --lr 0.001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task conv_cifar10 --opt inp15 --loss64 --alpha 0 --lr 0.0001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp15 --loss64 --alpha 0 --lr 0.001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task conv_cifar10 --opt inp15 --loss64 --alpha 0 --lr 1e-05 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp15 --loss64 --alpha 0 --lr 0.0001 --size l --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task mlp_mnist --opt inp15 --loss64 --alpha 0 --lr 1e-05 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale
+--task transformer_ptb --opt inp15 --loss64 --alpha 0 --lr 0.0001 --size m --seed 0 --budget 3600 --eval-every 60 --out results_scale

@@ -3,8 +3,8 @@
 % time,{opt}_mean,{opt}_min,{opt}_max; bands_{task}.tex lists the methods with bands.
 \begin{tikzpicture}
   \begin{groupplot}[
-      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.5cm},
-      width=0.5\linewidth, height=3.4cm,
+      group style={group size=2 by 2, horizontal sep=1.5cm, vertical sep=1.6cm},
+      width=0.5\linewidth, height=5.2cm,
       cycle list name=zoocycleX,
       ymode=log, log ticks with fixed point,
       xmin=0, xmax=60,
@@ -16,22 +16,22 @@
       unbounded coords=jump,
       grid=major, grid style={gray!25},
     ]
-    \nextgroupplot[title={MNIST / MLP}, ymin=0.08, ymax=3,
+    \nextgroupplot[title={MNIST / MLP}, ymin=0.05, ymax=3, ytick={0.05,0.1,0.2,0.5,1,2},
       legend to name=zoolegendX, legend columns=6,
       legend style={font=\scriptsize, draw=none, /tikz/every even column/.append style={column sep=0.4em}},
       legend entries={BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, FF, 1.5-INP, DUST}]
     \input{figures/bands_mlp_mnist}
     \zoomeansX{data/curve2_mlp_mnist.csv}
 
-    \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.9, ymax=3]
+    \nextgroupplot[title={CIFAR-10 / ConvNet}, ymin=0.8, ymax=3, ytick={0.8,1,1.5,2,3}]
     \input{figures/bands_conv_cifar10}
     \zoomeansX{data/curve2_conv_cifar10.csv}
 
-    \nextgroupplot[title={PTB / char-LSTM}, ymin=1, ymax=5]
+    \nextgroupplot[title={PTB / char-LSTM}, ymode=normal, ymin=1, ymax=3.2, ytick={1,1.5,2,2.5,3}]
     \input{figures/bands_lstm_ptb}
     \zoomeansX{data/curve2_lstm_ptb.csv}
 
-    \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5]
+    \nextgroupplot[title={PTB / char-Transformer}, ymode=normal, ymin=1, ymax=3.2, ytick={1,1.5,2,2.5,3}]
     \input{figures/bands_transformer_ptb}
     \zoomeansX{data/curve2_transformer_ptb.csv}
   \end{groupplot}

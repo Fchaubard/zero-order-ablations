@@ -1,8 +1,8 @@
 % Figure: test loss summed over the four tasks against model size (log x), one line per method.
-% Data: data/scale.csv with columns params,bp,spsa,spsa15,rs,np,anp,anp15,inp,danp,ff (nan = not run).
+% Data: data/scale.csv with one column per method (nan = not run).
 \begin{tikzpicture}
   \begin{axis}[
-      width=0.7\linewidth, height=3.5cm,
+      width=0.66\linewidth, height=4.8cm, ymin=2.5, ymax=7, ytick={3,4,5,6,7},
       xmode=log, log basis x=10,
       xtick={40000, 400000, 4000000}, xticklabels={40k, 400k, 4M},
       xlabel={parameters}, ylabel={test loss summed over the four tasks},
@@ -23,7 +23,9 @@
     \addplot table [x=params, y=anp15,  col sep=comma] {data/scale.csv};
     \addplot table [x=params, y=inp,    col sep=comma] {data/scale.csv};
     \addplot table [x=params, y=danp,   col sep=comma] {data/scale.csv};
-    \addplot table [x=params, y=ff,     col sep=comma] {data/scale.csv};
-    \legend{BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, FF}
+    \addplot+[forget plot, draw=none, mark=none] table [x=params, y=ff, col sep=comma] {data/scale.csv};   % FF omitted (readout loss not comparable); keeps the cycle order
+    \addplot[zooinpb] table [x=params, y=inp15, col sep=comma] {data/scale.csv};
+    \addplot[zoodustst] table [x=params, y=dust, col sep=comma] {data/scale.csv};
+    \legend{BP, SPSA, 1.5-SPSA, RS, NP, ANP, 1.5-ANP, INP, DANP, 1.5-INP, DUST}
   \end{axis}
 \end{tikzpicture}
