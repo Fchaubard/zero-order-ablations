@@ -23,5 +23,6 @@
     \zoomeansNoFFi{data/curve2_lstm_ptb_4m.csv}
     \nextgroupplot[title={PTB / char-Transformer, 4M}, ymode=normal, ymin=1, ymax=3.2, ytick={1,1.5,2,2.5,3}]
     \zoomeansNoFFi{data/curve2_transformer_ptb_4m.csv}
+    \addplot[zooipcst] table [x=time, y=ipc_mean, col sep=comma] {data/curve2_transformer_ptb_4m.csv};
   \end{groupplot}
 \end{tikzpicture}

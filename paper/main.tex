@@ -40,6 +40,7 @@
 \definecolor{zoodanp}{HTML}{56B4E9}
 \definecolor{zooff}{HTML}{6A3D9A}
 \definecolor{zoodust}{HTML}{999933}
+\definecolor{zooipc}{HTML}{882255}
 \pgfplotscreateplotcyclelist{zoocycle}{%
   color=black,   dashed, thick, mark=none\\
   color=zoospsa, solid, mark=o,         mark size=1.3pt\\
@@ -77,6 +78,7 @@
 \newcommand{\DANP}{\method{danp}}
 \newcommand{\FF}{\method{ff}}
 \newcommand{\DUST}{\method{dust}}
+\newcommand{\IPC}{\method{ipc}}
 \newcommand{\ghat}{\hat{\mathbf{g}}}
 \newcommand{\btheta}{\boldsymbol{\theta}}
 \newcommand{\bxi}{\boldsymbol{\xi}}
@@ -84,6 +86,8 @@
 \newcommand{\bv}{\mathbf{v}}
 \newcommand{\bd}{\mathbf{d}}
 \newcommand{\bh}{\mathbf{h}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bg}{\mathbf{g}}
 \newcommand{\ba}{\mathbf{a}}
 \newcommand{\bb}{\mathbf{b}}
 \newcommand{\bW}{\mathbf{W}}
@@ -134,7 +138,10 @@ of iterative node perturbation, INP, and 5.36 for INP) and leads both sequence t
 for the next rule and 1.80 and 1.84 for backpropagation); on the image tasks INP ties classic and
 activity-based node perturbation within seed noise (96.9\,\% on MNIST and 63--65\,\% on
 CIFAR-10, against 97.0 and 69.2\,\%), and DUST and 1.5-INP match them on MNIST but trail on
-CIFAR-10 (61 and 60\,\%). Curvature preconditioning leaves SPSA unchanged under Adam and does
+CIFAR-10 (61 and 60\,\%). On the Transformer, identity-path credit from the speedrun that
+followed DUST, which measures the top-layer error exactly and sends it down the residual
+path, does better still (2.56 bits per character with one forward pass per step, 2.0 at 400k and
+4M, where its gap to backpropagation narrows) but needs a residual network. Curvature preconditioning leaves SPSA unchanged under Adam and does
 not help it under SGD; 1.5-ANP is usable on the sequence models where ANP is not, but
 its $\alpha=0$ control shows that the curvature weighting is not the ingredient
 responsible. At ten and a hundred times the parameter count (one seed) DUST and
@@ -225,7 +232,8 @@ input decorrelation of \citet{ahmad2023constrained}, which also accelerates
 backpropagation \citep{dalm2024,ahmad2024}; 1.5-ANP \citep{chaubard2025anp15} adds a
 three-point curvature preconditioner to central-difference activity perturbation; we
 implement all five. \DUST{} \citep{dahal2026dust} credits each token's output jitter with the
-loss change at that token to pretrain Transformers; we port it to all four models.
+loss change at that token to pretrain Transformers; we port it to all four models, and
+add identity-path credit from the speedrun it started \citep{noise2026} on the Transformer.
 
 \paragraph{Local rules and benchmarks.}
 Forward-forward \citep{hinton2022}, our representative local rule, replaces the
@@ -330,6 +338,14 @@ draws per layer (Eq.~\eqref{eq:inp}).
 outputs per draw and rewards each unit's jitter with the loss change at that unit (token
 or example), centred across draws; attention internals and the readout get cheap draws
 on cached activations (15 draws and a clean pass; Appendix~\ref{app:optimizers}).
+
+\paragraph{Identity-path credit (IPC).}
+\IPC{}, from the community speedrun built on \DUST{} \citep{noise2026} and also added
+later, measures each token's loss gradient at the last residual stream by central
+differences along a full orthonormal cycle through the final normalization and readout,
+hands that credit to every block along the residual path, and trains block internals by
+one local step from it; it needs a residual stream, so it runs on the Transformer only
+(one pass per step; Appendix~\ref{app:optimizers}).
 
 \paragraph{Decorrelated ANP (DANP).}
 DANP \citep{dalm2023} is ANP on layer inputs decorrelated by a matrix $\bR_l$ trained
@@ -446,7 +462,10 @@ the best probe method by a wide margin (2.47 and 2.78 bits per character on the 
 Transformer); on the LSTM 1.5-INP follows (2.69, at $\varepsilon=10^{-2}$)
 ahead of \INP{}, \SPSAb{} and \NP{} (2.91, 2.96 and 3.02), on the Transformer \SPSAb{}, 1.5-INP and
 \INP{} (3.11--3.14) ahead of \SPSA{} (3.17), and
-\ANP{} is last on both (4.16 and 3.95). Across the four tasks \DUST{} has
+\ANP{} is last on both (4.16 and 3.95). \IPC{}, Transformer only, beats every rule there but
+\BP{}: 1.777 (2.56 bits per character), 0.15 below \DUST{} and a quarter of the way to \BP{},
+with one pass per step (308k steps in the hour, \DUST{} 78k); it passes \DUST{}'s one-hour
+loss in minute 6 and then flattens. Across the four tasks \DUST{} has
 the best mean rank among the ten probe methods at the best checkpoint (2.25, bootstrap
 interval 1.75--3.0), ahead of \INP{} and 1.5-INP (3.0), \NP{} (4.25), \SPSAb{} (5.0), \SPSA{}
 (6.25), \ANP{} (7.0), \RS{} and \DANP{} (8.0) and \ANPb{} (8.25), and the
@@ -469,7 +488,8 @@ tasks every rule but \ANP{}, \ANPb{} and \DANP{} is still descending or flat at 
   Bold: best probe method per task. \BP{} (one forward and one backward pass per step)
   is the reference; \FF{} is reported by label-accumulation accuracy [readout in
   brackets] and its readout loss is not comparable, so it has no score. 1.5-INP ($\alpha=0$,
-  fp64 losses) and \DUST{} were added after the protocol (Section~\ref{sec:own}).}
+  fp64 losses), \DUST{} and \IPC{} were added after the protocol (Section~\ref{sec:own});
+  \IPC{} runs on the Transformer only and has no score.}
   \label{tab:main}
   \centering
   \scriptsize
@@ -563,7 +583,10 @@ rules lose 0.1--0.6 against $40$k (\INP{} 5.52, \SPSA{} 5.84, \NP{} 5.91, \RS{} 
 1.5-INP stay the two best probe rules (4.91 and 5.08). They are the two best on both
 sequence tasks at every size (\DUST{} first on the LSTM, 1.5-INP on the Transformer at 400k
 and 4M, 1.81 against 1.87 at 4M, with every other rule above 2.13) and trail the node rules
-on CIFAR-10. Unlike the other rules, which were re-screened only where they stalled, both
+on CIFAR-10. \IPC{} (Transformer only; $\varepsilon=10^{-4}$, $10^{-3}$, $10^{-2}$ at each size;
+the larger runs stopped at minute 58 of 60) improves with size: 1.78, 1.39 and 1.37 at
+40k, 400k and 4M against \BP{}'s 1.28, 1.06 and 1.07, so its gap to \BP{} narrows from
+0.72 to 0.44 bits per character, at the smallest $\varepsilon$ tried at both larger sizes. Unlike the other rules, which were re-screened only where they stalled, both
 were run at the $40$k $\varepsilon$ and a decade below in every cell (two decades on MNIST
 at $4$M, none on CIFAR-10 at $400$k); at the $40$k $\varepsilon$ alone they still lead \INP{}
 at $400$k (5.09 and 5.29) but not at $4$M (5.81 and 5.57), where their sequence-model runs
@@ -573,13 +596,9 @@ Transformer plateaued from minute 10 at 2.5--2.9; one decade down \SPSA{}, \INP{
 \SPSAb{} reach 2.14--2.17, as good as at $40$k, one decade up they diverge, and plain
 SGD or 128 passes at the old $\varepsilon$ do not help.
 The $4$M LSTM is budget-limited (16--33k steps an hour). Alignment does degrade with
-width (Table~\ref{tab:align4m}: tenfold for the weight-space rules, two- to sixfold for \NP{}, \INP{} and \DANP{}). Figure~\ref{fig:scale-tasks} shows the per-task curves. Two follow-ups
-(Appendix~\ref{app:extra}): random search with direct jumps instead of the Adam
-wrapper is within 0.03 of the protocol's version at $40$k and $400$k and 0.04 behind at
-$4$M (Table~\ref{tab:rsj}),
-and giving \ANPb{} four times more pairs
-(32, 65 passes) does not rescue its curvature term: its $\alpha=0$ control still wins on
-every task, and \INP{} at 65 passes beats both on two tasks (Table~\ref{tab:passes}).
+width (Table~\ref{tab:align4m}: tenfold for the weight-space rules, two- to sixfold for \NP{}, \INP{} and \DANP{}). Figure~\ref{fig:scale-tasks} shows the per-task curves. In two follow-ups, random search
+with direct jumps stays within 0.04 of the protocol's version (Table~\ref{tab:rsj}) and four
+times more pairs do not rescue \ANPb{}'s curvature term (Table~\ref{tab:passes}).
 
 \begin{figure}[t]
   \centering
@@ -614,7 +633,8 @@ is the fastest. It differs from \INP{} by rewarding each unit's jitter with the 
 at its own token rather than the sequence mean, centring the reward across draws, and
 giving attention internals and the readout cheap draws on cached activations; on the image
 models, where both credit an example's own loss, only the last two differ. The gap to \BP{} is 0.1 points on MNIST,
-4 points on CIFAR-10 and 0.7--0.9 bits per character on the sequence tasks.
+4 points on CIFAR-10 and 0.7--0.9 bits per character on the sequence tasks. \IPC{} does better on the Transformer by using its
+residual stream, so it does not apply to the MLP, ConvNet or LSTM.
 
 \paragraph{Weight probes versus node probes.}
 \SPSA{} and \RS{} perturb all $P\approx40$k weights and obtain one scalar loss
@@ -636,8 +656,7 @@ rounding floor; with $\sigma=10^{-2}$ and fp64
 losses it recovers to within 0.03 of \ANP{} on MNIST, and its $\alpha=0$ control
 matches \ANP{} on MNIST and comes within 0.06 on CIFAR-10. On the sequence models its token-local attribution
 repairs \ANP{}'s failure (3.13 versus 4.16 bits per character on the LSTM, 3.70 versus
-3.95 on the Transformer) without reaching \INP{} or \SPSA{}; per step it is within 3\,\% of \ANP{} on the ConvNet and 14--43\,\% faster on the other
-three models (Table~\ref{tab:steps}).
+3.95 on the Transformer) without reaching \INP{} or \SPSA{}.
 
 \paragraph{Activity-based, iterative and decorrelated variants.}
 The measured activity difference (\ANP{}) is worth nothing over \NP{} at the right
@@ -647,16 +666,14 @@ through shared weights, produces updates of erratic size (the spikes in
 Figure~\ref{fig:curves}) and the worst probe result on both tasks. \INP{}'s one-layer-at-a-time attribution removes all cross-layer noise and is never
 worse than fourth on any task. Decorrelation helps only where \citet{dalm2023} reported it: \DANP{} is the fastest rule on CIFAR-10 (best checkpoint at minute 5, 63.0\,\%) but
 drifts to 1.36 by minute 60, is behind on MNIST (94.0\,\%) and on the sequence tasks
-(3.80 and 3.72 bits per character), and was the screening's most fragile rule. Lowering $\eta_R$ does not remove the
-drift at $40$k (the MNIST run still peaks at minute 1 and ends at 1.0--1.1; one seed,
-Table~\ref{tab:danp-rate}) but at $4$M $\eta_R=10^{-4}$ helps (0.120 on MNIST, 0.831 on
-CIFAR-10 against 0.157 and 1.025), which the size sweep, at the protocol's rate, does not use.
+(3.80 and 3.72 bits per character), and was the screening's most fragile rule. A lower $\eta_R$ does not remove the drift at $40$k but helps at $4$M (0.120 on
+MNIST, 0.831 on CIFAR-10 against 0.157 and 1.025; Table~\ref{tab:danp-rate}).
 
 \paragraph{Sequence models and forward-forward.}
 Against count models on the training text (unigram 4.32 bits/char, bigram 3.31,
 trigram 2.61; Appendix~\ref{app:impl}) the zero-order rules learn roughly bigram
 statistics in an hour---eight rules beat the bigram on the LSTM (2.47--3.22) and six on
-the Transformer (2.78--3.28), only \DUST{} the trigram (on the LSTM)---and \BP{} (1.80 and 1.84) a real
+the Transformer (2.78--3.28), only \DUST{} (LSTM) and \IPC{} (Transformer, 2.56) the trigram---and \BP{} (1.80 and 1.84) a real
 character model; nearly every probe curve is still descending at minute 60, so part of the gap is
 budget, but at 12--34k steps per hour closing it would take days. \FF{}, not a probe method, trains fast but its two inference rules disagree: on MNIST its selected $\varepsilon=0.1$ is seed-fragile (label accumulation
 59.7(295)\,\% over three seeds against 93.1(3)\,\% at $\varepsilon=0.01$, Appendix~\ref{app:extra}) and the
@@ -680,32 +697,25 @@ The selection rests on one seed per $\varepsilon$, so the error bars exclude sel
 noise; the models are small, and Section~\ref{sec:scale} shows the weight-space rules losing
 ground with $P$.
 Wall-clock comparisons reward implementations that batch probes well; the equal-pass
-view (Figure~\ref{fig:passes}) is the implementation-independent comparison.
-
-\paragraph{Faithfulness.}
-Every departure from a method's source (Gaussian rather than Rademacher directions,
-\RS{} through Adam, \FF{} at the parameter budget, \DANP{}'s fixed $\eta_R$) is stated
-where the method is defined and discussed in Appendix~\ref{app:extra}.
+view (Figure~\ref{fig:passes}) is the implementation-independent comparison. Every
+departure from a method's source is stated where it is defined (Appendix~\ref{app:extra}).
 % ====================================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
-We compared nine backprop-free training rules, two added later (1.5-INP and DUST) and
+We compared nine backprop-free training rules, three added later (1.5-INP, DUST and identity-path credit) and
 backpropagation on four
 $\approx$40k-parameter architectures under one equal-budget protocol. The screening
 sweep's first result is methodological: with Adam the step size, not the probe scale,
 decides how far a noisy estimator gets in an hour, and at $\eta=10^{-4}$ the weight-space
 rules close about half of their gap on the image tasks.
-If one zero-order rule must be chosen it is DUST, which credits each unit's jitter with
-the loss change at its own token: it has the lowest summed loss and leads both language
+If one zero-order rule must be chosen it is DUST: it has the lowest summed loss and leads both language
 models by 0.2--0.3 bits per character but trails on CIFAR-10, followed by iterative node
-perturbation and 1.5-INP; classic and activity-based node perturbation match
-INP on images and the activity-based rule fails
-on sequences; weight-space perturbation competes where the number of perturbed units
-approaches the number of weights; curvature preconditioning adds nothing to SPSA under
+perturbation and 1.5-INP; curvature preconditioning adds nothing to SPSA under
 Adam or SGD, and the sequence-model gains of 1.5-ANP over ANP survive setting its
 curvature exponent to zero. On the language models the best zero-order rule is still 0.7 and 0.9 bits per character
-behind backpropagation after an hour. At ten and a hundred times the size \DUST{} and 1.5-INP remain the two best probe rules
+behind backpropagation after an hour; identity-path credit, which exploits the Transformer's
+residual stream, cuts the Transformer's gap from 0.9 to 0.7 bits, and to 0.4 at 4M. At ten and a hundred times the size \DUST{} and 1.5-INP remain the two best probe rules
 once the step size is re-selected, and the gap to backpropagation widens.
 
 % ====================================================================================
@@ -953,6 +963,44 @@ hidden layers but the first; reading only the top block keeps the readout inside
 parameter budget). The LSTM block's output lies in $(-1,1)$, so its goodness cannot
 exceed 1; that block uses $\theta_{\FF}=0.25$.
 
+\paragraph{Identity-path credit (IPC).}
+\IPC{} comes from the Noise speedrun \citep{noise2026}, where it underlies every
+speedrun record from its seventh on; we port it from the record scripts onto our
+Transformer (\texttt{zoo/optimizers/ipc.py}). It needs a residual stream, so it runs on
+the Transformer only. One clean pass caches every layer's input and output; every
+learning signal is then a measured change of a loss, or of a local output scored against
+a measured credit, from partial recomputations on the cached activations. (i)~\emph{Top
+credit}: each token's credit at the last residual stream,
+$\bg_u=\partial\ell_u/\partial\bx_{L,u}$, is measured by central differences along a full
+orthonormal basis $\{\mathbf{q}_j\}_{j=1}^{d}$ (a new random basis every step), each a
+re-evaluation of the final layer normalization, the readout and the token's cross-entropy
+at $\bx_{L,u}\pm\varepsilon\mathbf{q}_j$:
+$\hat\bg_u=\sum_j\frac{\ell_u(\bx_{L,u}+\varepsilon\mathbf{q}_j)-\ell_u(\bx_{L,u}-\varepsilon\mathbf{q}_j)}{2\varepsilon}\mathbf{q}_j$;
+the readout is a per-token function, so every token is probed at once without
+interference, and a complete basis returns the credit exactly up to the
+finite-difference error. (ii)~\emph{Identity path}: every earlier residual stream
+receives the same credit, so the attention and MLP output projections and the token and
+position embeddings take $\hat\bg_u$ as their output error (the reference scales it by its
+residual mixing scalars, which our model lacks). The Jacobians of the later sub-blocks
+are dropped; this is the method's one approximation. (iii)~\emph{One local step}: each
+MLP hidden unit's pre-activation is moved along a full orthonormal cycle over the hidden
+width and the change of the block output, through the ReLU and the output layer, is
+scored against $\hat\bg_u$; the target at the attention output before its projection is
+$\hat\bg_u$ seen through that (linear) projection; values take their exact credit
+$\sum_s A_{st}\,\mathbf{t}_s$ (attention is linear in its values), queries a full
+orthonormal cycle per head with the attention rerun, and keys single-position,
+single-coordinate moves evaluated in closed form (one attention logit per query
+changes), each query's output change scored against its target $\mathbf{t}_s$. (iv)~The
+readout takes the cross-entropy's central difference along every logit, in closed form
+on the cached logits. Weight gradients are output errors times cached inputs, as for the
+node rules. Every finite-difference step equals the tied $\varepsilon$, and the update is
+the shared Adam rule (the reference uses ANVIL~II on the block matrices and steps relative
+to the probed vector's RMS). On our Transformer the estimate equals the true gradient for
+the readout and the top block's MLP (cosine $>0.9999$); a unit test checks it against the
+identity-path rule computed by automatic differentiation (cosine $>0.9995$ on every
+layer). \IPC{} spends one forward pass per step; its partial recomputations are charged
+to the wall-clock budget.
+
 \paragraph{Backpropagation (reference).}
 One forward and one backward pass produce the exact gradient, fed to the same Adam
 update. It is the reference, not a zero-order method.
@@ -978,6 +1026,7 @@ update. It is the reference, not a zero-order method.
     \INP{}   & 1 & 15 (one layer each) & -- & $\lfloor 15/L\rfloor$ draws per layer \\
     \DUST{}  & 1 & 15 (one group each) & -- & per-unit centred rewards; 60 head and local draws on cached outputs \\
     \FF{}    & 3 / 2 & 0 & per block & local goodness gradients \\
+    \IPC{}   & 1 & 0 & -- & exact top credit, residual path (Transformer only) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1110,7 +1159,7 @@ configuration, evaluation history and final metrics.
   \ref{zoolegendX}
   \caption{Test loss versus training time (minutes; evaluation excluded) of the selected
   40k runs: seed mean (line) and seed range (shaded). Log $y$-axis on the image tasks, linear
-  (clipped at 3.2) on the language models. The 1.5-order rules are dashed in their parent's colour.}
+  (clipped at 3.2) on the language models. The 1.5-order rules are dashed in their parent's colour; \IPC{} runs on the Transformer only.}
   \label{fig:curves}
 \end{figure}
 
@@ -1280,7 +1329,7 @@ about half of that on MNIST and three quarters on CIFAR-10.
   at the $\varepsilon$ with the lowest validation loss among those run at that size (the 40k rows are the seed means
   of Table~\ref{tab:main}). Widths: MLP hidden (400, 240) and (1600, 1700); ConvNet
   channels (48, 96, 96) and (128, 256, 256); LSTM hidden 265 and 870; Transformer width
-  152 and 496.}
+  152 and 496. \IPC{} runs on the Transformer only; its 400k and 4M runs stopped at minute 58 of 60.}
   \label{tab:scale}
   \centering
   \scriptsize
@@ -1294,7 +1343,7 @@ about half of that on MNIST and three quarters on CIFAR-10.
   \\[0.5ex]
   \ref{zoolegendX}
   \caption{Per-task best-checkpoint test loss against model size (one seed at 400k and
-  4M, seed mean at 40k; $\varepsilon$ re-selected per size; 1.5-INP and \DUST{} run at the 40k $\varepsilon$ and a decade below).}
+  4M, seed mean at 40k; $\varepsilon$ re-selected per size; 1.5-INP and \DUST{} run at the 40k $\varepsilon$ and a decade below; \IPC{}, Transformer only, at three $\varepsilon$ per size, its 400k and 4M runs stopped at minute 58 of 60).}
   \label{fig:scale-tasks}
 \end{figure}
 
@@ -1495,7 +1544,14 @@ with a local ``goodness'' objective. Rules that broadcast a global error vector
 synthetic gradients \citep{jaderberg2017} still require a learned or random backward
 signal, and forward gradients \citep{baydin2022,ren2023} require a Jacobian-vector
 product through the network; they are outside the zero-order scope of this benchmark,
-which includes forward-forward as the representative local rule. Controlled comparisons
+which includes forward-forward as the representative local rule. Identity-path credit,
+from the Noise speedrun \citep{noise2026} that followed \DUST{}, is closest to the
+global-error rules: it broadcasts one error vector to every block, but it \emph{measures}
+that vector with forward differences of the loss and uses the residual identity as its
+backward path, so it needs neither a backward signal nor a Jacobian-vector product; the
+speedrun's later records add exact forward differences through the later blocks with
+attention held fixed, cross-token probes and weight averaging, which we do not port.
+Controlled comparisons
 of biologically motivated rules exist for the feedback-alignment family
 \citep{bartunov2018assessing,launay2020direct,sanfiz2021benchmarking}; we are not aware
 of one that puts weight perturbation, the node-perturbation family and forward-forward

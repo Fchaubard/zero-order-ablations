@@ -40,11 +40,13 @@ from collections import defaultdict
 
 TASKS = ["mlp_mnist", "conv_cifar10", "lstm_ptb", "transformer_ptb"]
 IMAGE = ["mlp_mnist", "conv_cifar10"]
-OPTS = ["bp", "spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "dust", "danp", "ff"]   # table row order
-NO_SIZE = {"inp15", "dust"}   # rules without untied-grid or isolated-throughput runs (kept out of those tables)
+OPTS = ["bp", "spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "dust", "danp", "ff", "ipc"]   # table row order
+NO_SIZE = {"inp15", "dust", "ipc"}   # rules without untied-grid or isolated-throughput runs (kept out of those tables)
+# identity-path credit (Noise speedrun) needs a residual stream: Transformer only, outside the probe ranks and the summed score
+TASK_ONLY = {"ipc": {"transformer_ptb"}}
 PROBE = ["spsa", "spsa15", "rs", "np", "anp", "anp15", "inp", "inp15", "dust", "danp"]
 OPT_LABEL = {"bp": "\\BP{}", "spsa": "\\SPSA{}", "spsa15": "\\SPSAb{}", "rs": "\\RS{}", "np": "\\NP{}", "anp": "\\ANP{}",
-             "anp15": "\\ANPb{}", "inp": "\\INP{}", "danp": "\\DANP{}", "ff": "\\FF{}", "inp15": "1.5-INP", "dust": "\\DUST{}", "rsj": "RS-jump"}
+             "anp15": "\\ANPb{}", "inp": "\\INP{}", "danp": "\\DANP{}", "ff": "\\FF{}", "inp15": "1.5-INP", "dust": "\\DUST{}", "ipc": "\\IPC{}", "rsj": "RS-jump"}
 TASK_SHORT = {"mlp_mnist": "MNIST", "conv_cifar10": "CIFAR-10", "lstm_ptb": "LSTM", "transformer_ptb": "Transformer"}
 TASK_LABEL = {"mlp_mnist": "MNIST / MLP", "conv_cifar10": "CIFAR-10 / ConvNet",
               "lstm_ptb": "PTB / char-LSTM", "transformer_ptb": "PTB / char-Transformer"}
@@ -68,7 +70,11 @@ def load_dir(d, partial=False):
         if not r.get("history") or c.get("task") is None:
             continue
         if not partial and r.get("status") in ("running", "starting", "error"):
-            continue
+            # a run whose node was stopped within the last 5% of its budget counts, flagged (the IPC 400k / 4M runs
+            # of 2026-11-08 got 58 of their 60 minutes)
+            if not (r.get("status") == "running" and r["history"][-1].get("train_time", 0) >= 0.95 * c.get("budget", 3600)):
+                continue
+            r["truncated"] = True
         key = (c["task"], c["opt"], f"{float(c['lr']):g}", int(c.get("seed", 0)), c.get("tag", "") or "")
         runs[key] = r
     return runs
@@ -302,7 +308,7 @@ def main():
             score[o] = sum(rel) if len(rel) == len(TASKS) else float("nan")
             ranks = []
             for t in TASKS:
-                order = sorted([x for x in OPTS if not math.isnan(means[t][x])], key=lambda x: means[t][x])
+                order = sorted([x for x in OPTS if x not in TASK_ONLY and not math.isnan(means[t][x])], key=lambda x: means[t][x])
                 if o in order:
                     ranks.append(order.index(o) + 1)
             mrank[o] = mean(ranks) if ranks else float("nan")
@@ -314,7 +320,7 @@ def main():
         lines += ["\\bottomrule", "\\end{tabular}"]
         open(os.path.join(tab_dir, f"{kind}_table.tex"), "w").write("\n".join(lines) + "\n")
         rows = []
-        PLAIN = {"bp": "BP", "spsa": "SPSA", "spsa15": "1.5-SPSA", "rs": "RS", "np": "NP", "anp": "ANP", "anp15": "1.5-ANP", "inp": "INP", "inp15": "1.5-INP", "dust": "DUST", "danp": "DANP", "ff": "FF"}
+        PLAIN = {"bp": "BP", "spsa": "SPSA", "spsa15": "1.5-SPSA", "rs": "RS", "np": "NP", "anp": "ANP", "anp15": "1.5-ANP", "inp": "INP", "inp15": "1.5-INP", "dust": "DUST", "danp": "DANP", "ff": "FF", "ipc": "IPC"}
         for o in order:
             if math.isnan(score[o]) or o == "ff":
                 continue
@@ -352,6 +358,8 @@ def main():
             b = max(probe, key=probe.get); ti = IMAGE.index(task)
             acc_cells[b][2 * ti] = f"\\textbf{{{acc_cells[b][2 * ti]}}}"
     for o in OPTS:
+        if o in TASK_ONLY:
+            continue
         lines.append(f"{OPT_LABEL[o]} & " + " & ".join(acc_cells[o]) + " \\\\")
     lines += ["\\bottomrule", "\\end{tabular}"]
     open(os.path.join(tab_dir, "bestacc_table.tex"), "w").write("\n".join(lines) + "\n")
@@ -484,7 +492,7 @@ def main():
         write_csv(os.path.join(data_dir, f"curve2_{task}.csv"), ["time", *[f"{o}_{k}" for o in OPTS for k in ("mean", "min", "max")]], rows)
         # seed bands only for the methods that have data (pgfplots' fill between fails on empty paths)
         colors = {"bp": "black", "spsa": "zoospsa", "spsa15": "zoospsa", "rs": "zoors", "np": "zoonp", "anp": "zooanp", "anp15": "zooanp",
-                  "inp": "zooinp", "inp15": "zooinp", "dust": "zoodust", "danp": "zoodanp", "ff": "zooff"}
+                  "inp": "zooinp", "inp15": "zooinp", "dust": "zoodust", "danp": "zoodanp", "ff": "zooff", "ipc": "zooipc"}
         fig_dir = os.path.join(a.paper, "figures")
         os.makedirs(fig_dir, exist_ok=True)
         with open(os.path.join(fig_dir, f"bands_{task}.tex"), "w") as f:
@@ -691,6 +699,8 @@ def main():
              "Task & Method & " + " & ".join(f"$\\varepsilon={e.replace('1e-05', '10^{-5}')}$" for e in EPS_ALL) + " \\\\", "\\midrule"]
     for task in TASKS:
         for o in OPTS:
+            if o in TASK_ONLY and task not in TASK_ONLY[o]:
+                continue
             selv = summary["selected"].get(f"{task}/{o}", {})
             cands = selv.get("candidates", {})
             cells = []

@@ -20,5 +20,6 @@
     \zooplotsXi{params}{data/scale_lstm_ptb.csv}
     \nextgroupplot[title={PTB / char-Transformer}, ylabel={}]
     \zooplotsXi{params}{data/scale_transformer_ptb.csv}
+    \addplot[zooipcst] table [x=params, y=ipc, col sep=comma] {data/scale_transformer_ptb.csv};
   \end{groupplot}
 \end{tikzpicture}

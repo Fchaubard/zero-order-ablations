@@ -26,5 +26,6 @@
 
     \nextgroupplot[title={PTB / char-Transformer}, ymin=1, ymax=5, ylabel={}]
     \zooplotsXi{passes}{data/passes_transformer_ptb.csv}
+    \addplot[zooipcst] table [x=passes, y=ipc, col sep=comma] {data/passes_transformer_ptb.csv};
   \end{groupplot}
 \end{tikzpicture}
