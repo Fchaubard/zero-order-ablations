@@ -921,7 +921,14 @@ with the tied $\varepsilon$ instead of SGD with momentum and per-site scales (0.
 0.05), no residual mixing scalars, value embeddings or attention gates (absent from our
 model), and a position embedding treated like the token embedding. On the MLP, ConvNet
 and LSTM the rule reduces to layer-wise node perturbation with unit-local, draw-centred
-rewards and the cached-logit readout.
+rewards and the cached-logit readout. \emph{1.5-DUST} (added after the protocol and
+tested only in Appendix~\ref{app:extra}) gives the direct draws 1.5-INP's estimator: each
+draw becomes an antithetic pair $\pm\sigma\bxi$ on its group's sites, and each unit's
+error is $\frac{1}{K}\sum_k\beta_u^{(k)}\bd_u^{(k)}$ with $\bd_u=2\sigma\bxi_u$ and
+$\beta_u$ of Eq.~\eqref{eq:anp15}, $N_u$ counting the unit's jittered nodes in the group
+and no centring; it spends 1 clean pass and 8 pairs (17 passes) split over the groups in
+the reference proportions (one pair per group on the Transformer), with fp64 losses and
+\DUST{}'s local and head draws; $\alpha=0$ is antithetic \DUST{}.
 
 \paragraph{Decorrelated ANP (DANP).}
 Decorrelated ANP \citep{dalm2023} is ANP in which every layer input is first
@@ -1396,6 +1403,23 @@ about half of that on MNIST and three quarters on CIFAR-10.
 \end{table}
 
 \begin{table}[ht]
+  \caption{1.5-DUST against \DUST{} (CPU, fp32 forward). Top: cosine between each
+  estimate and the backprop gradient of one protocol batch, mean (standard error in the
+  last digits) over 24 draws, at \DUST{}'s selected $\varepsilon$, at initialisation
+  (start) and after a 2000-step backpropagation warm-up (warm). All three estimators
+  spend 17 passes (\DUST{}: 16 direct draws; 1.5-DUST: 8 antithetic pairs, fp64 losses)
+  with the same local and head draws. Direct sites: the parameters of \DUST{}'s jittered
+  sites, the only ones whose estimate differs (readout and $q,k,v$ excluded); whole model:
+  every parameter; best of each triple in bold. Bottom: one 10-minute training run per
+  rule on the Transformer at $\varepsilon=10^{-3}$, three side by side with three threads
+  each (\DUST{} at the protocol's 16 passes): best-checkpoint test loss and steps taken.}
+  \label{tab:dust15}
+  \centering
+  \scriptsize
+  \resizebox{\linewidth}{!}{\input{tables/dust15_table}}
+\end{table}
+
+\begin{table}[ht]
   \caption{\DANP{} with the decorrelation rate $\eta_R$ lowered from the protocol's
   $10^{-3}$ (one seed, at the $\varepsilon$ and size shown): best-checkpoint test loss
   (accuracy or bits per character), the minute it was reached and the end-of-hour loss.
@@ -1452,6 +1476,29 @@ drops from 0.445 to 0.420 and that of \INP{} from 0.425 to 0.358 (fp64: 0.475 an
 $\sigma=10^{-2}$ (Table~\ref{tab:precision}, measured on a different batch and
 warm-up seed from Table~\ref{tab:align}). Stage 1 ran with TF32 on; stage 2 runs in
 full fp32.
+
+\paragraph{1.5-DUST.}
+Table~\ref{tab:dust15} asks whether 1.5-ANP's estimator would help \DUST{}
+(Appendix~\ref{app:optimizers}). On the CPU, on one protocol batch per task at \DUST{}'s
+selected $\varepsilon$, at initialisation and after the 2000-step backpropagation
+warm-up, it compares the cosine with the true gradient of \DUST{} and of 1.5-DUST with
+$\alpha=0.5$ and with its $\alpha=0$ control, all at 17 passes with the same local and
+head draws, over 24 draws each. On the direct sites, the only parameters whose estimate
+changes, the curvature factor lowers the cosine in every cell: by 0.03--0.16 against
+$\alpha=0$ on the MLP, the LSTM and the Transformer, and by about one standard error on the
+ConvNet. It does the same in 1.5-INP, where $\alpha=0.5$ trails $\alpha=0$ on all four
+tasks (Table~\ref{tab:inp15}). The pairs alone are within two standard errors of \DUST{}
+on the ConvNet and the Transformer and behind it on the MLP and the LSTM (0.60 to 0.48 and
+0.50 at initialisation): at a tied $\varepsilon\le10^{-2}$, \DUST{}'s one-sided draws
+already subtract the exact clean loss, so a pair removes only a term of order $\sigma$
+relative to the first-order signal, while it halves the number of directions per pass.
+The one gain is in the Transformer's whole-model cosine at initialisation (0.33 and 0.34
+against 0.28). It comes through the queries, keys and values, which are scored against a
+cleaner attention-output error, and it is gone after the warm-up. In a 10-minute CPU
+training run on the Transformer (three runs side by side, three threads each), 1.5-DUST
+reaches 2.303 at $\alpha=0$ and 2.398 at $\alpha=0.5$, against 2.291 for \DUST{} with the
+protocol's 16 passes (2.298 at the same 1,801 steps as $\alpha=0$). 1.5-DUST was not run
+on the GPU.
 
 \paragraph{Sequence models.}
 On the test split a uniform model scores 5.64 bits/char, a unigram 4.32, a bigram 3.31
