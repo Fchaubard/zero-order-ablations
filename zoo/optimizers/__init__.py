@@ -31,10 +31,10 @@ _MODULE_OF = {
     "node_perturbation": ("np", "anp", "inp", "danp"),
     "forward_forward": ("ff",),
     "curvature": ("spsa15", "anp15", "inp15"),
-    "dust": ("dust",),
+    "dust": ("dust", "dust15"),
     "ipc": ("ipc",),
 }
 # Protocol optimizers in column order; spsa15 / anp15 (17 passes: 1 clean + 8 antithetic pairs) were
 # added for stage 2 of the survey.
 ALL_OPTIMIZERS = ["bp", "spsa", "rs", "np", "anp", "inp", "danp", "ff", "spsa15", "anp15"]
-EXTRA_OPTIMIZERS = ["rsj", "inp15", "dust", "ipc"]   # ablations outside the protocol (direct-jump random search)
+EXTRA_OPTIMIZERS = ["rsj", "inp15", "dust", "ipc", "dust15"]   # ablations outside the protocol (direct-jump random search)

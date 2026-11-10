@@ -133,6 +133,7 @@ class DUST(BaseOptimizer):
             groups.append(([_Site(model.pos)], 10))                                     # learned positions (adaptation)
             counts = _alloc(self.n_direct, [w for _, w in groups])
             self.groups = [(g, k) for (g, _), k in zip(groups, counts)]
+            self._group_weights = [w for _, w in groups]
             # local draws per block: the reference ratio q : v : k = 2 : 20 : 12, scaled to this population
             # (one draw per block per two direct draws of that block, at least one per kind)
             for b, blk in enumerate(self._blocks):
@@ -146,12 +147,14 @@ class DUST(BaseOptimizer):
             groups = [([_Site(lstm.gates)], 38 + 38), ([_Site(model.tok)], 10)]
             counts = _alloc(self.n_direct, [w for _, w in groups])
             self.groups = [(g, k) for (g, _), k in zip(groups, counts)]
+            self._group_weights = [w for _, w in groups]
         else:   # MLP / ConvNet: every hidden layer is a direct site, front-loaded allocation
             hidden = [l for l in self.layers if l is not model.readout]
             ref_w = [38, 32, 16, 10, 6, 4, 2, 2]
             groups = [([_Site(l)], ref_w[min(i, 7)]) for i, l in enumerate(hidden)]
             counts = _alloc(self.n_direct, [w for _, w in groups])
             self.groups = [(g, k) for (g, _), k in zip(groups, counts)]
+            self._group_weights = [w for _, w in groups]
         self.n_head = self.head_mult * self.n_direct
 
     def allocation(self) -> dict:
@@ -243,51 +246,10 @@ class DUST(BaseOptimizer):
             for s in g:
                 if s.layout is None:
                     s.layout = self._layout(s, N, T)
-        errors: Dict[int, List[torch.Tensor]] = {}                 # id(layer) -> error per recorded tensor (output sites)
-        hub_err: Dict[int, torch.Tensor] = {}
-        abs_r = l0.new_zeros(())
-
         # ---- 2. direct draws ----
         ctx.mode = "bp"
         with torch.no_grad():
-            for g, K in self.groups:
-                noises, rewards = [], []
-                for _ in range(K):
-                    draw = []
-                    self._jitter, self._hub_jitter, self._calls = {}, {}, {}
-                    for s in g:
-                        shp = self._site_shapes(s)
-                        if s.layout == "shared":
-                            a = [torch.randn(shp[0], device=x.device)]
-                        else:
-                            a = [torch.randn(sh, device=x.device) for sh in shp]
-                        draw.append(a)
-                        if s.kind == "hub":
-                            self._hub_jitter[id(s.attn)] = sigma * a[0]
-                        else:
-                            self._jitter[id(s)] = [sigma * t for t in a]
-                    try:
-                        lk = self._unit_loss(self.model(x), y)
-                    finally:
-                        self._jitter, self._hub_jitter, self._calls = {}, {}, {}
-                    noises.append(draw)
-                    rewards.append(l0 - lk)                       # loss reduction per unit
-                R = torch.stack(rewards)                          # (K, N[, T])
-                if K > 1:
-                    R = R - R.mean(0, keepdim=True)               # centred across the draws of the group
-                abs_r = abs_r + R.abs().mean()
-                for si, s in enumerate(g):
-                    Rs = self._future_credit(R) if (s.recurrent and T is not None) else R
-                    shp = self._site_shapes(s)
-                    acc = [torch.zeros(sh, device=x.device) for sh in shp]
-                    for k in range(K):
-                        for ti, a in enumerate(noises[k][si]):
-                            acc[ti].sub_(self._bcast(Rs[k], s.layout, ti, a.shape) * a / sigma)
-                    acc = [t / K for t in acc]
-                    if s.kind == "hub":
-                        hub_err[id(s.attn)] = acc[0]
-                    else:
-                        errors[id(s.layer)] = acc
+            errors, hub_err, abs_r = self._direct_errors(x, y, l0, sigma)
 
             # ---- 3. local draws: attention internals scored against the hub's estimated error ----
             for attn, ks in self.local:
@@ -310,6 +272,55 @@ class DUST(BaseOptimizer):
         self._last_abs_r = abs_r / max(len(self.groups), 1)
         ctx.mode = "bp"
         return l0.mean()
+
+    # ------------------------------------------------------------------ direct draws
+    def _direct_errors(self, x, y, l0, sigma):
+        """Step 2: the direct draws of every group.  Returns the estimated output error per recorded tensor of
+        every output site (keyed by id(layer)), the hub errors (keyed by id(attention module)) and the summed
+        mean |reward| of the groups.  Runs under no_grad."""
+        errors: Dict[int, List[torch.Tensor]] = {}                 # id(layer) -> error per recorded tensor (output sites)
+        hub_err: Dict[int, torch.Tensor] = {}
+        abs_r = l0.new_zeros(())
+        T = l0.shape[1] if l0.dim() == 2 else None
+        for g, K in self.groups:
+            noises, rewards = [], []
+            for _ in range(K):
+                draw = []
+                self._jitter, self._hub_jitter, self._calls = {}, {}, {}
+                for s in g:
+                    shp = self._site_shapes(s)
+                    if s.layout == "shared":
+                        a = [torch.randn(shp[0], device=x.device)]
+                    else:
+                        a = [torch.randn(sh, device=x.device) for sh in shp]
+                    draw.append(a)
+                    if s.kind == "hub":
+                        self._hub_jitter[id(s.attn)] = sigma * a[0]
+                    else:
+                        self._jitter[id(s)] = [sigma * t for t in a]
+                try:
+                    lk = self._unit_loss(self.model(x), y)
+                finally:
+                    self._jitter, self._hub_jitter, self._calls = {}, {}, {}
+                noises.append(draw)
+                rewards.append(l0 - lk)                       # loss reduction per unit
+            R = torch.stack(rewards)                          # (K, N[, T])
+            if K > 1:
+                R = R - R.mean(0, keepdim=True)               # centred across the draws of the group
+            abs_r = abs_r + R.abs().mean()
+            for si, s in enumerate(g):
+                Rs = self._future_credit(R) if (s.recurrent and T is not None) else R
+                shp = self._site_shapes(s)
+                acc = [torch.zeros(sh, device=x.device) for sh in shp]
+                for k in range(K):
+                    for ti, a in enumerate(noises[k][si]):
+                        acc[ti].sub_(self._bcast(Rs[k], s.layout, ti, a.shape) * a / sigma)
+                acc = [t / K for t in acc]
+                if s.kind == "hub":
+                    hub_err[id(s.attn)] = acc[0]
+                else:
+                    errors[id(s.layer)] = acc
+        return errors, hub_err, abs_r
 
     # ------------------------------------------------------------------ head and local estimates
     def _head_error(self, y, l0, sigma):
@@ -366,3 +377,123 @@ class DUST(BaseOptimizer):
 
     def extra_log(self) -> dict:
         return {} if self._last_abs_r is None else {"mean_abs_reward": float(self._last_abs_r)}
+
+
+@register("dust15")
+class CurvatureDUST(DUST):
+    """1.5-DUST: DUST with 1.5-ANP's estimator on its direct draws (added after the protocol, 2026-11-10).
+
+    Each group's direct draws become antithetic pairs: the jitter ``+sigma a`` and ``-sigma a`` (the same
+    ``a``) is applied to the group's sites, and for every unit u (token / example) with N_u jittered nodes::
+
+        c_u    = N_u |l_u^+ - 2 l_u^0 + l_u^-| / (sigma^2 ||a_u||^2)          (= 4 N_u |...| / ||d_u||^2, d_u = 2 sigma a_u)
+        ghat_u = N_u (l_u^+ - l_u^-) / (2 sigma ||a_u||^2 (c_u + lambda)^alpha) * a_u
+
+    averaged over the group's pairs: Eq. (anp15) of the paper with 1.5-INP's attribution to the jittered sites
+    only.  The pairs replace DUST's centring across draws (the clean loss cancels exactly); ``alpha = 0`` is
+    antithetic DUST with per-unit normalisation, the control that separates the curvature factor from the pairing.
+    Budget: 1 clean pass + 8 pairs = 17 passes, as the two 1.5-order rules; the pairs are split over DUST's groups
+    in its front-loaded proportions (at least one pair per group).  Local draws (q, k, v) and the head are DUST's,
+    with the counts DUST would use at this budget.  Run with ``--loss64``: the second difference at sigma = 1e-3 is
+    at the fp32 rounding floor of the loss.
+    """
+    forward_passes_per_step = 17          # 1 clean + 8 antithetic pairs
+    lam = 1e-3                            # as anp15 (spec: lambda)
+    alpha = 0.5                           # as anp15 (spec: alpha_c); 0 = antithetic DUST
+    eps_mach = 1e-12
+
+    def __init__(self, model, lr, task_kind, n_classes, loss64: bool = False, **kw):
+        super().__init__(model, lr, task_kind, n_classes, loss64=loss64, **kw)
+        self.n_pairs = max(1, (self.forward_passes_per_step - 1) // 2)
+        counts = _alloc(self.n_pairs, self._group_weights)
+        self.groups = [(g, k) for (g, _), k in zip(self.groups, counts)]
+        self._last_curv: Optional[torch.Tensor] = None
+
+    def _unit_loss(self, logits, y):
+        # keep fp64 (DUST casts back to fp32): the three-point second difference needs it
+        return per_unit_loss(logits.double() if self.loss64 else logits, y)
+
+    def _jittered_loss(self, x, y, g, draw, scale: float) -> torch.Tensor:
+        self._jitter, self._hub_jitter, self._calls = {}, {}, {}
+        for s, a in zip(g, draw):
+            if s.kind == "hub":
+                self._hub_jitter[id(s.attn)] = scale * a[0]
+            else:
+                self._jitter[id(s)] = [scale * t for t in a]
+        try:
+            return self._unit_loss(self.model(x), y)
+        finally:
+            self._jitter, self._hub_jitter, self._calls = {}, {}, {}
+
+    @staticmethod
+    def _unit_sq(g, draw, l0: torch.Tensor, N: int, T: Optional[int]) -> torch.Tensor:
+        """||a_u||^2 per unit over every jittered node of the group (shape of l0)."""
+        sq = torch.zeros_like(l0)
+        for s, a_list in zip(g, draw):
+            if s.layout == "ex":
+                for t in a_list:
+                    sq = sq + t.reshape(N, -1).pow(2).sum(1)
+            elif s.layout == "tok":
+                for t in a_list:
+                    sq = sq + t.reshape(N, T, -1).pow(2).sum(2)
+            elif s.layout == "call":
+                sq = sq + torch.stack([t.reshape(N, -1).pow(2).sum(1) for t in a_list], 1)
+            else:                                                  # shared (T, ...): the same jitter for every sequence
+                for t in a_list:
+                    sq = sq + t.reshape(T, -1).pow(2).sum(1)[None, :]
+        return sq
+
+    @staticmethod
+    def _unit_nodes(g, shps, N: int, T: Optional[int]) -> float:
+        """N_u: jittered nodes per unit in the group."""
+        n = 0
+        for s, shp in zip(g, shps):
+            if s.layout == "ex":
+                n += sum(math.prod(sh) // N for sh in shp)
+            elif s.layout == "tok":
+                n += sum(math.prod(sh) // (N * T) for sh in shp)
+            elif s.layout == "call":
+                n += math.prod(shp[0]) // N                        # one call = one position
+            else:
+                n += sum(math.prod(sh) // T for sh in shp)
+        return float(n)
+
+    def _direct_errors(self, x, y, l0, sigma):
+        errors: Dict[int, List[torch.Tensor]] = {}
+        hub_err: Dict[int, torch.Tensor] = {}
+        abs_r = l0.new_zeros(())
+        curv = l0.new_zeros(())
+        N = x.shape[0]
+        T = l0.shape[1] if l0.dim() == 2 else None
+        for g, K in self.groups:
+            shps = [self._site_shapes(s) for s in g]
+            nodes = self._unit_nodes(g, shps, N, T)
+            accs = [[torch.zeros(sh, device=x.device) for sh in shp] for shp in shps]
+            for _ in range(K):
+                draw = [[torch.randn(shp[0], device=x.device)] if s.layout == "shared"
+                        else [torch.randn(sh, device=x.device) for sh in shp] for s, shp in zip(g, shps)]
+                lp = self._jittered_loss(x, y, g, draw, +sigma)
+                lm = self._jittered_loss(x, y, g, draw, -sigma)
+                sq = self._unit_sq(g, draw, l0, N, T) + self.eps_mach
+                c = nodes * (lp - 2.0 * l0 + lm).abs() / (sigma * sigma * sq)
+                w = nodes * (lp - lm) / (2.0 * sigma * sq * (c + self.lam).pow(self.alpha))
+                w = w.float()
+                for si, s in enumerate(g):
+                    for ti, a in enumerate(draw[si]):
+                        accs[si][ti].add_(self._bcast(w, s.layout, ti, a.shape) * a)
+                abs_r = abs_r + (lp - lm).abs().mean()
+                curv = curv + c.mean()
+            for si, s in enumerate(g):
+                acc = [t / K for t in accs[si]]
+                if s.kind == "hub":
+                    hub_err[id(s.attn)] = acc[0]
+                else:
+                    errors[id(s.layer)] = acc
+        self._last_curv = curv / max(sum(k for _, k in self.groups), 1)
+        return errors, hub_err, abs_r
+
+    def extra_log(self) -> dict:
+        d = super().extra_log()
+        if self._last_curv is not None:
+            d["curvature"] = float(self._last_curv)
+        return d
