@@ -1,30 +1,130 @@
 # A ZOO Deep Learning Survey
 
-Which zero-order optimizer wins across standard small architectures and tasks?
+**Zero-order optimization (ZOO)** trains a network from loss evaluations alone, without back-propagating
+errors. It is the natural training rule for neuromorphic and analog hardware, non-differentiable systems,
+biologically plausible learning and memory-constrained training. Many ZOO rules exist, but they are rarely
+compared under one budget on the same networks. This repository does that: **twelve backprop-free rules
+against backpropagation on four architectures**, with the same forward passes per step, one GPU-hour, the
+same Adam update and three seeds.
 
-**10 optimizers** (`bp` backprop reference, `spsa`, `spsa15` (1.5-SPSA), `rs` random search,
-`np` / `anp` / `inp` / `danp` node-perturbation variants, `anp15` (1.5-ANP), `ff` forward-forward)
-**x 4 tasks** (`mlp_mnist`, `conv_cifar10`, `lstm_ptb`, `transformer_ptb`, ~40k parameters each)
-**x 3 epsilons** (0.1, 0.01, 0.001; epsilon == learning rate), one hour of training wall-clock each.
-Stage 1 screens epsilon (one seed, `results/`); stage 2 replicates the selected configurations
-with three seeds and 1-minute evaluations (`results_v2/`) and adds ablations (`results_bp/`,
-`results_decouple/`, `results_align/`).  The experimental protocol is the single source of
-truth: **[PROTOCOL.md](PROTOCOL.md)**.
+**[Read the paper (PDF)](paper/zoo_survey_final.pdf)** · [LaTeX source](paper/) ·
+[Blog post](https://fchaubard.github.io/zoo_survey.html) · [Protocol](PROTOCOL.md)
+
+![Figure 1: best-checkpoint test loss summed over the four tasks, per optimizer, with per-task contributions stacked](assets/figure1.png)
+
+*Figure 1. Test loss at the best validation checkpoint, summed over the four tasks (lower is better), with
+each task's contribution stacked; mean over three seeds. BP is the backpropagation reference (3.53).
+Forward-forward is omitted because its readout loss is not comparable.*
+
+## Findings
+
+- **DUST is the best probe method.** It has the lowest summed loss (4.86, against 5.27 for 1.5-INP and 5.36
+  for iterative node perturbation) and leads both language models: 2.47 and 2.78 bits per character on the
+  LSTM and the Transformer, against 1.80 and 1.84 for backpropagation.
+- **On images, node perturbation is close to backprop on MNIST, not on CIFAR-10.** The best node-perturbation
+  rules reach 96.7–97.0 % on MNIST (backprop 97.0 %) but at most 65 % on CIFAR-10 (backprop 69.2 %).
+- **The step size decides, not the probe scale.** At ε = 10⁻⁴, eight of the ten protocol rules improve on
+  both image tasks, and the weight-space rules (SPSA, random search) close about half of their gap.
+- **Identity-path credit is the best rule on the Transformer.** It measures the top-layer error exactly and
+  sends it down the residual path, with one forward pass per step: 2.56 bits per character at 40k
+  parameters, and its gap to backprop narrows with size, from 0.72 to 0.44 bits per character at 4M. It
+  needs a residual network, so it runs on the Transformer only.
+- **Curvature preconditioning ("1.5-order") does not help.** 1.5-SPSA's curvature factor is inert under Adam
+  and does not help under SGD. 1.5-ANP's gains on the sequence models survive setting its curvature exponent
+  to zero. Added to DUST, it lowers the alignment with the true gradient on all four tasks in a CPU check
+  (Appendix C).
+- **More parameters do not close the gap.** At 10× and 100× the size, DUST and 1.5-INP stay the two best
+  probe rules, but the gap to backpropagation widens and the step size selected at 40k has to shrink.
+
+## Main result
+
+Best-validation-checkpoint test accuracy or bits per character, mean over three seeds (Table 1 of the paper,
+with standard deviations and losses). Score = test loss summed over the four tasks; lower is better.
+
+| Method | MNIST / MLP acc. | CIFAR-10 / ConvNet acc. | PTB / char-LSTM bits/char | PTB / char-Transformer bits/char | Score |
+|---|---:|---:|---:|---:|---:|
+| Backprop (reference) | 97.0 % | 69.2 % | 1.80 | 1.84 | 3.53 |
+| **DUST** | 96.9 % | 60.7 % | **2.47** | **2.78** | **4.86** |
+| 1.5-INP | **97.0 %** | 60.0 % | 2.69 | 3.12 | 5.27 |
+| INP | 96.9 % | 63.5 % | 2.91 | 3.14 | 5.36 |
+| NP | 96.7 % | **65.0 %** | 3.02 | 3.36 | 5.54 |
+| 1.5-SPSA | 95.9 % | 56.7 % | 2.96 | 3.11 | 5.56 |
+| SPSA | 95.8 % | 57.8 % | 3.09 | 3.17 | 5.68 |
+| Random search | 94.9 % | 53.7 % | 3.22 | 3.28 | 5.97 |
+| 1.5-ANP | 95.7 % | 46.2 % | 3.13 | 3.70 | 6.42 |
+| DANP | 94.0 % | 63.0 % | 3.80 | 3.72 | 6.53 |
+| ANP | 96.6 % | 63.3 % | 4.16 | 3.95 | 6.79 |
+| Forward-forward | 59.7 % | 33.9 % | 3.78 | 4.23 | – |
+| Identity-path credit | – | – | – | 2.56 | – |
+
+Bold: best backprop-free rule per column. Identity-path credit runs on the Transformer only and has no score.
+
+**Model size** (one seed per point; Figure 2 of the paper). Summed test loss at 40k / 400k / 4M parameters:
+backprop 3.53 / 3.04 / 2.98, DUST 4.86 / 4.78 / 4.91, 1.5-INP 5.27 / 5.00 / 5.08, INP 5.36 / 5.38 / 5.52.
+Transformer test loss of identity-path credit: 1.78 / 1.39 / 1.37, against backprop's 1.28 / 1.06 / 1.07.
+
+![Figure 2: summed test loss against model size](assets/figure2.png)
+
+## Protocol
+
+| | |
+|---|---|
+| Tasks | MLP on MNIST, ConvNet on CIFAR-10, character-level LSTM and Transformer on Penn Treebank; ≈40k parameters each (also 400k and 4M) |
+| Budget | 1 GPU-hour per run (RTX 5090), training time only; evaluation every minute |
+| Passes | 16 forward passes per step for the probe methods (17 for the 1.5-order rules); backprop takes one forward and one backward |
+| Update | Adam (β = 0.9, 0.99) on every estimate, learning rate = probe scale = ε |
+| Selection | ε screened over five values per method and task, then three seeds at the selected ε; best validation checkpoint reported |
+
+The full protocol is in [PROTOCOL.md](PROTOCOL.md) and Section 4 of the paper.
+
+## Methods
+
+| Key | Method | Passes / step |
+|---|---|---|
+| `bp` | Backpropagation (reference) | 1 + backward |
+| `spsa` | SPSA, Gaussian antithetic pairs | 16 |
+| `spsa15` | 1.5-SPSA: SPSA with a three-point curvature preconditioner | 17 |
+| `rs` | Random search, best of 15 probes (`rsj`: direct-jump variant) | 16 |
+| `np` | Node perturbation | 16 |
+| `anp` | Activity-based node perturbation | 16 |
+| `inp` | Iterative node perturbation (one layer per pass) | 16 |
+| `danp` | Decorrelated activity-based node perturbation | 16 |
+| `anp15` | 1.5-ANP: activity perturbation with curvature preconditioning | 17 |
+| `inp15` | 1.5-INP: 1.5-ANP's estimator with INP's layer-wise probing (new) | 17 |
+| `dust` | DUST (Q Labs, 2026), ported to all four models | 16 |
+| `ipc` | Identity-path credit (Noise speedrun, Q Labs, 2026), Transformer only | 1 |
+| `ff` | Forward-forward | 2 |
+| `dust15` | 1.5-DUST: DUST with 1.5-ANP's estimator (negative result, Appendix C) | 17 |
+
+Every method lives in one file under [`zoo/optimizers/`](zoo/optimizers); the paper's Appendix A gives each
+definition.
+
+## Repository layout
 
 ```
-zoo/perturb.py      perturbable layers + the global forward "mode" every optimizer drives
-zoo/models.py       the four models (TASKS, build_model)
-zoo/optimizers/     one file per method (curvature.py = spsa15 / anp15); get_optimizer(name, model, lr, task_kind, n_classes, ...)
+paper/              LaTeX source (main.tex, figures/ in TikZ, tables/ generated), zoo_survey_final.pdf
+zoo/perturb.py      perturbable layers and the global forward "mode" every optimizer drives
+zoo/models.py       the four models at three sizes (build_model, SIZES)
+zoo/optimizers/     one file per method family; get_optimizer(name, model, lr, task_kind, n_classes, ...)
 zoo/data.py         MNIST / CIFAR-10 / PTB-char, resident on the device; python -m zoo.data --download-all
-zoo/train.py        one run: timed training loop, eval every N seconds, results JSON + wandb
-zoo/sweep.py        tasks x opts x lrs over a GPU pool (resumable);  zoo/status.py  tables + grid
-scripts/            setup_remote.sh (fresh CUDA box), launch_sweep.sh (tmux), make_stage2_jobs.py,
-                    collect_results.py (stage 1), collect_stage2.py (stage 2), gradient_alignment.py
-jobs/               stage2.txt / stage2_extra.txt: the stage-2 job lists (one zoo.train line per run)
-results/            {task}-{opt}-lr{eps}[-sig..][-K..][-wd..][-tf32][-s{seed}].json per run      paper/   the write-up
+zoo/train.py        one run: timed training loop, evaluation every N seconds, results JSON (+ wandb)
+zoo/sweep.py        job lists over a GPU pool (resumable);  zoo/status.py  quick tables
+scripts/            collect_stage2.py (every table and figure of the paper), gradient_alignment.py,
+                    dust15_alignment.py, readme_figures.py, setup_remote.sh, launch_sweep.sh, ...
+jobs/               the job lists of every stage (one zoo.train argument line per run)
+results/            stage 1 screening (one seed per epsilon)
+results_v2/         stage 2: three seeds at the selected epsilon, plus DUST, 1.5-INP, IPC and follow-ups
+results_scale/      400k and 4M parameters
+results_bp/, results_decouple/, results_15/, results_align*/, results_supp/, results_dust15/
+                    backprop reference, untied probe scale, 1.5-order rules under their own recipe,
+                    gradient alignment, short backprop runs, the 1.5-DUST check
+logs/               sweep logs
 ```
 
-## Install
+Every run's JSON holds its configuration, its per-minute history (train / validation / test loss and
+accuracy) and its final result; every run is also on Weights & Biases (project `zoo-survey`).
+
+## Reproduce
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -33,80 +133,42 @@ python -m zoo.data --root ./data --download-all      # MNIST, CIFAR-10, PTB (cac
 python -m pytest tests -q                            # CPU, no network
 ```
 
-## Run one experiment
+One run (the budget counts only time inside `opt.step`):
 
 ```bash
-export WANDB_API_KEY=...                             # optional; without it runs log offline
-python -m zoo.train --task mlp_mnist --opt spsa --lr 0.01 --budget 3600 --eval-every 300 \
-    --seed 0 --out results --wandb-project zoo-survey --data-root ./data
+python -m zoo.train --task transformer_ptb --opt dust --lr 0.001 --budget 3600 --eval-every 60 \
+    --seed 0 --out results_v2 --no-wandb
 ```
 
-`--budget` counts only seconds spent inside `opt.step` (evaluation and logging are excluded).
-The run writes `results/mlp_mnist-spsa-lr0.01.json` after every evaluation (`history`, then
-`final`), saves checkpoints at the best validation loss / 5 minutes / the end (`*.pt`), stops
-early and sets `diverged` when a loss is non-finite or the validation loss exceeds 2x its step-0
-value at two consecutive evaluations, and logs to wandb with `train_time` as the x-axis.
-Ablation flags (each recorded in the run name): `--sigma` (probe scale decoupled from the
-learning rate), `--passes` (forward-pass budget), `--weight-decay` (AdamW), `--tf32` (default:
-full fp32), `--seed`.  Add `--no-wandb` to skip wandb, `--synthetic` for a smoke run on random
-data, `--budget 20 --eval-every 5` for a quick look.
-
-## Run the sweep (8 GPUs)
+A job list over 8 GPUs (resumable; one log per run under `--logdir`):
 
 ```bash
-bash scripts/setup_remote.sh                         # fresh Ubuntu + CUDA image: deps, data, GPU list
-bash scripts/launch_sweep.sh                         # detached tmux session "sweep", log in runs/sweep.log
-tmux attach -t sweep
-# or by hand:
-python -m zoo.sweep --gpus 0,1,2,3,4,5,6,7 --tasks all --opts all --lrs 0.1,0.01,0.001 \
-    --budget 3600 --eval-every 300 --out results --logdir runs [--dry-run] [--order interleaved]
+bash scripts/setup_remote.sh                         # fresh Ubuntu + CUDA box: dependencies, data, GPU list
+python -m zoo.sweep --jobs jobs/stage2.txt --gpus 0,1,2,3,4,5,6,7 --logdir runs_v2
 ```
 
-The sweep is resumable: configs whose JSON already has a `final` block and no `error` are
-skipped (`--force` reruns them).  Each run's stdout/stderr goes to `runs/{name}.log`.
-Stage 2 uses the job-list mode: `python -m zoo.sweep --jobs jobs/stage2.txt --extra-jobs jobs/extra.txt
---gpus 0,...,7 --logdir runs_v2` runs one `zoo.train` argument line per job over the GPU pool;
-lines appended to the `--extra-jobs` file while the sweep runs are picked up with priority.  A `--skip-jobs FILE` (run names or glob patterns, one per line, re-read before every job)
-prunes queued jobs from a running sweep without restarting it.
-
-## Inspecting results
+Tables, figures and the paper:
 
 ```bash
-python -m zoo.status --out results                   # every run + best epsilon per (task, opt) by val loss
-python -m zoo.status --out results --grid            # 4 x 8 test-loss grid
-python -m zoo.status --out results --grid --csv paper/grid.csv --metric test_acc
+python scripts/collect_stage2.py --align results_align_gpu   # regenerates paper/tables and paper/data
+cd paper && make                                              # main.pdf (pdflatex + bibtex)
 ```
 
-Model selection follows the protocol: for each (task, optimizer) the epsilon with the lowest
-final validation loss is selected and that run's test loss (test accuracy for classification,
-bits-per-character for language modelling) is reported.  The write-up lives in `paper/`.
+Ablation flags of `zoo.train` (each recorded in the run name): `--sigma` (probe scale untied from the
+learning rate), `--passes` (forward-pass budget), `--size m|l` (400k / 4M parameters), `--alpha` and
+`--lam` (curvature exponent and floor of the 1.5-order rules), `--loss64`, `--optim sgd`, `--weight-decay`,
+`--tf32`, `--seed`.
 
-## Results (all 96 runs complete)
+## Citation
 
-Final test loss after one hour, epsilon selected by final validation loss (the paper's Table 3), and the
-early-stopping oracle (Table 4: best validation-loss evaluation over all epsilon and times).  Second rows
-of the paper's tables give accuracy / bits-per-character.  Headline: iterative node perturbation (INP) is
-the most consistent zero-order rule (best on both sequence tasks, mean rank 2.0 of 7); ANP / DANP win the
-image tasks; the best zero-order rule trails backprop by about one bit per character on the LSTM and
-Transformer and by 1-7 accuracy points on MNIST / CIFAR-10 at its best evaluation.
-
-```
-final test loss (selected eps):
-task                     bp     spsa       rs       np      anp      inp     danp       ff
-mlp_mnist             1.857    1.039    1.412    2.141    0.381    0.916    0.751    2.127
-conv_cifar10          2.402    2.468    2.406    1.613    1.177    1.339    1.285    1.886
-lstm_ptb              1.231    2.048    2.124    2.015    3.232    1.955    2.608    2.688
-transformer_ptb       1.262    2.181    2.279    2.357    3.412    2.151    2.525    2.959
-
-early-stopping oracle test loss (best val-loss evaluation over all eps and times):
-task                     bp     spsa       rs       np      anp      inp     danp       ff
-mlp_mnist             1.260    0.391    0.487    0.167    0.137    0.162    0.321    1.051
-conv_cifar10          1.319    1.642    1.742    1.434    1.139    1.341    1.085    1.819
-lstm_ptb              1.231    2.048    2.124    2.015    2.969    1.955    2.608    2.658
-transformer_ptb       1.260    2.181    2.279    2.342    3.065    2.151    2.513    2.925
+```bibtex
+@misc{chaubard2026zoo,
+  title        = {A {ZOO} Deep Learning Survey},
+  author       = {Chaubard, Francois},
+  year         = {2026},
+  howpublished = {\url{https://github.com/Fchaubard/zero_order_optimization_DL_survey}}
+}
 ```
 
-The paper (`paper/main.pdf`, NeurIPS format, all plots in TikZ) is built with `make` in `paper/` after
-`python scripts/collect_results.py`.  Raw per-run JSON results are in `results/` (plus four 10-minute
-backprop runs with 30-second evaluations in `results_supp/`), the sweep logs in `logs/`, and every run is
-on Weights & Biases (project `zoo-survey`).
+MIT License. DUST and identity-path credit are ported from the MIT-licensed reference code of Q Labs
+([qlabs-eng/dust](https://github.com/qlabs-eng/dust), [qlabs-eng/noise](https://github.com/qlabs-eng/noise)).

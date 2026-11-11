@@ -148,7 +148,7 @@ responsible. At ten and a hundred times the parameter count (one seed) DUST and
 1.5-INP stay the two best probe rules (summed loss 4.78 and 5.00 at 400k, 4.91 and 5.08 at 4M,
 against 5.38 and 5.52 for INP), the gap to backpropagation widens, and the
 step size selected at the small size has to shrink with width. Code and run logs:
-\url{https://github.com/Fchaubard/zero-order-ablations}.
+\url{https://github.com/Fchaubard/zero_order_optimization_DL_survey}.
 \end{abstract}
 
 % ====================================================================================
@@ -1137,7 +1137,7 @@ methods; their job lists are in the repository.
 \paragraph{Hardware and software.}
 All runs use one RTX~5090 per run on an 8-GPU vast.ai node (8 runs at a time; PyTorch
 2.9.1, CUDA 12.8), with the code at
-\url{https://github.com/Fchaubard/zero-order-ablations} (stage 1: commits
+\url{https://github.com/Fchaubard/zero_order_optimization_DL_survey} (stage 1: commits
 \texttt{db100bc} and \texttt{f5424e9}; stage 2: \texttt{97c03f5}). Every run is logged to
 Weights \& Biases (project \texttt{zoo-survey}) and writes a JSON file with its
 configuration, evaluation history and final metrics.
@@ -1967,7 +1967,7 @@ logs, superseded by Table~\ref{tab:bp}).
 \item {\bf Open access to data and code}
     \item[] Question: Does the paper provide open access to the data and code, with sufficient instructions to faithfully reproduce the main experimental results, as described in supplemental material?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The complete code, the job lists of both stages, the per-run JSON results, the checkpoints and the scripts that generate every table and figure are released at \url{https://github.com/Fchaubard/zero-order-ablations}; the datasets are public and downloaded by the code.
+    \item[] Justification: The complete code, the job lists of both stages, the per-run JSON results, the checkpoints and the scripts that generate every table and figure are released at \url{https://github.com/Fchaubard/zero_order_optimization_DL_survey}; the datasets are public and downloaded by the code.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer NA means that paper does not include experiments requiring code.
